@@ -43,9 +43,9 @@ spring:
   # MyBatis 설정
   mybatis:
     # Mapper XML 파일 위치 설정
-     mapper-locations: classpath:com.codepresso.codepresso/*.xml     # 특정 패키지의 XML 파일 (현재 경로가 잘못됨)
-     # 테스트 할 땐 이걸로!
-     type-aliases-package: com.codepresso.codepresso.test        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
+    mapper-locations: classpath:com.codepresso.codepresso/*.xml     # 특정 패키지의 XML 파일 (현재 경로가 잘못됨)
+    # 테스트 할 땐 이걸로!
+    type-aliases-package: com.codepresso.codepresso.test        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
 
 # 테스트 안 할 땐 이걸로!!!!!!!!!
 #  type-aliases-package: com.codepresso.codepresso        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)

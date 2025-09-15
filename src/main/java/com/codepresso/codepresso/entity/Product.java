@@ -1,23 +1,18 @@
 package com.codepresso.codepresso.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 상품 엔티티
- * ERD의 product 테이블과 매핑
- */
-@Entity
-@Table(name = "product")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "product")
+@Entity
 public class Product {
 
     @Id
@@ -34,8 +29,23 @@ public class Product {
     @Column(name = "product_photo")
     private String productPhoto;
 
-    @Column
-    private Integer price;
+    private String price;
+
+    // 1:N - ProductOption
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOption> options = new ArrayList<>();
+
+    // 1:1 - NutritionInfo
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private NutritionInfo nutritionInfo;
+
+    // 1:N - AllergenProduct (중간 테이블)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AllergenProduct> allergenProducts = new ArrayList<>();
+
+    // 1:N - Category
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Category> categories = new ArrayList<>();
 
     // 1:N 관계 매핑 (즐겨찾기만)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
