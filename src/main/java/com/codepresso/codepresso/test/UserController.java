@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Controller
+//@Controller  // 메인 UserController와 충돌 방지를 위해 주석 처리
 @RequiredArgsConstructor
 public class UserController {
     private final MybatisService mybatisService;
