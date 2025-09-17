@@ -56,7 +56,7 @@ public class Member {
     @Column(nullable = false, length = 20)
     private Role role; // USER/ADMIN
 
-    @Column(name = "last_login_at")
+    @Column(name = "last_login_at", columnDefinition = "datetime")
     private LocalDateTime lastLoginAt; // 마지막 로그인 시간
 
     public enum Role { USER, ADMIN }

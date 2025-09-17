@@ -3,9 +3,11 @@ package com.codepresso.codepresso.controller.member;
 import com.codepresso.codepresso.dto.AuthResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
 import com.codepresso.codepresso.dto.member.FavoriteRequest;
+import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -21,17 +23,12 @@ public class FavoriteApiController {
 
     /**
      * 즐겨찾기 추가 API
-     * 회원이 상품을 즐겨찾기에 추가
-     * 
-     * @param memberId 회원 ID
-     * @param request 즐겨찾기 추가 요청
-     * @return ResponseEntity<AuthResponse> 성공/실패 응답
      */
     @PostMapping("/favorites")
     public ResponseEntity<AuthResponse> addFavorite(
-            @RequestParam Long memberId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody FavoriteRequest request) {
-        
+        Long memberId = loginUser.getMemberId();
         AuthResponse response = favoriteService.addFavorite(memberId, request);
         
         if (response.isSuccess()) {
@@ -43,15 +40,11 @@ public class FavoriteApiController {
 
     /**
      * 즐겨찾기 목록 조회 API
-     * 회원의 즐겨찾기 목록을 조회
-     * 
-     * @param memberId 회원 ID
-     * @return ResponseEntity<FavoriteListResponse> 즐겨찾기 목록 응답
      */
     @GetMapping("/favorites")
     public ResponseEntity<FavoriteListResponse> getFavoriteList(
-            @RequestParam Long memberId) {
-        
+            @AuthenticationPrincipal LoginUser loginUser) {
+        Long memberId = loginUser.getMemberId();
         FavoriteListResponse response = favoriteService.getFavoriteList(memberId);
         return ResponseEntity.ok(response);
     }
@@ -59,16 +52,12 @@ public class FavoriteApiController {
     /**
      * 즐겨찾기 삭제 API
      * 회원의 특정 상품을 즐겨찾기에서 제거
-     * 
-     * @param memberId 회원 ID
-     * @param productId 삭제할 상품 ID
-     * @return ResponseEntity<AuthResponse> 성공/실패 응답
      */
     @DeleteMapping("/favorites/{productId}")
     public ResponseEntity<AuthResponse> removeFavorite(
-            @RequestParam Long memberId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @PathVariable Long productId) {
-        
+        Long memberId = loginUser.getMemberId();
         AuthResponse response = favoriteService.removeFavorite(memberId, productId);
         
         if (response.isSuccess()) {

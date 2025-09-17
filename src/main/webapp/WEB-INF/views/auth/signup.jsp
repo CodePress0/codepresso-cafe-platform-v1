@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" session="false" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
 <body>
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
@@ -9,12 +9,19 @@
             <div>
                 <div class="badge">CodePress · 회원가입</div>
                 <h1>지금 CodePress에 가입하세요</h1>
-                <p>연분홍 테마와 함께 더 편하게 주문해보세요. 아이디, 비밀번호, 닉네임, 이메일만 입력하면 끝!</p>
+                <p>아이디, 비밀번호, 닉네임, 이메일만 입력하면 끝!</p>
 
                 <style>
                     /* 회원가입 페이지는 마스코트 영역 없이 단일 컬럼으로 표시 */
-                    .signup-card { grid-template-columns: 1fr; }
-                    .form { display: grid; gap: 14px; max-width: 460px; }
+                    .signup-card {
+                        grid-template-columns: 1fr;
+                        width: 100%;
+                        max-width: 640px;   /* 카드 전체 너비 더 축소 */
+                        margin: 0 auto;     /* 가운데 정렬 */
+                        padding: 24px;      /* 패딩도 조금 더 줄임 */
+                        text-align: center; /* 상단 문구 중앙 정렬 */
+                    }
+                    .form { display: grid; gap: 14px; max-width: 380px; margin: 0 auto; text-align: left; }
                     .field { display: grid; gap: 6px; }
                     .row { display: flex; gap: 8px; }
                     .row > button { white-space: nowrap; }
@@ -253,8 +260,10 @@
                 return;
             }
             const data = await res.json();
-            alert('회원가입 성공! 환영합니다, ' + data.nickname + '님');
-            location.href = '/auth/signup';
+            // 성공 알림은 모달로 표시되며, 사용자가 확인을 누르면 다음 줄이 실행됩니다.
+            alert('회원가입을 축하합니다! ' + data.nickname + '님');
+            // 확인을 누른 뒤 메인 페이지로 이동합니다.
+            location.href = '/';
         }catch(e){
             alert('요청 중 오류가 발생했습니다.');
         }
