@@ -27,4 +27,14 @@ public class BranchService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "branchName"));
         return branchRepository.findAll(pageable);
     }
+
+    public Page<Branch> searchByName(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "branchName"));
+        return branchRepository.findByBranchNameContainingIgnoreCase(keyword, pageable);
+    }
+
+    public Page<Branch> getNearby(double lat, double lng, double radiusKm, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return branchRepository.findNearby(lat, lng, radiusKm, pageable);
+    }
 }

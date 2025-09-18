@@ -24,6 +24,13 @@ public class Branch {
     @Column(name = "address", length = 255)
     private String address;
 
+    // 위치 정보 (선택)
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "opening_time")
     private LocalTime openingTime;
 
