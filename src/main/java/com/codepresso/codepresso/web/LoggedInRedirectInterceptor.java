@@ -16,7 +16,7 @@ public class LoggedInRedirectInterceptor implements HandlerInterceptor {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean loggedIn = authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken);
         if (loggedIn) {
-            response.sendRedirect("/branch/select?blocked=1");
+            response.sendRedirect("/branch/list?blocked=1");
             return false;
         }
         return true;

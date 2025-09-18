@@ -39,10 +39,7 @@ public class ViewController {
         return "auth/login";
     }
 
-    @GetMapping("/branch/select") // /WEB-INF/views/branch/select.jsp → 매장 선택 화면
-    public String branchSelect() {
-        return "branch/select";
-    }
+    // 매장 목록은 BranchController에서 처리
 
     @GetMapping("/member/mypage") // GET /member/mypage → 마이페이지 (보안설정에서 보호)
     public String mypage() {

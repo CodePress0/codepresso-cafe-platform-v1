@@ -32,7 +32,7 @@ public class SecurityConfig {
                 ).permitAll()
                 // 로그인 필요 페이지/API
                 .requestMatchers(
-                    "/branch/select",
+                    "/branch/**",
                     "/member/**",
                     "/favorites",
                     "/users/**",
@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login")               // 로그인 처리 경로 (POST)
                 .usernameParameter("accountId")             // 폼에서 사용자 ID input name
                 .passwordParameter("password")              // 폼에서 비밀번호 input name
-                .defaultSuccessUrl("/branch/select", true)  // 로그인 성공 시 매장 선택 화면으로 이동
+                .defaultSuccessUrl("/branch/list", true)  // 로그인 성공 시 매장 목록 화면으로 이동
                 .failureUrl("/auth/login?error=1")
                 .permitAll()
             )
