@@ -19,7 +19,7 @@ public class CartOption {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_option_id", nullable = false)
-    private ProductOption productoption;
+    private ProductOption productOption;
 
     @ManyToOne(fetch=FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_item_id", nullable = false)
