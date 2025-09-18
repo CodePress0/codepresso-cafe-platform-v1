@@ -25,4 +25,12 @@ public class SignUpRequest {
     @NotBlank
     @Email
     private String email;
+
+    @NotBlank
+    @Size(min = 2, max = 50)
+    private String name;
+
+    @NotBlank
+    @Size(min = 7, max = 20)
+    private String phone; // 클라이언트는 하이픈 포함 가능, 서버에서 숫자만 저장
 }

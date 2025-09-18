@@ -34,10 +34,10 @@ public class Favorite {
     private Integer orderby;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", insertable = false, updatable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product product;
 }

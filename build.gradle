@@ -40,7 +40,7 @@ dependencies {
     // DB / Persistence
     // =========================
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'  // JPA(Hibernate) 스타터
-    runtimeOnly 'com.mysql:mysql-connector-j'                                // MySQL JDBC 드라이버
+    runtimeOnly 'com.mysql:mysql-connector-j'// MySQL JDBC 드라이버
 
     // =========================
     // View (JSP 사용 시)
@@ -64,7 +64,8 @@ dependencies {
     // =========================
     // Test
     // =========================
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'   // JUnit/AssertJ/Mockito 등 번들
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'             // 테스트 런처(IDE/빌드툴 실행용)
 }
 

@@ -3,6 +3,8 @@ package com.codepresso.codepresso.entity.product;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -21,13 +23,7 @@ public class ProductOption {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "option_name")
-    private String optionName;
-
-    @Column(name = "option_type", nullable = false)
-    private String optionType;
-
-    @Column(name = "extra_price")
-    private int extraPrice;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_style_id")
+    private OptionStyle optionStyle;
 }

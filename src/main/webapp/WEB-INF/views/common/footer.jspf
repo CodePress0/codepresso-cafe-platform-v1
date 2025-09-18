@@ -1,8 +1,23 @@
 <%@ page pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <footer class="footer">
     <div class="container">
         © CodePress. All rights reserved.
+        <!--
+          로그인 상태일 때만 로그아웃 링크 표시
+          - pageContext.request.userPrincipal: 인증된 사용자가 있으면 null이 아님
+          - 지금은 기능을 나중에 붙일 예정이므로 단순 링크만 제공합니다.
+        -->
+        <c:if test="${pageContext.request.userPrincipal != null}">
+            <span style="margin-left:12px;">
+                <!-- POST /logout 로 전환 (CSRF 활성화 시 hidden 토큰 추가 예정) -->
+                <form method="post" action="/logout" style="display:inline;">
+                    <button type="submit" style="background:none;border:0;color:inherit;cursor:pointer;text-decoration:none;">로그아웃</button>
+                </form>
+            </span>
+        </c:if>
     </div>
+    
 </footer>
 </body>
 </html>
