@@ -1,6 +1,7 @@
 package com.codepresso.codepresso.entity.product;
 import com.codepresso.codepresso.entity.member.Favorite;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
