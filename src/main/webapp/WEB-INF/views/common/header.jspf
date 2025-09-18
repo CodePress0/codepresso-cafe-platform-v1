@@ -4,7 +4,7 @@
     <div class="container header-inner">
         <c:set var="homeHref" value="/" />
         <c:if test="${pageContext.request.userPrincipal != null}">
-            <c:set var="homeHref" value="/branch/select" />
+            <c:set var="homeHref" value="/branch/list" />
         </c:if>
         <a class="brand" href="${homeHref}">
 <%--            <div class="logo" aria-hidden="true"></div>--%>

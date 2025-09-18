@@ -1,0 +1,30 @@
+package com.codepresso.codepresso.service.branch;
+
+import com.codepresso.codepresso.entity.branch.Branch;
+import com.codepresso.codepresso.repository.branch.BranchRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class BranchService {
+
+    private final BranchRepository branchRepository;
+
+    public BranchService(BranchRepository branchRepository) {
+        this.branchRepository = branchRepository;
+    }
+
+    public List<Branch> getAllBranches() {
+        return branchRepository.findAll(Sort.by(Sort.Direction.ASC, "branchName"));
+    }
+
+    public Page<Branch> getBranchPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "branchName"));
+        return branchRepository.findAll(pageable);
+    }
+}

@@ -65,7 +65,7 @@
 
     <!-- 하단 액션 버튼 -->
     <div class="cta" style="justify-content:center; margin-top: 20px;">
-        <a href="/branch/select" class="btn btn-primary">주문하러 가기</a>
+        <a href="/branch/list" class="btn btn-primary">주문하러 가기</a>
         <a href="/member/mypage" class="btn btn-ghost">마이페이지로 돌아가기</a>
     </div>
       </div>

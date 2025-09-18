@@ -27,7 +27,7 @@
                 </ul>
 
                 <div class="cta">
-                    <a class="btn btn-primary" href="/branch/select">주문하러 가기</a>
+                    <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
                     <a class="btn btn-ghost" href="/favorites">즐겨찾기</a>
                 </div>
 
