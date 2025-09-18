@@ -18,6 +18,7 @@ public class LoginUser extends User {
     private final String accountId; // 로그인 ID
     private final String email;     // 이메일
     private final String name;      // 이름(실명)
+    private final String phone;     // 휴대전화(숫자만 저장)
     private final String nickname;  // 닉네임
     private final String role;      // ROLE 문자열(예: USER/ADMIN)
 
@@ -28,6 +29,7 @@ public class LoginUser extends User {
         this.accountId = member.getAccountId();
         this.email = member.getEmail();
         this.name = member.getName();
+        this.phone = member.getPhone();
         this.nickname = member.getNickname();
         this.role = member.getRole() == null ? "USER" : member.getRole().name();
     }
