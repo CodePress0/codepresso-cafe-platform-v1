@@ -9,7 +9,7 @@
             <div>
                 <div class="badge">CodePress · 회원가입</div>
                 <h1>지금 CodePress에 가입하세요</h1>
-                <p>아이디, 비밀번호, 닉네임, 이메일만 입력하면 끝!</p>
+<%--                <p>아이디, 비밀번호, 이름, 전화번호, 이메일, 닉네임을 입력하세요.</p>--%>
 
                 <style>
                     /* 회원가입 페이지는 마스코트 영역 없이 단일 컬럼으로 표시 */
@@ -33,10 +33,13 @@
                     input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.18); }
                     .btn.secondary { background: var(--white); color: var(--text-1); border: 1px solid rgba(0,0,0,.06); }
                     .hint { font-size: 12px; color: var(--text-2); }
+                    /* 라벨 옆 힌트 간격+톤 조정 */
+                    .field label .hint { margin-left: 10px; color: #6b7280; font-weight: 400; }
+                    .field label .hint .em { font-weight: 600; color: #4b5563; }
                     .msg { font-size: 13px; }
                     .ok { color: #2f855a; }
                     .bad { color: #c53030; }
-                    .links { margin-top: 8px; display: flex; gap: 16px; }
+                    .links { margin-top: 8px; display: flex; gap: 16px; justify-content: center; }
                     .links a { color: var(--pink-1); text-decoration: none; font-weight: 700; }
                 </style>
 
@@ -44,26 +47,28 @@
                     <div class="field">
                         <label for="accountId">아이디</label>
                         <div class="row">
-                            <input type="text" id="accountId" placeholder="아이디 입력" />
+                            <input type="text" id="accountId" placeholder="아이디" />
                             <button class="btn secondary" id="checkIdBtn">중복체크</button>
                         </div>
                         <div class="msg" id="idMsg"></div>
                     </div>
 
                     <div class="field">
-                        <label for="password">비밀번호</label>
-                        <input type="password" id="password" placeholder="비밀번호 입력" />
-                        <div class="hint">6자 이상, 영문/숫자 포함</div>
+                        <label for="password">비밀번호 <span class="hint">6자 이상, 영문/숫자 포함</span></label>
+                        <input type="password" id="password" placeholder="비밀번호" />
                         <div class="msg" id="pwMsg"></div>
                     </div>
 
                     <div class="field">
-                        <label for="nickname">닉네임</label>
-                        <div class="row">
-                            <input type="text" id="nickname" placeholder="닉네임 입력" />
-                            <button class="btn secondary" id="checkNicknameBtn">중복체크</button>
-                        </div>
-                        <div class="msg" id="nicknameMsg"></div>
+                        <label for="name">이름</label>
+                        <input type="text" id="name" placeholder="이름" />
+                        <div class="msg" id="nameMsg"></div>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">전화번호 <span class="hint">숫자만 입력해도 자동으로 하이픈이 들어갑니다.</span></label>
+                        <input type="text" id="phone" placeholder="010-1234-5678" inputmode="numeric" />
+                        <div class="msg" id="phoneMsg"></div>
                     </div>
 
                     <div class="field">
@@ -74,6 +79,17 @@
                         </div>
                         <div class="msg" id="emailMsg"></div>
                     </div>
+
+                    <div class="field">
+                        <label for="nickname">닉네임</label>
+                        <div class="row">
+                            <input type="text" id="nickname" placeholder="닉네임" />
+                            <button class="btn secondary" id="checkNicknameBtn">중복체크</button>
+                        </div>
+                        <div class="msg" id="nicknameMsg"></div>
+                    </div>
+
+                    
 
                     <div class="field">
                         <button class="btn btn-primary" id="signupBtn">회원가입</button>
@@ -95,13 +111,17 @@
     // ===== 1) DOM 요소 참조 =====
     const idInput = document.getElementById('accountId');
     const pwInput = document.getElementById('password');
-    const nickInput = document.getElementById('nickname');
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
     const emailInput = document.getElementById('email');
+    const nickInput = document.getElementById('nickname');
 
     const idMsg = document.getElementById('idMsg');
     const pwMsg = document.getElementById('pwMsg');
-    const nicknameMsg = document.getElementById('nicknameMsg');
+    const nameMsg = document.getElementById('nameMsg');
+    const phoneMsg = document.getElementById('phoneMsg');
     const emailMsg = document.getElementById('emailMsg');
+    const nicknameMsg = document.getElementById('nicknameMsg');
 
     // ===== 2) 유효성 검사 규칙 =====
     // - accountId: 4~50자, 영문/숫자/밑줄
@@ -140,6 +160,33 @@
         if(!val) return '이메일을 입력해주세요.';
         if(!patterns.email.test(val)) return '올바른 이메일 형식이 아닙니다.';
         return '';
+    }
+
+    function validateName(val){
+        if(!val) return '이름을 입력해주세요.';
+        if(val.length < 2) return '이름은 2자 이상이어야 합니다.';
+        return '';
+    }
+
+    function validatePhone(val){
+        const digits = (val||'').replace(/\D/g,'');
+        if(digits.length < 10 || digits.length > 11) return '전화번호는 10~11자리 숫자여야 합니다.';
+        return '';
+    }
+
+    function formatPhone(value){
+        const d = (value||'').replace(/\D/g,'').slice(0,11);
+        if(d.startsWith('02')){
+            if(d.length <= 2) return d;
+            if(d.length <= 5) return d.slice(0,2)+'-'+d.slice(2);
+            if(d.length <= 9) return d.slice(0,2)+'-'+d.slice(2,5)+'-'+d.slice(5);
+            return d.slice(0,2)+'-'+d.slice(2,6)+'-'+d.slice(6);
+        }else{
+            if(d.length <= 3) return d;
+            if(d.length <= 7) return d.slice(0,3)+'-'+d.slice(3);
+            if(d.length <= 10) return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);
+            return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);
+        }
     }
 
     // ===== 4) 한글 라벨 변환 =====
@@ -227,18 +274,28 @@
         checkDup('email', emailInput.value.trim(), emailMsg, '이메일');
     });
 
+    // 전화번호 자동 하이픈 포맷팅
+    phoneInput.addEventListener('input', () => {
+        const formatted = formatPhone(phoneInput.value);
+        phoneInput.value = formatted;
+    });
+
     document.getElementById('signupBtn').addEventListener('click', async () => {
         const accountId = idInput.value.trim();
         const password = pwInput.value.trim();
-        const nickname = nickInput.value.trim();
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.trim();
         const email = emailInput.value.trim();
+        const nickname = nickInput.value.trim();
 
         // 종합 유효성 검사
         const v = [
             {m: validateAccountId(accountId), el: idMsg, focusEl: idInput},
             {m: validatePassword(password), el: pwMsg, focusEl: pwInput},
-            {m: validateNickname(nickname), el: nicknameMsg, focusEl: nickInput},
-            {m: validateEmail(email), el: emailMsg, focusEl: emailInput}
+            {m: validateName(name), el: nameMsg, focusEl: nameInput},
+            {m: validatePhone(phone), el: phoneMsg, focusEl: phoneInput},
+            {m: validateEmail(email), el: emailMsg, focusEl: emailInput},
+            {m: validateNickname(nickname), el: nicknameMsg, focusEl: nickInput}
         ];
         const firstInvalid = v.find(x => x.m);
         if(firstInvalid){
@@ -252,7 +309,7 @@
             const res = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accountId, password, nickname, email })
+                body: JSON.stringify({ accountId, password, nickname, email, name, phone })
             });
             if(!res.ok){
                 const msg = await res.text();
