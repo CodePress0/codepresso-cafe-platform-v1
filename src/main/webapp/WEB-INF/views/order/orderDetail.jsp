@@ -644,7 +644,7 @@
         // checkout에서 온 데이터에는 productionStatus가 없으므로 기본값 설정
         const status = orderData.productionStatus || '주문접수';
         statusBadge.textContent = status;
-        statusBadge.className = `status-badge ${getStatusClass(status)}`;
+        statusBadge.className = 'status-badge ' + getStatusClass(status);
 
         // 진행률 업데이트
         const progressFill = document.querySelector('.progress-fill');
