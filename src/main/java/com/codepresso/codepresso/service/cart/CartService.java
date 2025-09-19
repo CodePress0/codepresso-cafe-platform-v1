@@ -151,7 +151,7 @@ public class CartService {
     }
 
     // u - 수량 newQuantity로 덮어쓰기
-    public void changeItemQuantity(Long memberId, Long cartItemId, int newQuantity){
+    public void changeItemQuantity(Long cartItemId, Long memberId, int newQuantity){
         if(newQuantity <= 0) {
             throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
         }
