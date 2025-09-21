@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,8 +28,11 @@ public class Review {
     @Column(name = "content", nullable = false, length = 500)
     private String content;
 
-    @Column(name = "photo_url", nullable = false, length = 500)
+    @Column(name = "photo_url", length = 500)
     private String photoUrl;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_detail_id", nullable = false)
