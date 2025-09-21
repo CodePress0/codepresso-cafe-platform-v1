@@ -24,6 +24,13 @@ public class Branch {
     @Column(name = "address", length = 255)
     private String address;
 
+    // 위치 정보 (선택)
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "opening_time")
     private LocalTime openingTime;
 
@@ -36,9 +43,11 @@ public class Branch {
     @Column(name = "branch_number", length = 20)
     private String branchNumber;
 
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
     // 연관관계: Branch ↔ OrderMaster (1:N)
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Orders> orders = new java.util.ArrayList<>();
 }
-

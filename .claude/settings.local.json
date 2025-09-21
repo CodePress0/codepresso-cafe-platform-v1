@@ -8,7 +8,8 @@
       "Bash(./gradlew:*)",
       "Bash(lsof:*)",
       "Bash(kill:*)",
-      "Read(//Users/admin/Desktop/공부/Spring/projects/codepresso/**)"
+      "Read(//Users/admin/Desktop/공부/Spring/projects/codepresso/**)",
+      "Bash(java:*)"
     ],
     "deny": [],
     "ask": []
