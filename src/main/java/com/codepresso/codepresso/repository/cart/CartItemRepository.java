@@ -1,6 +1,7 @@
 package com.codepresso.codepresso.repository.cart;
 
 import com.codepresso.codepresso.entity.cart.CartItem;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
