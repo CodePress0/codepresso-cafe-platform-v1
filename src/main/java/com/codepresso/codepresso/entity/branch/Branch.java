@@ -50,4 +50,5 @@ public class Branch {
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Orders> orders = new java.util.ArrayList<>();
+  
 }

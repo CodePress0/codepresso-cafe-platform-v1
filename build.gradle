@@ -40,8 +40,7 @@ dependencies {
     // DB / Persistence
     // =========================
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'  // JPA(Hibernate) 스타터
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3' // MyBatis 스타터 (병행 사용 시 경계 명확히)
-    runtimeOnly 'com.mysql:mysql-connector-j'                                // MySQL JDBC 드라이버
+    runtimeOnly 'com.mysql:mysql-connector-j'// MySQL JDBC 드라이버
 
     // =========================
     // View (JSP 사용 시)
