@@ -1,11 +1,15 @@
-package com.codepresso.codepresso.controller;
+package com.codepresso.codepresso.controller.cart;
 
 import com.codepresso.codepresso.dto.cart.*;
 import com.codepresso.codepresso.entity.cart.CartItem;
+import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -16,28 +20,21 @@ public class CartController {
 
     private final CartService cartService;
 
-    //장바구니 생성
-    @PostMapping("/create")
-    public ResponseEntity<String> createCart(@RequestParam Long memberId) {
-        cartService.create(memberId);
-        return ResponseEntity.ok("장바구니가 생성되었습니다.");
-    }
-
     //장바구니 조회
     @GetMapping
-    public ResponseEntity<CartResponse> getCart(@RequestParam Long memberId) {
-        return ResponseEntity.ok(cartService.getCartByMemberId(memberId));
+    public ResponseEntity<CartResponse> getCart(@AuthenticationPrincipal LoginUser loginUser) {
+        return ResponseEntity.ok(cartService.getCartByMemberId(loginUser.getMemberId()));
     }
 
     //장바구니 상품 추가
     @PostMapping
     public ResponseEntity<CartItemResponse> addItem(
-            @RequestParam Long memberId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam Long productId,
             @RequestParam int quantity,
             @RequestParam(required = false) List<Long> optionIds
     ){
-        CartItem savedItem = cartService.addItemWithOptions(memberId, productId, quantity, optionIds);
+        CartItem savedItem = cartService.addItemWithOptions(loginUser.getMemberId(), productId, quantity, optionIds);
 
         //cartItem -> DTO 변환
         CartItemResponse response = CartItemResponse.builder()
@@ -62,10 +59,10 @@ public class CartController {
     @PatchMapping("/{cartItemId}")
     public ResponseEntity<String> updateQuantity(
             @PathVariable Long cartItemId,
-            @RequestParam Long memberId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam int quantity
     ) {
-        cartService.changeItemQuantity(cartItemId, memberId, quantity);
+        cartService.changeItemQuantity(cartItemId, loginUser.getMemberId(), quantity);
         return ResponseEntity.ok("수량이 변경되었습니다.");
     }
 
@@ -73,9 +70,20 @@ public class CartController {
     @DeleteMapping("/{cartItemId}")
     public ResponseEntity<String> deleteItem(
             @PathVariable Long cartItemId,
-            @RequestParam Long memberId
+           @AuthenticationPrincipal LoginUser loginUser
     ){
-    cartService.deleteItem(cartItemId, memberId);
-    return ResponseEntity.ok("아이템이 삭제되었습니다.");
+        cartService.deleteItem(cartItemId, loginUser.getMemberId());
+        return ResponseEntity.ok("아이템이 삭제되었습니다.");
+    }
+
+
+    //장바구니 비우기
+    @PostMapping("/clear")
+    public ResponseEntity<String> clearCart(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam Long cartId
+    ) {
+        cartService.clearCart(loginUser.getMemberId(), cartId);
+        return ResponseEntity.ok("장바구니가 비워졌습니다.");
     }
 }
