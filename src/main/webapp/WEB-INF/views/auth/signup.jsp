@@ -201,8 +201,7 @@
 
     // ===== 5) 중복체크 요청 함수 =====
     // - endpoint: 'id' | 'nickname' | 'email'
-    // - 우선 /api/auth/check?type={field}&value=... 로 호출 (명확한 파라미터)
-    // - 실패 시 /api/auth/check/{field}?value=... 로 재시도 (RESTful 폴백)
+    // - /api/auth/check?field={field}&value=... 형태로 호출
     // - 주의: JSP의 $ { } EL과 충돌 방지를 위해 템플릿 리터럴을 쓰지 않고 문자열 결합 사용
     async function checkDup(endpoint, value, msgEl, label){
         // 허용되지 않은 endpoint가 오면 기본값 id로 보정
@@ -212,16 +211,10 @@
         if(!value){ msgEl.textContent = labelText + '를 입력해주세요.'; msgEl.className='msg bad'; return; }
         const q = encodeURIComponent(value);
         try {
-            // 1차 시도: 쿼리 파라미터 방식 (/check?type={field}&value=...)
-            const url1 = '/api/auth/check?type=' + encodeURIComponent(field) + '&value=' + q;
-            console.log('[dup-check] try1', field, url1);
-            let res = await fetch(url1);
-            // 2차 시도: RESTful 경로 (/check/{field}?value=...)
-            if (!res.ok) {
-                const url2 = '/api/auth/check/' + encodeURIComponent(field) + '?value=' + q;
-                console.log('[dup-check] try2', field, url2);
-                res = await fetch(url2);
-            }
+            // 1차 시도: 쿼리 파라미터 방식 (/check?field={field}&value=...)
+            const url = '/api/auth/check?field=' + encodeURIComponent(field) + '&value=' + q;
+            console.log('[dup-check]', field, url);
+            const res = await fetch(url);
             if (!res.ok) throw new Error('중복체크 실패');
             const data = await res.json();
             const lbl = toKoreanField((data && data.field) ? data.field : field);

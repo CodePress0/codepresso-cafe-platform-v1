@@ -10,7 +10,7 @@ public enum CheckField {
     EMAIL;
 
     public static CheckField from(String value) {
-        if (value == null) throw new IllegalArgumentException("field/type 파라미터가 필요합니다.");
+        if (value == null) throw new IllegalArgumentException("field 파라미터가 필요합니다.");
         return switch (value.trim().toLowerCase()) {
             case "id" -> ID;
             case "nickname" -> NICKNAME;
