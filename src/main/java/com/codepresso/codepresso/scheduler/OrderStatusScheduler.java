@@ -1,7 +1,7 @@
 package com.codepresso.codepresso.scheduler;
 
 import com.codepresso.codepresso.entity.order.Orders;
-import com.codepresso.codepresso.repository.member.order.OrdersRepository;
+import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

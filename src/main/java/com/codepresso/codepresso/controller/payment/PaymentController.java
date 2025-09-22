@@ -1,7 +1,7 @@
 package com.codepresso.codepresso.controller.payment;
 
-import com.codepresso.codepresso.dto.auth.payment.CheckoutRequest;
-import com.codepresso.codepresso.dto.auth.payment.CheckoutResponse;
+import com.codepresso.codepresso.dto.payment.CheckoutRequest;
+import com.codepresso.codepresso.dto.payment.CheckoutResponse;
 import com.codepresso.codepresso.service.payment.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,20 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주문상세조회 - 바나프레소</title>
-</head>
-
+<%@ include file="/WEB-INF/views/common/head.jspf" %>
 <body>
-<div class="order-detail-container">
-    <!-- 상단 헤더 -->
-    <div class="order-header">
-        <div class="header-content">
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
+<main class="hero order-detail-page">
+    <div class="container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
             <button class="back-btn" onclick="history.back()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -22,10 +15,9 @@
             </button>
             <h1 class="page-title">주문상세조회</h1>
         </div>
-    </div>
 
-    <!-- 메인 컨텐츠 -->
-    <div class="main-content">
+        <!-- 메인 컨텐츠 -->
+        <div class="order-detail-content">
         <!-- 좌측: 주문 정보 -->
         <div class="left-section">
             <!-- 주문 상태 -->
@@ -167,74 +159,51 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
+</main>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    /* Order Detail Page Specific Styles */
+    .order-detail-page {
+        padding-top: 40px;
+        padding-bottom: 40px;
     }
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        line-height: 1.6;
-    }
-
-    .order-detail-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background-color: #fff;
-        min-height: 100vh;
-    }
-
-    .order-header {
-        background-color: #fff;
-        border-bottom: 1px solid #e9ecef;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        padding: 0 24px;
-    }
-
-    .header-content {
+    .page-header {
         display: flex;
         align-items: center;
-        height: 64px;
-        max-width: 1200px;
-        margin: 0 auto;
+        margin-bottom: 32px;
+        gap: 16px;
     }
 
     .back-btn {
-        background: none;
-        border: none;
-        color: #666;
+        background: var(--white);
+        border: 1px solid rgba(0,0,0,0.08);
+        color: var(--text-2);
         cursor: pointer;
-        padding: 8px;
-        margin-right: 16px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
+        padding: 12px;
+        border-radius: 12px;
+        transition: all 0.2s;
+        box-shadow: var(--shadow);
     }
 
     .back-btn:hover {
-        background-color: #f8f9fa;
+        background-color: var(--pink-4);
+        border-color: var(--pink-2);
+        color: var(--pink-1);
     }
 
     .page-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #333;
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--text-1);
+        margin: 0;
     }
 
-    .main-content {
+    .order-detail-content {
         display: grid;
         grid-template-columns: 1fr 400px;
         gap: 32px;
-        padding: 32px 24px;
-        max-width: 1200px;
-        margin: 0 auto;
     }
 
     .left-section, .right-section {
@@ -244,16 +213,17 @@
     }
 
     .order-status-section, .order-items-section, .store-section, .payment-info-section {
-        background-color: #fff;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
+        background: var(--white);
+        border-radius: 18px;
         padding: 24px;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(0,0,0,0.05);
     }
 
     .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-1);
         margin-bottom: 20px;
     }
 
@@ -278,18 +248,18 @@
     }
 
     .status-making {
-        background-color: #ffc107;
-        color: #fff;
+        background: linear-gradient(135deg, #ffc107, #ffb700);
+        color: var(--white);
     }
 
     .status-complete {
-        background-color: #28a745;
-        color: #fff;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: var(--white);
     }
 
     .status-pickup {
-        background-color: #007bff;
-        color: #fff;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+        color: var(--white);
     }
 
     .status-progress {
@@ -307,7 +277,7 @@
 
     .progress-fill {
         height: 100%;
-        background-color: #dc3545;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
         border-radius: 2px;
         transition: width 0.3s ease;
     }
@@ -324,7 +294,7 @@
     }
 
     .step.completed, .step.active {
-        color: #dc3545;
+        color: var(--pink-1);
         font-weight: 600;
     }
 
@@ -361,8 +331,9 @@
         align-items: center;
         gap: 16px;
         padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 12px;
+        background: linear-gradient(135deg, var(--pink-4), rgba(255,255,255,0.8));
+        border-radius: 14px;
+        border: 1px solid rgba(255,122,162,0.1);
     }
 
     .item-number {
@@ -371,11 +342,12 @@
         justify-content: center;
         width: 32px;
         height: 32px;
-        background-color: #dc3545;
-        color: #fff;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+        color: var(--white);
         border-radius: 50%;
         font-weight: 600;
         font-size: 14px;
+        box-shadow: 0 4px 8px rgba(255,122,162,0.3);
     }
 
     .item-image {
@@ -419,8 +391,8 @@
 
     .total-price {
         font-size: 18px;
-        font-weight: 600;
-        color: #dc3545;
+        font-weight: 700;
+        color: var(--pink-1);
     }
 
     .store-info {
@@ -444,18 +416,21 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
-        background-color: #28a745;
-        color: #fff;
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: var(--white);
         border: none;
-        border-radius: 6px;
+        border-radius: 12px;
         font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(40,167,69,0.3);
     }
 
     .call-btn:hover {
-        background-color: #218838;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px rgba(40,167,69,0.4);
     }
 
     .store-address, .store-hours {
@@ -511,8 +486,8 @@
     }
 
     .total-amount {
-        color: #dc3545;
-        font-weight: 700;
+        color: var(--pink-1);
+        font-weight: 800;
     }
 
     .order-actions {
@@ -542,17 +517,19 @@
     }
 
     .btn-primary {
-        background-color: #dc3545;
-        color: #fff;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+        color: var(--white);
+        box-shadow: 0 8px 16px rgba(255, 122, 162, 0.35);
     }
 
     .btn-primary:hover {
-        background-color: #c82333;
+        filter: brightness(1.02);
+        transform: translateY(-1px);
     }
 
     /* 태블릿 반응형 */
     @media (max-width: 1024px) {
-        .main-content {
+        .order-detail-content {
             grid-template-columns: 1fr;
             gap: 24px;
             padding: 24px 16px;
@@ -762,5 +739,5 @@
         if (totalAmountEl) totalAmountEl.textContent = orderData.totalAmount.toLocaleString() + '원';
     }
 </script>
-</body>
-</html>
+
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

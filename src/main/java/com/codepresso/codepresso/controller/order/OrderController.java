@@ -1,10 +1,8 @@
 package com.codepresso.codepresso.controller.order;
 
-import com.codepresso.codepresso.dto.auth.order.OrderDetailResponse;
-import com.codepresso.codepresso.dto.auth.order.OrderListResponse;
-import com.codepresso.codepresso.entity.order.OrdersDetail;
+import com.codepresso.codepresso.dto.order.OrderDetailResponse;
+import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.service.order.OrderService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
