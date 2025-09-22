@@ -3,7 +3,6 @@ package com.codepresso.codepresso.controller;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.FavoriteService;
-import com.codepresso.codepresso.service.member.MemberProfileService;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -18,11 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ViewController {
 
     @Getter
-    private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
 
-    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService) {
-        this.memberProfileService = memberProfileService;
+    public ViewController(FavoriteService favoriteService) {
         this.favoriteService = favoriteService;
     }
 
@@ -68,20 +65,4 @@ public class ViewController {
     }
 
 
-    /**
-     * 프로필 수정 처리
-     */
-//    @PostMapping("/profile-update")
-//    public String updateProfile(@RequestParam Long memberId, ProfileUpdateRequest request, Model model) {
-//        try {
-//            // 프로필 수정 후 수정된 정보를 JSP에 전달
-//            UserDetailResponse updatedMember = memberProfileService.updateProfile(memberId, request);
-//            model.addAttribute("member", updatedMember);
-//            model.addAttribute("success", "프로필이 성공적으로 수정되었습니다.");
-//        } catch (Exception e) {
-//            // 에러 발생 시 에러 메시지를 JSP에 전달
-//            model.addAttribute("error", "프로필 수정 중 오류가 발생했습니다: " + e.getMessage());
-//        }
-//        return "member/mypage";
-//    }
 }
