@@ -20,6 +20,7 @@ public class NutritionInfoDTO {
     private double sodium;
 
     private double sugar;
+    private double caffeine;
 
     private int cholesterol;
 
@@ -32,6 +33,7 @@ public class NutritionInfoDTO {
         transFat = nutritionInfo.getTransFat();
         sodium = nutritionInfo.getSodium();
         sugar = nutritionInfo.getSugar();
+        caffeine = nutritionInfo.getCaffeine();
         cholesterol = nutritionInfo.getCholesterol();
     }
 }

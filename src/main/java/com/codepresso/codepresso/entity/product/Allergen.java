@@ -1,5 +1,6 @@
 package com.codepresso.codepresso.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,12 +23,13 @@ public class Allergen {
     private Long id;
 
     @Column(name = "allergen_name", nullable = false)
-    private String allegenName;
+    private String allergenName;
 
     @Column(name = "allergen_code")
-    private String allegenCode;
+    private String allergenCode;
 
-    // 1:N - AllergenProduct
-    @OneToMany(mappedBy = "allergen", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AllergenProduct> allergenProducts = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    @JsonIgnore
+    private Product product;
 }

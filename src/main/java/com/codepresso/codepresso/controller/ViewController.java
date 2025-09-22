@@ -1,15 +1,22 @@
 package com.codepresso.codepresso.controller;
 
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
+import com.codepresso.codepresso.dto.product.ProductDetailResponse;
+import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.FavoriteService;
 import com.codepresso.codepresso.service.member.MemberProfileService;
+import com.codepresso.codepresso.service.product.ProductService;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * JSP 뷰를 반환하는 컨트롤러
@@ -20,10 +27,12 @@ public class ViewController {
     @Getter
     private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
+    private final ProductService productService;
 
-    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService) {
+    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, ProductService productService) {
         this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
+        this.productService = productService;
     }
 
     @GetMapping("/")
@@ -67,6 +76,35 @@ public class ViewController {
         return "member/favorite-list";
     }
 
+
+    /**
+     * 상품 목록 페이지
+     */
+    @GetMapping("/products")
+    public String productList(@RequestParam(required = false, defaultValue = "COFFEE") String category, Model model) {
+        try {
+            List<ProductListResponse> products = productService.findProductsByCategory(category);
+            model.addAttribute("products", products);
+            model.addAttribute("currentCategory", category);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "상품 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "product/productList";
+    }
+
+    /**
+     * 상품 상세 페이지
+     */
+    @GetMapping("/products/{productId}")
+    public String productDetail(@PathVariable Long productId, Model model) {
+        try {
+            ProductDetailResponse product = productService.findByProductId(productId);
+            model.addAttribute("product", product);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "product/productDetail";
+    }
 
     /**
      * 프로필 수정 처리

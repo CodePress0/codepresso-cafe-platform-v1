@@ -42,7 +42,7 @@ public class Product {
 
     // 1:N - AllergenProduct (중간 테이블)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AllergenProduct> allergenProducts = new ArrayList<>();
+    private List<Allergen> allergens = new ArrayList<>();
 
     // 1:N - Category
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,5 +52,9 @@ public class Product {
     // 1:N 관계 매핑 (즐겨찾기만)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Favorite> favorites = new ArrayList<>();
+
+    // 1:N - Hashtag
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Hashtag> productHashtags = new ArrayList<>();
 
 }
