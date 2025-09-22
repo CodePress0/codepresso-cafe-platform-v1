@@ -17,6 +17,26 @@ public class CartItemResponse {
     private Long productId;
     private Integer quantity;
     private String productName;
+    private Integer unitPrice;
+    private List<CartItemOptionResponse> options;
+
+    public Integer getTotalPrice() {
+        if (unitPrice == null || quantity == null) {
+            return null;
+        }
+        return (unitPrice + getOptionExtraPerUnit()) * quantity;
+    }
+
+    public Integer getOptionExtraPerUnit() {
+        if (options == null) {
+            return 0;
+        }
+        return options.stream()
+                .map(CartItemOptionResponse::getAddPrice)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
     private Integer price;
     private List<CartOptionResponse> options;
 }
