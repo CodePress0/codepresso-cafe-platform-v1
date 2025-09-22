@@ -45,7 +45,8 @@ public class MemberService {
      * 회원가입 처리
      */
     @Transactional
-    public Member register(String accountId, String rawPassword, String nickname, String email) {
+    public Member register(String accountId, String rawPassword, String nickname, String email,
+                           String name, String phone) {
         if (isAccountIdDuplicate(accountId)) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
@@ -57,11 +58,17 @@ public class MemberService {
         }
 
         String encoded = passwordEncoder.encode(rawPassword);
+        // 전화번호 정규화: 숫자만 남기기 (빈 값이면 null)
+        String normalizedPhone = (phone == null) ? null : phone.replaceAll("[^0-9]", "").trim();
+        if (normalizedPhone != null && normalizedPhone.isEmpty()) normalizedPhone = null;
+        String trimmedName = name == null ? null : name.trim();
         Member member = Member.builder()
                 .accountId(accountId)
                 .password(encoded)
                 .nickname(nickname)
                 .email(email)
+                .name(trimmedName)
+                .phone(normalizedPhone)
                 .build();
         try {
             return memberRepository.save(member);

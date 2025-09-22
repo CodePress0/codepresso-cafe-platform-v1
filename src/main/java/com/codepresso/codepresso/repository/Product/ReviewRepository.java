@@ -1,8 +1,8 @@
-package com.codepresso.codepresso.repository.Product;
+package com.codepresso.codepresso.repository.product;
 
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
 import com.codepresso.codepresso.entity.product.Review;
-import org.apache.ibatis.annotations.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

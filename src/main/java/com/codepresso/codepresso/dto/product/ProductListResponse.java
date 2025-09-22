@@ -4,7 +4,6 @@ import com.codepresso.codepresso.entity.product.Product;
 import lombok.*;
 
 @Getter
-@Setter
 public class ProductListResponse {
     private Long productId;
     private String productName;

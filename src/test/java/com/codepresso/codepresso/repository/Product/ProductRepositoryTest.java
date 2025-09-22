@@ -1,7 +1,6 @@
-package com.codepresso.codepresso.repository.Product;
+package com.codepresso.codepresso.repository.product;
 
 import com.codepresso.codepresso.entity.product.Product;
-import com.codepresso.codepresso.repository.Product.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

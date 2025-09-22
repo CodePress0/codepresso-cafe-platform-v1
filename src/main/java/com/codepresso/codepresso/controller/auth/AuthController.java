@@ -5,6 +5,7 @@ import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.service.member.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final MemberService memberService;
@@ -56,15 +58,21 @@ public class AuthController {
     /** 회원가입 */
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody @Valid SignUpRequest request) {
+        log.info("[signup] req accountId={}, name={}, phone={}", request.getAccountId(), request.getName(), request.getPhone());
         Member member = memberService.register(
                 request.getAccountId(),
                 request.getPassword(),
                 request.getNickname(),
-                request.getEmail()
+                request.getEmail(),
+                request.getName(),
+                request.getPhone()
         );
+        log.info("[signup] saved id={}, name={}, phone={}", member.getId(), member.getName(), member.getPhone());
         Map<String, Object> resp = new HashMap<>();
         resp.put("id", member.getId());
         resp.put("accountId", member.getAccountId());
+        resp.put("name", member.getName());
+        resp.put("phone", member.getPhone());
         resp.put("nickname", member.getNickname());
         resp.put("email", member.getEmail());
         return ResponseEntity.ok(resp);

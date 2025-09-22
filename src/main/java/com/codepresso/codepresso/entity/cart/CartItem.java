@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name="cart_item")
 @Entity
 public class CartItem {
@@ -34,6 +35,7 @@ public class CartItem {
     @JoinColumn(name="product_id", nullable = false)
     private Product product;
 
+    @Builder.Default
     @OneToMany(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<CartOption> options = new ArrayList<>();
 

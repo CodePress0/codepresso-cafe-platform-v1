@@ -7,7 +7,7 @@ import com.codepresso.codepresso.entity.product.AllergenProduct;
 import com.codepresso.codepresso.entity.product.Product;
 import com.codepresso.codepresso.entity.product.ProductOption;
 import com.codepresso.codepresso.entity.product.Review;
-import com.codepresso.codepresso.repository.Product.*;
+import com.codepresso.codepresso.repository.product.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -59,8 +59,19 @@ public class ProductService {
 
 
     public List<ReviewListResponse> findProductReviews(Long productId) {
-        return reviewRepo.findByProductReviews(productId);
+        List<Review> reviews = reviewRepo.findByProductReviews(productId);
+
+        List<ReviewListResponse> reviewResponseDTOs = new ArrayList<>();
+        for (Review review : reviews) {
+            ReviewListResponse rr = new ReviewListResponse(review);
+            reviewResponseDTOs.add(rr);
+        }
+
+        return reviewResponseDTOs;
     }
 
+//    public Review findByReviewId(Long reviewId) {
+//        return Review
+//    }
 
 }

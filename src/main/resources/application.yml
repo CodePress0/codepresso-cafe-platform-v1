@@ -28,20 +28,13 @@ spring:
 
   # JPA/Hibernate 설정
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect  # MySQL 8용 방언 설정
+    database-platform: org.hibernate.dialect.MySQLDialect   # MySQL 방언(자동 선택되지만 명시)
     hibernate:
       ddl-auto: update # 기존 테이블 유지하면서 변경된 엔티티 반영(update로 변경할것)
     show-sql: true        # 실행되는 SQL 쿼리를 콘솔에 출력
 
-  # MyBatis 설정
-  mybatis:
-    # Mapper XML 파일 위치 설정
-    mapper-locations: classpath:com.codepresso.codepresso/*.xml     # 특정 패키지의 XML 파일 (현재 경로가 잘못됨)
-    # 테스트 할 땐 이걸로!
-    type-aliases-package: com.codepresso.codepresso.test        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
-
-# 테스트 안 할 땐 이걸로!!!!!!!!!
-#  type-aliases-package: com.codepresso.codepresso        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
+  
+# MyBatis는 비활성화(의존성 제거). 필요 시 추후 재도입
 
 server:
   servlet:

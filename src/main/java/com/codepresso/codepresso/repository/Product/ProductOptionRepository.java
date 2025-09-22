@@ -1,4 +1,4 @@
-package com.codepresso.codepresso.repository.Product;
+package com.codepresso.codepresso.repository.product;
 
 import com.codepresso.codepresso.entity.product.ProductOption;
 import org.springframework.data.jpa.repository.JpaRepository;

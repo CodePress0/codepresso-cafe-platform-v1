@@ -3,9 +3,11 @@ package com.codepresso.codepresso.controller;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
+import com.codepresso.codepresso.entity.product.Product;
 import com.codepresso.codepresso.entity.product.Review;
 import com.codepresso.codepresso.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,10 +38,14 @@ public class ProductController {
 //        return "product";
 //    }
 
+    // 1. 상품 전체 조회
     @GetMapping
-    public List<ProductListResponse> getProducts(@RequestParam(required = false, defaultValue = "COFFEE") String category) {
+    public ResponseEntity<List<ProductListResponse>> getProducts(
+            @RequestParam(required = false, defaultValue = "COFFEE") String category) {
         // 카테고리별 상품 조회
-        return productService.findProductsByCategory(category);
+        List<ProductListResponse> products = productService.findProductsByCategory(category);
+
+        return ResponseEntity.ok(products);
     }
 
 //    // 2. 상품 상세 조회
@@ -57,20 +63,27 @@ public class ProductController {
 //        return productService.findByProductId(productId);
 //    }
 
+    // 2. 상품 상세 조회
     @GetMapping("/{productId}")
-    public ProductDetailResponse getProduct(@PathVariable Long productId) {
-        return productService.findByProductId(productId);
+    public ResponseEntity<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse product = productService.findByProductId(productId);
+
+        return ResponseEntity.ok(product);
     }
 
-
-    // 3. 상품 리뷰 목록
+    // 3. 상품 리뷰 목록 조회
     @GetMapping("/{productId}/reviews")
-    public List<ReviewListResponse> getProductReviews(@PathVariable Long productId) {
-        return productService.findProductReviews(productId);
+    public ResponseEntity<List<ReviewListResponse>> getProductReviews(@PathVariable Long productId) {
+        List<ReviewListResponse> reviews = productService.findProductReviews(productId);
+
+        return ResponseEntity.ok(reviews);
     }
 
-    // 4. 리뷰 작성
-    // @PutMapping("/{productId}/reviews")
+//    // 4. 리뷰 작성
+//    @PutMapping("/{productId}/reviews/{reviewId}")
+//    public Review editReview(@PathVariable Long productId, Long reviewId, Review review) {
+//        return productService.findByReviewId(reviewId);
+//    }
 
     // 5. 리뷰 수정
     // @PutMapping("/{productId}/reviews/{reviewId}")
