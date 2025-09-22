@@ -1,11 +1,14 @@
 package com.codepresso.codepresso.controller;
 
+import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
 import com.codepresso.codepresso.security.LoginUser;
+import com.codepresso.codepresso.service.cart.CartService;
 import com.codepresso.codepresso.service.member.FavoriteService;
 import com.codepresso.codepresso.service.member.MemberProfileService;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +23,12 @@ public class ViewController {
     @Getter
     private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
+    private final CartService cartService;
 
-    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService) {
+    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, CartService cartService) {
         this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
+        this.cartService = cartService;
     }
 
     @GetMapping("/")
@@ -67,6 +72,19 @@ public class ViewController {
         return "member/favorite-list";
     }
 
+    @GetMapping
+    public String viewCart(@AuthenticationPrincipal LoginUser loginUser, Model model) {
+        CartResponse cart = null;
+        if (loginUser != null) {
+            try {
+                cart = cartService.getCartByMemberId(loginUser.getMemberId());
+            } catch (IllegalArgumentException ignored) {
+                // 장바구니가 없으면 빈 화면을 보여준다.
+            }
+        }
+        model.addAttribute("cart", cart);
+        return "cart/cart";
+    }
 
     /**
      * 프로필 수정 처리
