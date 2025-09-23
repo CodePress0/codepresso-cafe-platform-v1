@@ -28,7 +28,11 @@ public class SecurityConfig {
                     "/auth/signup",
                     "/api/auth/**",
                     "/banners/**",
-                    "/error"
+                    "/error",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
                 // 로그인 필요 페이지/API
                 .requestMatchers(
@@ -36,7 +40,8 @@ public class SecurityConfig {
                     "/member/**",
                     "/favorites",
                     "/users/**",
-                    "/api/users/**"
+                    "/api/users/**",
+                    "/boards/**"
                 ).authenticated()
                 .anyRequest().permitAll()
             )

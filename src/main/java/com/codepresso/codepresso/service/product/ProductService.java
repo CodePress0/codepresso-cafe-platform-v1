@@ -3,7 +3,6 @@ package com.codepresso.codepresso.service.product;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
-import com.codepresso.codepresso.entity.product.AllergenProduct;
 import com.codepresso.codepresso.entity.product.Product;
 import com.codepresso.codepresso.entity.product.ProductOption;
 import com.codepresso.codepresso.entity.product.Review;
@@ -20,22 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepo;
-    private final AllergenProductRepository allergenProdRepo;
     private final ProductOptionRepository productOptRepo;
     private final ReviewRepository reviewRepo;
 
-//    public List<ProductResponseDTO> findAllProducts() {
-//        List<Product> products = productRepo.findAll();
-//
-//        List<ProductResponseDTO> productResponseDTOS = new ArrayList<>();
-//
-//        for(Product product : products) {
-//            ProductResponseDTO pr = new ProductResponseDTO(product);
-//            productResponseDTOS.add(pr);
-//        }
-//
-//        return productResponseDTOS;
-//    }
 
     public List<ProductListResponse> findProductsByCategory(String categoryCode) {
         List<Product> products = productRepo.findByCategoryCategoryCode(categoryCode);
@@ -47,14 +33,6 @@ public class ProductService {
         }
 
         return productResponseDTOs;
-    }
-
-    public ProductDetailResponse findByProductId(Long productId) {
-        Product product = productRepo.findWithNutrition(productId);
-        List<AllergenProduct> allergenProducts = allergenProdRepo.findAllergenByProductId(productId);
-        List<ProductOption> productOptions = productOptRepo.findOptionByProductId(productId);
-
-        return new ProductDetailResponse(product, allergenProducts, productOptions);
     }
 
 
@@ -69,5 +47,14 @@ public class ProductService {
         return reviewResponseDTOs;
     }
 
+    public ProductDetailResponse findByProductId(Long productId) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+
+        // Product 엔티티에서 직접 관련 데이터를 가져옴
+        List<ProductOption> options = product.getOptions();
+
+        return ProductDetailResponse.of(product, options);
+    }
 
 }

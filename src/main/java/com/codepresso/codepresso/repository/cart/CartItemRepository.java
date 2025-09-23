@@ -12,9 +12,12 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     //특정 장바구니의 모든 아이템 조회
     List<CartItem> findByCartId (Long cartId);
 
-    //특정 장바구니 안에서 특정 상품 담겼는지 조회
-    Optional<CartItem> findByCartIdAndProductId (Long cartId, Long productId);
-
     //단일 아이템 조회
     Optional<CartItem> findById(Long cartItemId);
+
+    //특정 장바구니 + 상품의 아이템들 전체 조회(옵션까지 한번에 로딩)
+    @EntityGraph(attributePaths = {"options", "options.productOption",
+            "options.productOption.optionStyle",
+            "product"})
+    List<CartItem> findByCart_IdAndProduct_Id (Long cartId, Long productId);
 }

@@ -1,14 +1,24 @@
 package com.codepresso.codepresso.controller;
 
+import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
+import com.codepresso.codepresso.dto.product.ProductDetailResponse;
+import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.security.LoginUser;
+import com.codepresso.codepresso.service.cart.CartService;
 import com.codepresso.codepresso.service.member.FavoriteService;
+import com.codepresso.codepresso.service.member.MemberProfileService;
+import com.codepresso.codepresso.service.product.ProductService;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * JSP 뷰를 반환하는 컨트롤러
@@ -17,10 +27,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ViewController {
 
     @Getter
+    private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
+    private final CartService cartService;
+    private final ProductService productService;
 
-    public ViewController(FavoriteService favoriteService) {
+    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, CartService cartService, ProductService productService) {
+        this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
+        this.cartService = cartService;
+        this.productService = productService;
     }
 
     @GetMapping("/")
@@ -64,5 +80,80 @@ public class ViewController {
         return "member/favorite-list";
     }
 
+    @GetMapping("/cart")
+    public String viewCart(@AuthenticationPrincipal LoginUser loginUser, Model model) {
+        CartResponse cart = null;
+        if (loginUser != null) {
+            try {
+                cart = cartService.getCartByMemberId(loginUser.getMemberId());
+            } catch (IllegalArgumentException ignored) {
+                // 장바구니가 없으면 빈 화면을 보여준다.
+            }
+        }
+        model.addAttribute("cart", cart);
+        return "cart/cart";
+    }
 
+    /**
+     * 게시판 목록 페이지
+     */
+    @GetMapping("/boards/list")
+    public String boardList() {
+        return "board/board-list";
+    }
+
+    /**
+     * 게시판 상세 페이지
+     */
+    @GetMapping("/boards/detail/{boardId}")
+    public String boardDetail(@PathVariable Long boardId, Model model) {
+        model.addAttribute("boardId", boardId);
+        return "board/board-detail";
+    }
+
+    /**
+     * 게시판 글쓰기 페이지
+     */
+    @GetMapping("/boards/write")
+    public String boardWrite() {
+        return "board/board-write";
+    }
+
+    /**
+     * 게시판 수정 페이지
+     */
+    @GetMapping("/boards/edit/{boardId}")
+    public String boardEdit(@PathVariable Long boardId, Model model) {
+        model.addAttribute("boardId", boardId);
+        return "board/board-write";
+    }
+
+    /**
+     * 상품 목록 페이지
+     */
+    @GetMapping("/products")
+    public String productList(@RequestParam(required = false, defaultValue = "COFFEE") String category, Model model) {
+        try {
+            List<ProductListResponse> products = productService.findProductsByCategory(category);
+            model.addAttribute("products", products);
+            model.addAttribute("currentCategory", category);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "상품 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "product/productList";
+    }
+
+    /**
+     * 상품 상세 페이지
+     */
+    @GetMapping("/products/{productId}")
+    public String productDetail(@PathVariable Long productId, Model model) {
+        try {
+            ProductDetailResponse product = productService.findByProductId(productId);
+            model.addAttribute("product", product);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "product/productDetail";
+    }
 }

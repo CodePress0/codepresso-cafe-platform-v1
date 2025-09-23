@@ -11,9 +11,6 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-//    "SELECT * FROM review r LEFT OUTER JOIN orderDetail od " +
-//            "ON od.order_detail_id = r.order_detail_id " +
-//            "WHERE or.order_detail_id = :productId", nativeQuery = true
 
     @Query("SELECT r FROM Review r LEFT JOIN FETCH r.ordersDetail od WHERE od.product.id = :productId")
     List<Review> findByProductReviews(@Param("productId") Long productId);
