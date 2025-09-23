@@ -36,7 +36,8 @@ public class SecurityConfig {
                     "/member/**",
                     "/favorites",
                     "/users/**",
-                    "/api/users/**"
+                    "/api/users/**",
+                    "/boards/**"
                 ).authenticated()
                 .anyRequest().permitAll()
             )

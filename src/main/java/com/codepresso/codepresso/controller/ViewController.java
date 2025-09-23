@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -64,5 +65,38 @@ public class ViewController {
         return "member/favorite-list";
     }
 
+    /**
+     * 게시판 목록 페이지
+     */
+    @GetMapping("/boards/list")
+    public String boardList() {
+        return "board/board-list";
+    }
+
+    /**
+     * 게시판 상세 페이지
+     */
+    @GetMapping("/boards/detail/{boardId}")
+    public String boardDetail(@PathVariable Long boardId, Model model) {
+        model.addAttribute("boardId", boardId);
+        return "board/board-detail";
+    }
+
+    /**
+     * 게시판 글쓰기 페이지
+     */
+    @GetMapping("/boards/write")
+    public String boardWrite() {
+        return "board/board-write";
+    }
+
+    /**
+     * 게시판 수정 페이지
+     */
+    @GetMapping("/boards/edit/{boardId}")
+    public String boardEdit(@PathVariable Long boardId, Model model) {
+        model.addAttribute("boardId", boardId);
+        return "board/board-write";
+    }
 
 }
