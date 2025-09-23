@@ -1,80 +1,71 @@
-package com.codepresso.codepresso.product.controller;
+package com.codepresso.codepresso.controller.product;
 
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
-import com.codepresso.codepresso.entity.product.Review;
+import com.codepresso.codepresso.security.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
     // 1. 상품 전체 조회
-//    @GetMapping
-//    public String getProducts(@RequestParam(required = false) String category, Model model) {
-//
-//        if (category == null || category.isEmpty()) {
-//            return "redirect:/products?category=COFFEE";
-//        }
-//
-//        List<ProductListResponse> products;
-//
-//        // 카테고리별 상품 조회
-//        products = productService.findProductsByCategory(category);
-//
-//        model.addAttribute("products", products);
-//        model.addAttribute("currentCategory", category);
-//
-//        return "product";
-//    }
-
     @GetMapping
-    public List<ProductListResponse> getProducts(@RequestParam(required = false, defaultValue = "COFFEE") String category) {
+    public ResponseEntity<List<ProductListResponse>> getProducts(
+            @RequestParam(required = false, defaultValue = "COFFEE") String category) {
         // 카테고리별 상품 조회
-        return productService.findProductsByCategory(category);
+        List<ProductListResponse> products = productService.findProductsByCategory(category);
+        return ResponseEntity.ok(products);
     }
 
-//    // 2. 상품 상세 조회
-//    @GetMapping("/{productId}")
-//    public String getProduct(@PathVariable Long productId, Model model) {
-//        ProductDetailResponse pdResponse = productService.findByProductId(productId);
-//        model.addAttribute("productDetail", pdResponse);
-//        return "productDetail";
-//    }
-
-    // 팝업용 상품 상세 조회 (AJAX)
-//    @GetMapping("/{productId}/detail")
-//    @ResponseBody
-//    public ProductDetailResponse getProductDetail(@PathVariable Long productId) {
-//        return productService.findByProductId(productId);
-//    }
-
+    // 2. 상품 상세 조회
     @GetMapping("/{productId}")
-    public ProductDetailResponse getProduct(@PathVariable Long productId) {
-        return productService.findByProductId(productId);
+    public ResponseEntity<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse product = productService.findByProductId(productId);
+        return ResponseEntity.ok(product);
     }
 
-
-    // 3. 상품 리뷰 목록
+    // 3. 상품 리뷰 목록 조회
     @GetMapping("/{productId}/reviews")
-    public List<ReviewListResponse> getProductReviews(@PathVariable Long productId) {
-        return productService.findProductReviews(productId);
+    public ResponseEntity<List<ReviewListResponse>> getProductReviews(@PathVariable Long productId) {
+        List<ReviewListResponse> reviews = productService.findProductReviews(productId);
+        return ResponseEntity.ok(reviews);
     }
 
-    // 4. 리뷰 작성
-    // @PutMapping("/{productId}/reviews")
+//    // 4. 리뷰 수정 (현재 구현 수정 필요)
+//    @PutMapping("/{productId}/reviews/{reviewId}")
+//    public ResponseEntity<Review> editReview(
+//            @PathVariable Long productId,
+//            @PathVariable Long reviewId,
+//            @RequestBody Review review) {
+//        // TODO: 실제 리뷰 수정 로직 구현 필요
+//        Review updatedReview = productService.findByReviewId(reviewId);
+//        return ResponseEntity.ok(updatedReview);
+//    }
 
-    // 5. 리뷰 수정
-    // @PutMapping("/{productId}/reviews/{reviewId}")
+    // TODO: 추가 구현 필요한 API들
+
+    // 5. 리뷰 작성
+    // @PostMapping("/reviews")
+    // public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewCreateRequest request) {
+    //     ReviewResponse review = reviewService.createReview(request);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(review);
+    // }
 
     // 6. 리뷰 삭제
-    // @DeleteMapping("/{productId}/reviews/{reviewId}")
+    // @DeleteMapping("/reviews/{reviewId}")
+    // public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
+    //     reviewService.deleteReview(reviewId);
+    //     return ResponseEntity.noContent().build();
+    // }
 }

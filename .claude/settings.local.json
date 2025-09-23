@@ -8,7 +8,20 @@
       "Bash(./gradlew:*)",
       "Bash(lsof:*)",
       "Bash(kill:*)",
-      "Read(//Users/admin/Desktop/공부/Spring/projects/codepresso/**)"
+      "Read(//Users/admin/Desktop/공부/Spring/projects/codepresso/**)",
+      "WebSearch",
+      "WebFetch(domain:mvnrepository.com)",
+      "Bash(git clone:*)",
+      "Bash(python3 -m pip install:*)",
+      "Bash(pipx install:*)",
+      "Bash(pipx:*)",
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(SuperClaude install)",
+      "Bash(source:*)",
+      "Bash(SuperClaude install:*)",
+      "Bash(printf:*)",
+      "Bash(echo $PATH)",
+      "Bash(~/.local/bin/SuperClaude:*)"
     ],
     "deny": [],
     "ask": []
