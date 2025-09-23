@@ -8,10 +8,11 @@
 
 <main class="cart-page">
     <div class="cart-shell">
-        <c:set var="itemCount" value="${empty cart or empty cart.items ? 0 : fn:length(cart.items)}" />
+        <c:set var="itemCount" value="0" />
         <c:set var="totalPrice" value="0" />
-        <c:if test="${itemCount > 0}">
+        <c:if test="${not empty cart and not empty cart.items}">
             <c:forEach var="item" items="${cart.items}">
+                <c:set var="itemCount" value="${itemCount + item.quantity}" />
                 <c:set var="totalPrice" value="${totalPrice + item.price}" />
             </c:forEach>
         </c:if>
@@ -38,13 +39,25 @@
                         <div class="cart-group-header">
                             <form class="cart-clear-form" action="<c:url value='/users/cart/clear'/>" method="post">
                                 <input type="hidden" name="cartId" value="${cart.cartId}" />
+                                <input type="hidden" name="redirect" value="/cart" />
                                 <button type="submit" class="btn-text">전체 비우기</button>
                             </form>
                         </div>
                         <ul class="cart-item-list">
                             <c:forEach var="item" items="${cart.items}">
                                 <li class="cart-item">
-                                    <div class="cart-item-thumb" aria-hidden="true"></div>
+                                    <div class="cart-item-thumb" aria-hidden="true">
+                                        <c:choose>
+                                            <c:when test="${not empty item.productPhoto}">
+                                                <img src="${item.productPhoto}"
+                                                     alt="${item.productName}"
+                                                     onerror="this.src='/banners/mascot.png'; this.onerror=null;" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="/banners/mascot.png" alt="CodePress Mascot" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
                                     <div class="cart-item-info">
                                         <div class="cart-item-header">
                                             <h3>${item.productName}</h3>
@@ -197,11 +210,10 @@
     }
     .cart-item-group .cart-item-list { gap: 20px; }
     .cart-item-thumb {
-        width: 96px; height: 96px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #ffd5e4, #ffafcc);
-        box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.45);
+        background: linear-gradient(135deg, var(--pink-3), var(--pink-4));
+        position: relative;
     }
+    .cart-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cart-item-info { display: grid; gap: 12px; }
     .cart-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
     .cart-item-header h3 { margin: 0; font-size: 20px; }
@@ -459,6 +471,8 @@
         }
         return headers;
     };
+
+    const cartBaseUrl = '<c:url value="/users/cart/" />';
 
     const clampQuantity = value => Math.max(1, Number.isNaN(value) ? 1 : value);
 
@@ -875,25 +889,78 @@
     document.querySelectorAll('[data-update]').forEach(button => {
         button.addEventListener('click', () => {
             const item = button.closest('.cart-item');
-            const control = item.querySelector('.qty-control');
-            const input = control.querySelector('input');
-            const quantity = clampQuantity(parseInt(input.value, 10));
-            const id = button.dataset.update;
+            if (!item) return;
 
-            fetch(`/users/cart/${id}?quantity=${quantity}`, {
+            const input = item.querySelector('.qty-control input');
+            const quantity = clampQuantity(parseInt(input?.value, 10));
+            const cartItemId = button.dataset.update;
+            if (!cartItemId) return;
+
+            const requestUrl = cartBaseUrl + cartItemId;
+            fetch(requestUrl, {
                 method: 'PATCH',
-                headers: withCsrf(),
-                credentials: 'include'
-            }).then(() => window.location.reload());
+                headers: withCsrf({ 'Content-Type': 'application/json' }),
+                credentials: 'include',
+                body: JSON.stringify({ quantity })
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error(`수정 실패: ${res.status}`);
+                    return res.text();
+                })
+                .then(() => window.location.reload())
+                .catch(err => console.error(err));
         });
     });
 
-    document.addEventListener('click', event => {
-        const deleteBtn = event.target.closest('[data-delete]');
-        if (!deleteBtn) return;
+    const clearForm = document.querySelector('.cart-clear-form');
+    if (clearForm) {
+        clearForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const formData = new URLSearchParams();
+            Array.from(new FormData(clearForm).entries()).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
 
-        const id = deleteBtn.getAttribute('data-delete');
-        window.location.href = `/users/cart/${id}/delete`;
+            fetch(clearForm.action, {
+                method: 'POST',
+                headers: withCsrf({
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }),
+                credentials: 'include',
+                body: formData.toString()
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`Failed to clear cart: ${res.status}`);
+                    }
+                })
+                .then(() => window.location.reload())
+                .catch(error => {
+                    console.error(error);
+                    alert('장바구니를 비우지 못했습니다. 잠시 후 다시 시도해주세요.');
+                });
+        });
+    }
+
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('[data-delete]');
+        if (!btn) return;
+        const cartItemId = btn.dataset.delete;
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+
+        const requestUrl = cartBaseUrl + cartItemId;
+        fetch(requestUrl, {
+            method: 'DELETE',
+            headers: withCsrf(),
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`삭제 실패 (${res.status})`);
+                btn.closest('.cart-item').remove();
+            })
+            .then(() => window.location.reload())
+            .catch(err => {
+                alert(err.message || '삭제 실패');
+            });
     });
 </script>
 
