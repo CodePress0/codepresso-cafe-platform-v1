@@ -19,4 +19,5 @@ public class CartItemResponse {
     private String productName;
     private Integer price;
     private List<CartOptionResponse> options;
+    private String productPhoto;
 }
