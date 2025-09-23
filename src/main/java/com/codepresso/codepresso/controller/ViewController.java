@@ -16,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -31,12 +30,14 @@ public class ViewController {
     private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
     private final CartService cartService;
+    private final ProductService productService;
 
     public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, CartService cartService, ProductService productService) {
         this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
         this.cartService = cartService;
         this.productService = productService;
+    }
 
     @GetMapping("/")
     public String index() { return "index"; }
@@ -91,6 +92,7 @@ public class ViewController {
         }
         model.addAttribute("cart", cart);
         return "cart/cart";
+    }
 
     /**
      * 게시판 목록 페이지
@@ -154,5 +156,4 @@ public class ViewController {
         }
         return "product/productDetail";
     }
-
 }
