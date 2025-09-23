@@ -52,6 +52,11 @@ public class ViewController {
         return "auth/login";
     }
 
+    @GetMapping("/auth/password-find") // 비밀번호 찾기 화면
+    public String passwordFindPage() {
+        return "auth/password-find";
+    }
+
     // 매장 목록은 BranchController에서 처리
 
     @GetMapping("/member/mypage") // GET /member/mypage → 마이페이지 (보안설정에서 보호)

@@ -1,37 +1,36 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게시글 상세</title>
+<%@ include file="/WEB-INF/views/common/head.jspf" %>
+<body>
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        /* 게시판 페이지 전용 스타일 - 헤더에 영향 주지 않도록 메인 콘텐츠만 타겟팅 */
+        .board-main-container {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8f9fa;
             color: #333;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .board-main-container * {
+            box-sizing: border-box;
         }
 
-        .main-content {
+        .board-main-container .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px 200px;
+        }
+
+        .board-main-container .main-content {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 80px 120px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 2000px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .post-header {
@@ -170,9 +169,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 메인 콘텐츠 영역 -->
-        <div class="main-content">
+    <div class="board-main-container">
+        <div class="container">
+            <!-- 메인 콘텐츠 영역 -->
+            <div class="main-content">
             <div id="postDetail">
                 <!-- 로딩 상태 -->
                 <div id="loading" class="loading">
@@ -212,8 +212,8 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
-
     </div>
 
     <script>
@@ -415,5 +415,5 @@
             return formattedDate;
         }
     </script>
-</body>
-</html>
+
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>
