@@ -1,14 +1,17 @@
 package com.codepresso.codepresso.controller;
 
+import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.security.LoginUser;
+import com.codepresso.codepresso.service.cart.CartService;
 import com.codepresso.codepresso.service.member.FavoriteService;
 import com.codepresso.codepresso.service.member.MemberProfileService;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +30,13 @@ public class ViewController {
     @Getter
     private final MemberProfileService memberProfileService;
     private final FavoriteService favoriteService;
-    private final ProductService productService;
+    private final CartService cartService;
 
-    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, ProductService productService) {
+    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, CartService cartService, ProductService productService) {
         this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
+        this.cartService = cartService;
         this.productService = productService;
-    }
 
     @GetMapping("/")
     public String index() { return "index"; }
@@ -75,6 +78,19 @@ public class ViewController {
         }
         return "member/favorite-list";
     }
+
+    @GetMapping("/cart")
+    public String viewCart(@AuthenticationPrincipal LoginUser loginUser, Model model) {
+        CartResponse cart = null;
+        if (loginUser != null) {
+            try {
+                cart = cartService.getCartByMemberId(loginUser.getMemberId());
+            } catch (IllegalArgumentException ignored) {
+                // 장바구니가 없으면 빈 화면을 보여준다.
+            }
+        }
+        model.addAttribute("cart", cart);
+        return "cart/cart";
 
     /**
      * 게시판 목록 페이지
@@ -139,20 +155,4 @@ public class ViewController {
         return "product/productDetail";
     }
 
-    /**
-     * 프로필 수정 처리
-     */
-//    @PostMapping("/profile-update")
-//    public String updateProfile(@RequestParam Long memberId, ProfileUpdateRequest request, Model model) {
-//        try {
-//            // 프로필 수정 후 수정된 정보를 JSP에 전달
-//            UserDetailResponse updatedMember = memberProfileService.updateProfile(memberId, request);
-//            model.addAttribute("member", updatedMember);
-//            model.addAttribute("success", "프로필이 성공적으로 수정되었습니다.");
-//        } catch (Exception e) {
-//            // 에러 발생 시 에러 메시지를 JSP에 전달
-//            model.addAttribute("error", "프로필 수정 중 오류가 발생했습니다: " + e.getMessage());
-//        }
-//        return "member/mypage";
-//    }
 }
