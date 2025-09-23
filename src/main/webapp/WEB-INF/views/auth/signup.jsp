@@ -39,8 +39,18 @@
                     .msg { font-size: 13px; }
                     .ok { color: #2f855a; }
                     .bad { color: #c53030; }
-                    .links { margin-top: 8px; display: flex; gap: 16px; justify-content: center; }
-                    .links a { color: var(--pink-1); text-decoration: none; font-weight: 700; }
+                    
+                    /* 이메일 인증 관련 스타일 */
+                    .email-verification { display: none; }
+                    .email-verification.active { display: block; }
+                    .verification-info { 
+                        background: #f8f9fa; 
+                        padding: 12px; 
+                        border-radius: 8px; 
+                        margin: 12px 0; 
+                        font-size: 14px; 
+                        color: #666;
+                    }
                 </style>
 
                 <div class="form">
@@ -75,9 +85,22 @@
                         <label for="email">이메일</label>
                         <div class="row">
                             <input type="email" id="email" placeholder="example@domain.com" />
-                            <button class="btn secondary" id="checkEmailBtn">중복체크</button>
+                            <button class="btn secondary" id="verifyEmailBtn">인증번호발송</button>
                         </div>
                         <div class="msg" id="emailMsg"></div>
+                        
+                        <!-- 이메일 인증 영역 -->
+                        <div class="email-verification" id="emailVerification">
+                            <div class="verification-info">
+                                <strong>인증번호가 이메일로 발송되었습니다!</strong><br>
+                                이메일을 확인하고 인증번호를 입력해주세요.
+                            </div>
+                            <div class="row">
+                                <input type="text" id="emailVerificationCode" placeholder="인증번호 입력" />
+                                <button class="btn secondary" id="confirmEmailBtn">인증확인</button>
+                            </div>
+                            <div class="msg" id="emailVerificationMsg"></div>
+                        </div>
                     </div>
 
                     <div class="field">
@@ -93,11 +116,6 @@
 
                     <div class="field">
                         <button class="btn btn-primary" id="signupBtn">회원가입</button>
-                    </div>
-
-                    <div class="links">
-                        <a href="#" onclick="alert('아이디 찾기 화면 (준비중)'); return false;">아이디 찾기</a>
-                        <a href="#" onclick="alert('비밀번호 찾기 화면 (준비중)'); return false;">비밀번호 찾기</a>
                     </div>
                 </div>
             </div>
@@ -115,6 +133,7 @@
     const phoneInput = document.getElementById('phone');
     const emailInput = document.getElementById('email');
     const nickInput = document.getElementById('nickname');
+    const emailVerificationCodeInput = document.getElementById('emailVerificationCode');
 
     const idMsg = document.getElementById('idMsg');
     const pwMsg = document.getElementById('pwMsg');
@@ -122,6 +141,11 @@
     const phoneMsg = document.getElementById('phoneMsg');
     const emailMsg = document.getElementById('emailMsg');
     const nicknameMsg = document.getElementById('nicknameMsg');
+    const emailVerificationMsg = document.getElementById('emailVerificationMsg');
+
+    // 이메일 인증 상태
+    let isEmailVerified = false;
+    let emailVerificationCode = '';
 
     // ===== 2) 유효성 검사 규칙 =====
     // - accountId: 4~50자, 영문/숫자/밑줄
@@ -231,6 +255,69 @@
         }
     }
 
+    // ===== 6) 이메일 인증 함수 =====
+    async function sendEmailVerification() {
+        const email = emailInput.value.trim();
+        const emailValidation = validateEmail(email);
+        
+        if (emailValidation) {
+            setMsg(emailMsg, emailValidation, false);
+            return;
+        }
+
+        try {
+            // 1. 이메일 중복체크
+            const checkRes = await fetch('/api/auth/check?field=email&value=' + encodeURIComponent(email));
+            if (!checkRes.ok) throw new Error('중복체크 실패');
+            
+            const checkData = await checkRes.json();
+            if (checkData.duplicate) {
+                setMsg(emailMsg, '이미 사용 중인 이메일입니다.', false);
+                return;
+            }
+
+            // 2. 이메일 인증번호 발송
+            const response = await fetch('/api/auth/send-email-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '이메일 발송 실패');
+            }
+
+            const data = await response.json();
+            emailVerificationCode = data.verificationCode;
+            
+            setMsg(emailMsg, '인증번호가 이메일로 발송되었습니다.', true);
+            document.getElementById('emailVerification').classList.add('active');
+            
+        } catch (error) {
+            console.error('이메일 인증 발송 실패:', error);
+            setMsg(emailMsg, error.message || '이메일 발송에 실패했습니다.', false);
+        }
+    }
+
+    async function confirmEmailVerification() {
+        const inputCode = emailVerificationCodeInput.value.trim();
+        
+        if (!inputCode) {
+            setMsg(emailVerificationMsg, '인증번호를 입력해주세요.', false);
+            return;
+        }
+
+        if (inputCode === emailVerificationCode) {
+            setMsg(emailVerificationMsg, '이메일 인증이 완료되었습니다.', true);
+            isEmailVerified = true;
+            document.getElementById('verifyEmailBtn').textContent = '인증완료';
+            document.getElementById('verifyEmailBtn').disabled = true;
+        } else {
+            setMsg(emailVerificationMsg, '인증번호가 일치하지 않습니다.', false);
+        }
+    }
+
     // 입력값 블러 시 즉시 유효성 메시지 표시
     // idInput.addEventListener('blur', () => {
     //     const m = validateAccountId(idInput.value.trim());
@@ -249,7 +336,7 @@
     //     if(m) setMsg(emailMsg, m, false); else setMsg(emailMsg, '형식이 유효합니다.', true);
     // });
 
-    // ===== 6) 이벤트 바인딩 =====
+    // ===== 7) 이벤트 바인딩 =====
     // 중복 체크 버튼: 유효할 때만 서버 요청
     document.getElementById('checkIdBtn').addEventListener('click', () => {
         const m = validateAccountId(idInput.value.trim());
@@ -261,11 +348,10 @@
         if(m) { setMsg(nicknameMsg, m, false); return; }
         checkDup('nickname', nickInput.value.trim(), nicknameMsg, '닉네임');
     });
-    document.getElementById('checkEmailBtn').addEventListener('click', () => {
-        const m = validateEmail(emailInput.value.trim());
-        if(m) { setMsg(emailMsg, m, false); return; }
-        checkDup('email', emailInput.value.trim(), emailMsg, '이메일');
-    });
+
+    // 이메일 인증 버튼
+    document.getElementById('verifyEmailBtn').addEventListener('click', sendEmailVerification);
+    document.getElementById('confirmEmailBtn').addEventListener('click', confirmEmailVerification);
 
     // 전화번호 자동 하이픈 포맷팅
     phoneInput.addEventListener('input', () => {
@@ -290,6 +376,14 @@
             {m: validateEmail(email), el: emailMsg, focusEl: emailInput},
             {m: validateNickname(nickname), el: nicknameMsg, focusEl: nickInput}
         ];
+        
+        // 이메일 인증 확인
+        if (!isEmailVerified) {
+            setMsg(emailMsg, '이메일 인증을 완료해주세요.', false);
+            emailInput.focus();
+            return;
+        }
+        
         const firstInvalid = v.find(x => x.m);
         if(firstInvalid){
             setMsg(firstInvalid.el, firstInvalid.m, false);
