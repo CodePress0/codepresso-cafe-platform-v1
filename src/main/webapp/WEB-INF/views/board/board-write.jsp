@@ -1,42 +1,38 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>글쓰기</title>
+<%@ include file="/WEB-INF/views/common/head.jspf" %>
+<body>
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        /* 게시판 페이지 전용 스타일 - 헤더에 영향 주지 않도록 메인 콘텐츠만 타겟팅 */
+        .board-main-container {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8f9fa;
             color: #333;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .board-main-container * {
+            box-sizing: border-box;
         }
 
-        .main-content {
+        .board-main-container .container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px 200px;
+        }
+
+        .board-main-container .main-content {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 80px 120px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 2000px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid #e9ecef;
@@ -46,22 +42,6 @@
             font-size: 24px;
             font-weight: 600;
             color: #333;
-        }
-
-        .back-btn {
-            background: none;
-            border: 1px solid #6c757d;
-            color: #6c757d;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .back-btn:hover {
-            background-color: #6c757d;
-            color: white;
         }
 
         .form-group {
@@ -223,12 +203,12 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 메인 콘텐츠 영역 -->
-        <div class="main-content">
+    <div class="board-main-container">
+        <div class="container">
+            <!-- 메인 콘텐츠 영역 -->
+            <div class="main-content">
             <div class="page-header">
                 <h1 class="page-title">글쓰기</h1>
-                <button class="back-btn" onclick="goBack()">뒤로가기</button>
             </div>
 
             <!-- 에러 메시지 -->
@@ -268,8 +248,8 @@
                     <button type="submit" class="submit-btn" id="submitBtn">제출하기</button>
                 </div>
             </form>
+            </div>
         </div>
-
     </div>
 
     <script>
@@ -430,5 +410,5 @@
             }
         }
     </script>
-</body>
-</html>
+
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>
