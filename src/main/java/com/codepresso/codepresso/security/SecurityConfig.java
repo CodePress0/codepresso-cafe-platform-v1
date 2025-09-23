@@ -41,7 +41,8 @@ public class SecurityConfig {
                     "/favorites",
                     "/users/**",
                     "/api/users/**",
-                    "/boards/**"
+                    "/boards/**",
+                    "/products/**"
                 ).authenticated()
                 .anyRequest().permitAll()
             )
