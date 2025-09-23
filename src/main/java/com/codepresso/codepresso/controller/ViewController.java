@@ -4,12 +4,15 @@ import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
+import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.cart.CartService;
+import com.codepresso.codepresso.service.branch.BranchService;
 import com.codepresso.codepresso.service.member.FavoriteService;
 import com.codepresso.codepresso.service.member.MemberProfileService;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.Getter;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.List;
 
@@ -31,12 +35,31 @@ public class ViewController {
     private final FavoriteService favoriteService;
     private final CartService cartService;
     private final ProductService productService;
+    private final BranchService branchService;
 
-    public ViewController(MemberProfileService memberProfileService, FavoriteService favoriteService, CartService cartService, ProductService productService) {
+    public ViewController(MemberProfileService memberProfileService,
+                          FavoriteService favoriteService,
+                          CartService cartService,
+                          ProductService productService,
+                          BranchService branchService) {
         this.memberProfileService = memberProfileService;
         this.favoriteService = favoriteService;
         this.cartService = cartService;
         this.productService = productService;
+        this.branchService = branchService;
+    }
+
+    @ModelAttribute
+    public void populateBranchModalDefaults(Model model) {
+        if (model.containsAttribute("selectBranches")) {
+            return;
+        }
+
+        Page<Branch> branchPage = branchService.getBranchPage(0, 6);
+        model.addAttribute("selectBranches", branchPage.getContent());
+        model.addAttribute("branchModalHasNext", branchPage.hasNext());
+        model.addAttribute("branchModalNextPage", branchPage.hasNext() ? 1 : null);
+        model.addAttribute("branchModalPageSize", branchPage.getSize());
     }
 
     @GetMapping("/")
@@ -50,6 +73,11 @@ public class ViewController {
     @GetMapping("/auth/login") // 로그인 화면 (이미 로그인 시 매장 선택으로 이동)
     public String loginPage() {
         return "auth/login";
+    }
+
+    @GetMapping("/auth/password-find") // 비밀번호 찾기 화면
+    public String passwordFindPage() {
+        return "auth/password-find";
     }
 
     // 매장 목록은 BranchController에서 처리

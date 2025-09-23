@@ -119,7 +119,7 @@
                 <c:if test="${not empty product.hashtags}">
                     <div class="category-tags">
                         <c:forEach var="hashtag" items="${product.hashtags}">
-                            <span class="tag">#${hashtag.hashtagName}</span>
+                            <span class="tag">${hashtag.hashtagName}</span>
                         </c:forEach>
                     </div>
                 </c:if>
@@ -133,6 +133,7 @@
                             var productOptionsData = [
                                 <c:forEach var="option" items="${product.productOptions}" varStatus="status">
                                 {
+                                    productOptionId: ${option.optionId},
                                     optionStyleId: ${option.optionStyleId},
                                     optionName: '${fn:escapeXml(option.optionName)}',
                                     optionStyle: '${fn:escapeXml(option.optionStyleName)}',
@@ -378,6 +379,7 @@
         options.forEach((option, index) => {
             const button = document.createElement('button');
             button.className = 'temp-btn' + (index === 1 ? ' active' : '');
+            button.dataset.productOptionId = option.productOptionId;
             button.dataset.optionId = option.optionStyleId;
             button.dataset.price = option.extraPrice;
             button.textContent = option.optionStyle;
@@ -427,6 +429,7 @@
             const button = document.createElement('button');
             // 텀블러 옵션은 기본 선택하지 않음, 다른 옵션은 첫 번째를 기본 선택
             button.className = 'option-btn-card' + (!isTumblerOption && index === 0 ? ' active' : '');
+            button.dataset.productOptionId = option.productOptionId;
             button.dataset.optionId = option.optionStyleId;
             button.dataset.price = option.extraPrice;
             button.dataset.isTumbler = isTumblerOption;
@@ -608,17 +611,69 @@
         calculateTotalPrice();
     });
 
+    // 선택된 옵션 ID들을 수집하는 함수
+    function getSelectedOptionIds() {
+        let optionIds = [];
+        // 각 옵션 그룹에서 선택된 버튼의 productOptionId 수집
+        document.querySelectorAll('.option-group .active').forEach(activeBtn => {
+            if (activeBtn.dataset.productOptionId) {
+                optionIds.push(parseInt(activeBtn.dataset.productOptionId));
+            }
+        });
+        return optionIds;
+    }
+
     // 장바구니에 담기
     function addToCartFromDetail() {
-        if (typeof window.addToCartHandler === 'function') {
-            for (let i = 0; i < currentQuantity; i++) {
-                window.addToCartHandler(currentProduct.name, currentProduct.price);
-            }
-        } else {
-            console.log('장바구니에 ' + currentProduct.name + ' ' + currentQuantity + '개 추가');
+        console.log('=== 장바구니 추가 디버깅 ===');
+        console.log('currentProduct:', currentProduct);
+        console.log('currentQuantity:', currentQuantity);
+
+        const selectedOptionIds = getSelectedOptionIds();
+        console.log('selectedOptionIds:', selectedOptionIds);
+
+        const formData = new FormData();
+        formData.append('productId', currentProduct.id);
+        formData.append('quantity', currentQuantity);
+
+        // 선택된 옵션 ID들 추가
+        selectedOptionIds.forEach(id => {
+            formData.append('optionIds', id);
+        });
+
+        // FormData 내용 확인
+        console.log('FormData 내용:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
         }
 
-        showSuccessMessage('장바구니에 ' + currentProduct.name + ' ' + currentQuantity + '개를 담았습니다.');
+        // API 호출
+        fetch('${pageContext.request.contextPath}/users/cart', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('응답 상태:', response.status);
+            console.log('응답 헤더:', response.headers);
+
+            if (response.ok) {
+                return response.json();
+            } else {
+                // 에러 응답 내용도 확인
+                return response.text().then(text => {
+                    console.error('에러 응답 내용:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                });
+            }
+        })
+        .then(data => {
+            console.log('장바구니 추가 성공:', data);
+            showSuccessMessage('장바구니에 ' + currentProduct.name + ' ' + currentQuantity + '개를 담았습니다.');
+        })
+        .catch(error => {
+            console.error('장바구니 추가 실패:', error);
+            showSuccessMessage('장바구니 추가 중 오류가 발생했습니다: ' + error.message);
+        });
     }
 
     // 성공 메시지 표시

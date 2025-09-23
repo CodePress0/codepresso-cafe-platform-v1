@@ -37,4 +37,9 @@ public class BranchService {
         Pageable pageable = PageRequest.of(page, size);
         return branchRepository.findNearby(lat, lng, radiusKm, pageable);
     }
+
+    public Branch getBranch(Long branchId) {
+        return branchRepository.findById(branchId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 매장을 찾을 수 없습니다."));
+    }
 }

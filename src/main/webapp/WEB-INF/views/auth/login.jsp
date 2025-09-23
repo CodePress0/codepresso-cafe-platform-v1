@@ -74,7 +74,10 @@
                     </div>
 
                     <!-- 실패 시 쿼리파라미터 error=1로 돌아옴(SecurityConfig.failureUrl) -->
-                    <a class="link" href="/auth/signup">Sign Up</a>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                        <a class="link" href="/auth/password-find">비밀번호 찾기</a>
+                        <a class="link" href="/auth/signup">Sign Up</a>
+                    </div>
                 </form>
             </div>
         </div>

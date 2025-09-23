@@ -4,12 +4,13 @@ import com.codepresso.codepresso.dto.cart.*;
 import com.codepresso.codepresso.entity.cart.CartItem;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.cart.CartService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -60,9 +61,9 @@ public class CartController {
     public ResponseEntity<String> updateQuantity(
             @PathVariable Long cartItemId,
             @AuthenticationPrincipal LoginUser loginUser,
-            @RequestParam int quantity
+            @Valid @RequestBody CartItemUpdateRequest updateRequest
     ) {
-        cartService.changeItemQuantity(cartItemId, loginUser.getMemberId(), quantity);
+        cartService.changeItemQuantity(cartItemId, loginUser.getMemberId(), updateRequest.getQuantity());
         return ResponseEntity.ok("수량이 변경되었습니다.");
     }
 
