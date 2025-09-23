@@ -72,7 +72,7 @@ public class ViewController {
         return "member/favorite-list";
     }
 
-    @GetMapping
+    @GetMapping("/cart")
     public String viewCart(@AuthenticationPrincipal LoginUser loginUser, Model model) {
         CartResponse cart = null;
         if (loginUser != null) {
