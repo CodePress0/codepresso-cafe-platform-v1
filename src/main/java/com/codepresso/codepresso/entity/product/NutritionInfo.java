@@ -31,6 +31,7 @@ public class NutritionInfo {
 
     private double saturatedFat;
 
+    @Column(columnDefinition = "DECIMAL(5,1) DEFAULT 0.0")
     private double caffeine;
 
     private double transFat;

@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public class ProductOptionDTO {
     private Long optionStyleId;
+    private Long optionId;
     private String optionName;
     private String optionStyleName;
     private Integer extraPrice;
@@ -20,5 +21,6 @@ public class ProductOptionDTO {
 
     public ProductOptionDTO(ProductOption productOption) {
         this(productOption.getOptionStyle());
+        optionId = productOption.getId();
     }
 }
