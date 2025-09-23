@@ -31,6 +31,8 @@ public class NutritionInfo {
 
     private double saturatedFat;
 
+    private double caffeine;
+
     private double transFat;
 
     private double sodium;
