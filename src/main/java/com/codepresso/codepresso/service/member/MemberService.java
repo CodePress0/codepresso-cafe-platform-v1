@@ -8,11 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 회원 도메인 서비스.
- * - 중복 체크(accountId/nickname/email)
- * - 회원가입: 비밀번호를 BCrypt로 암호화 후 저장, 유니크 제약 처리
- */
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -58,10 +53,12 @@ public class MemberService {
         }
 
         String encoded = passwordEncoder.encode(rawPassword);
+
         // 전화번호 정규화: 숫자만 남기기 (빈 값이면 null)
         String normalizedPhone = (phone == null) ? null : phone.replaceAll("[^0-9]", "").trim();
         if (normalizedPhone != null && normalizedPhone.isEmpty()) normalizedPhone = null;
         String trimmedName = name == null ? null : name.trim();
+
         Member member = Member.builder()
                 .accountId(accountId)
                 .password(encoded)

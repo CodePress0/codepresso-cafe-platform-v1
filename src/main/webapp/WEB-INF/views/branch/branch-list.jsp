@@ -243,8 +243,35 @@
       grid.addEventListener('click', function(e){
         var card = e.target.closest('.branch-card');
         if (!card || !grid.contains(card)) return;
-        var name = card.getAttribute('data-name') || (card.querySelector('.branch-name') ? card.querySelector('.branch-name').textContent.trim() : '매장');
-        alert(name + ' 선택! 주문을 시작해볼까요?');
+        var normalizeTime = function(value) {
+          if (value == null) return '';
+          var str = String(value).trim();
+          if (str === '' || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined') {
+            return '';
+          }
+          var parts = str.split(':');
+          if (parts.length >= 2) {
+            return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+          }
+          return str;
+        };
+
+        var rawOpening = card.getAttribute('data-opening-time');
+        var rawClosing = card.getAttribute('data-closing-time');
+
+        var selection = {
+          id: card.getAttribute('data-branch-id'),
+          name: card.getAttribute('data-name') || (card.querySelector('.branch-name') ? card.querySelector('.branch-name').textContent.trim() : ''),
+          address: card.getAttribute('data-address') || '',
+          openingTime: normalizeTime(rawOpening),
+          closingTime: normalizeTime(rawClosing)
+        };
+
+        if (window.branchSelection && typeof window.branchSelection.save === 'function') {
+          window.branchSelection.save(selection);
+        }
+
+        window.location.href = '/products';
       });
     }
     if (lat && lng) {

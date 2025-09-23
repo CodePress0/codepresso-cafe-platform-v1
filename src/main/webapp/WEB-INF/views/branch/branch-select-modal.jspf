@@ -1,0 +1,48 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:set var="branches" value="${selectBranches}" scope="request" />
+<div id="branchSelectOverlay" class="branch-modal-overlay is-hidden"></div>
+<div id="branchSelectModal"
+     class="branch-modal is-hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="branchSelectTitle"
+     data-next-page="${branchModalHasNext ? branchModalNextPage : ''}"
+     data-page-size="${branchModalPageSize}">
+    <div class="branch-modal-inner">
+        <div class="branch-modal-header">
+            <div class="branch-modal-title">
+                <h2 id="branchSelectTitle">매장 선택</h2>
+                <p>원하는 매장을 검색하거나 내 주변 매장을 찾아보세요.</p>
+            </div>
+            <button type="button" class="branch-modal-close" aria-label="닫기">✕</button>
+        </div>
+        <div class="branch-modal-actions">
+            <div class="branch-modal-search">
+                <input type="text"
+                       id="branchModalSearchInput"
+                       placeholder="매장명 검색"
+                       autocomplete="off" />
+                <button type="button" class="btn btn-primary btn-sm" id="branchModalSearchButton">검색</button>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="branchModalLocateButton">내 주변 매장</button>
+        </div>
+        <div class="branch-modal-body">
+            <c:choose>
+                <c:when test="${not empty branches}">
+                    <div id="branchModalGrid" class="branch-modal-grid">
+                        <jsp:include page="/WEB-INF/views/branch/branch-cards.jsp" />
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="branch-modal-empty">등록된 매장이 없습니다. 관리자에게 문의해주세요.</div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+        <div class="branch-modal-footer">
+            <button type="button"
+                    id="branchModalLoadMore"
+                    class="btn btn-outline btn-block ${branchModalHasNext ? '' : 'is-hidden'}">더 보기</button>
+        </div>
+    </div>
+</div>
