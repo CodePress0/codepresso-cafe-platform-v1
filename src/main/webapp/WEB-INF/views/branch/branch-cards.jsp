@@ -1,11 +1,16 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <jsp:useBean id="branches" scope="request" type="java.util.List"/>
 <c:forEach var="b" items="${branches}">
     <article class="branch-card" 
+             data-branch-id="${b.id}"
              data-lat="${b.latitude}"
              data-lng="${b.longitude}"
-             data-name="${b.branchName}">
+             data-name="${fn:escapeXml(b.branchName)}"
+             data-address="${fn:escapeXml(b.address)}"
+             data-opening-time="${fn:escapeXml(b.openingTime)}"
+             data-closing-time="${fn:escapeXml(b.closingTime)}">
         <div class="branch-cover" aria-label="매장 이미지">
             <c:choose>
                 <c:when test="${not empty b.photoUrl}">

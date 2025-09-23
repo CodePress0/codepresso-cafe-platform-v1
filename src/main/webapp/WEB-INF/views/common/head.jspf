@@ -120,4 +120,5 @@
             .cup { width: 260px; right: -6px; bottom: -6px; }
         }
     </style>
+    <script src="/js/branch-selection.js"></script>
 </head>
