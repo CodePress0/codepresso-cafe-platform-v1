@@ -215,6 +215,7 @@ public class CartService {
                             .cartItemId(item.getId())
                             .productId(item.getProduct().getId())
                             .productName(item.getProduct().getProductName())
+                            .productPhoto(item.getProduct().getProductPhoto())
                             .quantity(item.getQuantity())
                             .price(totalPrice) // 응답엔 총액을 내려줌
                             .options(optionResponses)
