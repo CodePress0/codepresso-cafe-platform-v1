@@ -2,6 +2,7 @@ package com.codepresso.codepresso.service.product;
 
 import com.codepresso.codepresso.dto.product.ReviewCreateRequest;
 import com.codepresso.codepresso.dto.product.ReviewResponse;
+import com.codepresso.codepresso.dto.product.ReviewUpdateRequest;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.product.Review;
@@ -54,15 +55,31 @@ public class ReviewService {
 
         Review savedReview = reviewRepo.save(review);
 
-        return ReviewResponse.builder()
-                .reviewId(savedReview.getId())
-                .orderDetailId(savedReview.getOrdersDetail().getId())
-                .memberId(savedReview.getMember().getId())
-                .rating(savedReview.getRating())
-                .content(savedReview.getContent())
-                .photoUrl(savedReview.getPhotoUrl())
-                .createdAt(savedReview.getCreatedAt())
+        return ReviewResponse.fromEntity(savedReview);
+    }
+
+    public ReviewResponse editReview(Long memberId, Long reviewId, ReviewUpdateRequest request) {
+        Review review = reviewRepo.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다"));
+
+        // 권한 확인
+        if (!review.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("본인의 리뷰만 수정할 수 있습니다");
+        }
+
+        review = Review.builder()
+                .id(review.getId())
+                .ordersDetail(review.getOrdersDetail())
+                .member(review.getMember())
+                .content(request.getContent())
+                .rating(request.getRating())
+                .photoUrl(request.getPhotoUrl())
+                .createdAt(review.getCreatedAt())
                 .build();
+
+        Review savedReview = reviewRepo.save(review);
+
+        return ReviewResponse.fromEntity(savedReview);
     }
 
     public void delete(Long id) {

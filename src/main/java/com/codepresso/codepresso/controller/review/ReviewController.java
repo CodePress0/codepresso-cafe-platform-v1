@@ -2,6 +2,8 @@ package com.codepresso.codepresso.controller.review;
 
 import com.codepresso.codepresso.dto.product.ReviewCreateRequest;
 import com.codepresso.codepresso.dto.product.ReviewResponse;
+import com.codepresso.codepresso.dto.product.ReviewUpdateRequest;
+import com.codepresso.codepresso.entity.product.Review;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.product.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,16 +31,16 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.CREATED).body(review);
     }
 
-//    // 5. 리뷰 수정 (현재 구현 수정 필요)
-//    @PutMapping("/{productId}/reviews/{reviewId}")
-//    public ResponseEntity<Review> editReview(
-//            @PathVariable Long productId,
-//            @PathVariable Long reviewId,
-//            @RequestBody Review review) {
-//        // TODO: 실제 리뷰 수정 로직 구현 필요
-//        Review updatedReview = productService.findByReviewId(reviewId);
-//        return ResponseEntity.ok(updatedReview);
-//    }
+    // 5. 리뷰 수정
+    @PatchMapping("/{reviewId}")
+    public ResponseEntity<ReviewResponse> editReview(@AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long reviewId,
+            @RequestBody ReviewUpdateRequest request) {
+        Long memberId = loginUser.getMemberId();
+
+        ReviewResponse review = reviewService.editReview(memberId, reviewId, request);
+        return ResponseEntity.ok(review);
+    }
 
     // TODO: 추가 구현 필요한 API들
 

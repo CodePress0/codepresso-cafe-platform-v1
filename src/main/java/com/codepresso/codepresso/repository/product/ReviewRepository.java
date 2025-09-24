@@ -1,13 +1,15 @@
 package com.codepresso.codepresso.repository.product;
 
-import com.codepresso.codepresso.dto.product.ReviewListResponse;
+import com.codepresso.codepresso.dto.product.ReviewResponse;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.product.Review;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -18,5 +20,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 중복 리뷰 방지를 위한 존재 여부 확인
     boolean existsByOrdersDetail(OrdersDetail ordersDetail);
+
+//    @Modifying
+//    @Query("UPDATE Review r " +
+//            "SET r.rating = :rating, r.content = :content, r.photoUrl = :photoUrl" +
+//            " WHERE r.id = :reviewId")
+//    int updateReview(@Param("rating") BigDecimal rating, @Param("content") String content,
+//                                @Param("photoUrl") String photoUrl, @Param("reviewId") Long reviewId);
 
 }
