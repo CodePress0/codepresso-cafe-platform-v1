@@ -31,6 +31,15 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             @Param("endOfDay") LocalDateTime endOfDay);
 
     /**
+     * 해당 일자(startOfDay~endOfDay) 중에서 특정 주문시각(orderDate)까지 생성된 주문 수
+     * (일일 순번 계산용)
+     */
+    long countByOrderDateBetweenAndOrderDateLessThanEqual(
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay,
+            @Param("orderDate") LocalDateTime orderDate);
+
+    /**
      * 회원별 주문 개수 조회
      * */
     long countByMemberId(Long memberId);

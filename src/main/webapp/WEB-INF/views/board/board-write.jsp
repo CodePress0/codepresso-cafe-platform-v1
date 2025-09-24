@@ -4,253 +4,212 @@
 <body>
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
     <style>
-        /* 게시판 페이지 전용 스타일 - 헤더에 영향 주지 않도록 메인 콘텐츠만 타겟팅 */
-        .board-main-container {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+        .board-page {
+            background: linear-gradient(150deg, var(--pink-4), #fff 55%);
+            padding: 72px 0 96px;
         }
 
-        .board-main-container * {
-            box-sizing: border-box;
-        }
-
-        .board-main-container .container {
-            max-width: 100%;
-            width: 100%;
+        .board-container {
+            max-width: 720px;
             margin: 0 auto;
-            padding: 20px 200px;
+            padding: 0 24px;
         }
 
-        .board-main-container .main-content {
-            background: white;
-            border-radius: 12px;
-            padding: 80px 120px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 2000px;
-            width: 100%;
-            margin: 0 auto;
+        .board-card {
+            background: #fff;
+            border-radius: 28px;
+            box-shadow: 0 32px 60px rgba(15,23,42,0.15);
+            padding: 48px;
+            display: grid;
+            gap: 28px;
         }
 
-        .page-header {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--text-1);
         }
 
-        .page-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
+        .board-form .form-group {
+            display: grid;
+            gap: 10px;
         }
 
-        .form-group {
-            margin-bottom: 25px;
+        .board-form label {
+            font-weight: 700;
+            color: var(--text-1);
+            font-size: 15px;
         }
 
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-            font-size: 16px;
-        }
-
-        .form-label.required::after {
+        .board-form label.required::after {
             content: ' *';
-            color: #dc3545;
+            color: var(--pink-1);
         }
 
-        .form-input {
+        .board-form input,
+        .board-form select,
+        .board-form textarea {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s ease;
+            border: 1px solid rgba(15,23,42,0.12);
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-size: 15px;
             font-family: inherit;
+            background: rgba(255,255,255,0.9);
+            transition: border-color .2s ease, box-shadow .2s ease;
         }
 
-        .form-input:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            min-height: 300px;
+        .board-form textarea {
+            min-height: 280px;
             resize: vertical;
-            transition: border-color 0.2s ease;
-            font-family: inherit;
             line-height: 1.6;
         }
 
-        .form-textarea:focus {
+        .board-form input:focus,
+        .board-form select:focus,
+        .board-form textarea:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: white;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-select:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            width: 100%;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .submit-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: background-color 0.2s ease;
-            flex: 1;
-            writing-mode: horizontal-tb;
-            text-orientation: mixed;
-            white-space: nowrap;
-        }
-
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-
-
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-            display: none;
-        }
-
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
-            display: none;
+            border-color: rgba(255,122,162,0.65);
+            box-shadow: 0 0 0 4px rgba(255,122,162,0.18);
         }
 
         .char-count {
             text-align: right;
             font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
+            color: var(--text-2);
         }
 
-        .char-count.warning {
-            color: #ffc107;
+        .char-count.warning { color: #f59e0b; }
+        .char-count.danger { color: #ef4444; }
+
+        .form-messages {
+            display: grid;
+            gap: 12px;
         }
 
-        .char-count.danger {
-            color: #dc3545;
+        .alert {
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .alert.success {
+            background: rgba(34, 197, 94, 0.12);
+            color: #166534;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px 22px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+
+        .btn:active { transform: translateY(1px); }
+
+        .btn-secondary {
+            background: rgba(15,23,42,0.06);
+            color: var(--text-1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15,23,42,0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            box-shadow: 0 16px 32px rgba(255,122,162,0.35);
+            min-width: 160px;
+        }
+
+        .submit-btn:disabled {
+            background: rgba(15,23,42,0.2);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 720px) {
+            .board-card {
+                padding: 32px 24px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn,
+            .submit-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="board-main-container">
-        <div class="container">
-            <!-- 메인 콘텐츠 영역 -->
-            <div class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">글쓰기</h1>
-            </div>
-
-            <!-- 에러 메시지 -->
-            <div id="errorMessage" class="error-message"></div>
-            
-            <!-- 성공 메시지 -->
-            <div id="successMessage" class="success-message"></div>
-
-            <form id="writeForm">
-                <div class="form-group">
-                    <label for="boardTypeId" class="form-label required">게시판 선택</label>
-                    <select id="boardTypeId" name="boardTypeId" class="form-select" required>
-                        <option value="">게시판을 선택하세요</option>
-                        <option value="1">공지사항</option>
-                        <option value="2" selected>1대1문의</option>
-                        <option value="3">FAQ</option>
-                    </select>
+    <main class="board-page">
+        <div class="board-container">
+            <section class="board-card">
+                <div class="page-header">
+                    <h1>글쓰기</h1>
                 </div>
 
-                <div class="form-group">
-                    <label for="title" class="form-label required">제목</label>
-                    <input type="text" id="title" name="title" class="form-input" 
-                           placeholder="제목을 입력하세요" maxlength="200" required>
-                    <div class="char-count" id="titleCount">0 / 200</div>
+                <div class="form-messages">
+                    <div id="errorMessage" class="alert error"></div>
+                    <div id="successMessage" class="alert success"></div>
                 </div>
 
-                <div class="form-group">
-                    <label for="content" class="form-label required">내용</label>
-                    <textarea id="content" name="content" class="form-textarea" 
-                              placeholder="내용을 입력하세요" required></textarea>
-                    <div class="char-count" id="contentCount">0</div>
-                </div>
+                <form id="writeForm" class="board-form">
+                    <div class="form-group">
+                        <label for="boardTypeId" class="required">게시판 선택</label>
+                        <select id="boardTypeId" name="boardTypeId" required>
+                            <option value="">게시판을 선택하세요</option>
+                            <option value="1">공지사항</option>
+                            <option value="2" selected>1대1문의</option>
+                            <option value="3">FAQ</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group">
+                        <label for="title" class="required">제목</label>
+                        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" maxlength="200" required>
+                        <div class="char-count" id="titleCount">0 / 200</div>
+                    </div>
 
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="goBack()">취소</button>
-                    <button type="submit" class="submit-btn" id="submitBtn">제출하기</button>
-                </div>
-            </form>
-            </div>
+                    <div class="form-group">
+                        <label for="content" class="required">내용</label>
+                        <textarea id="content" name="content" placeholder="문의 내용을 상세히 작성해 주세요" required></textarea>
+                        <div class="char-count" id="contentCount">0</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goBack()">취소</button>
+                        <button type="submit" class="btn submit-btn" id="submitBtn">제출하기</button>
+                    </div>
+                </form>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script>
         // 폼 요소들

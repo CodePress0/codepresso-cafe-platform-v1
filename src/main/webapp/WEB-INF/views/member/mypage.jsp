@@ -1,11 +1,37 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
-<body>
+<body class="mypage-body">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<main class="hero">
+<style>
+    .mypage-body {
+        background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+    }
+    .hero.mypage-hero {
+        background: transparent;
+        padding: 72px 0 92px;
+    }
+    .mypage-card {
+        background: #fff !important;
+        border-radius: 28px;
+        border: 1px solid rgba(15,23,42,0.06);
+        box-shadow: 0 28px 54px rgba(15,23,42,0.08);
+    }
+    .mypage-body .btn.btn-ghost {
+        background: #fff;
+        color: var(--pink-1);
+        border: 1px solid rgba(255,122,162,0.6);
+    }
+    .mypage-body .btn.btn-ghost:hover {
+        border-color: var(--pink-1);
+        background: rgba(255,122,162,0.08);
+        color: var(--pink-1);
+    }
+</style>
+
+<main class="hero mypage-hero">
     <div class="container">
-        <div class="hero-card" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
+        <div class="hero-card mypage-card" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
             <div>
                 <div class="badge">CodePress · 마이페이지</div>
                 <h1>내 정보</h1>
@@ -18,11 +44,26 @@
                 </c:if>
 
                 <style>
-                    .info-list { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 10px; }
-                    .info-item { background: var(--white); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; }
-                    .info-item b { display: inline-block; width: 120px; }
+                    .info-list { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 16px; }
+                    .info-item {
+                        display: grid;
+                        grid-template-columns: 140px 1fr;
+                        align-items: center;
+                        gap: 12px;
+                        padding-bottom: 14px;
+                        border-bottom: 1px dashed rgba(255, 122, 162, 0.5);
+                    }
+                    .info-item:last-child { border-bottom: none; padding-bottom: 0; }
+                    .info-item b { font-weight: 700; color: var(--text-1); }
                     .edit-mode { display: none; }
-                    .edit-mode input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 4px; }
+                    .edit-mode input {
+                        width: 100%;
+                        padding: 10px 14px;
+                        border: 1px solid rgba(15,23,42,0.12);
+                        border-radius: 12px;
+                        font-size: 14px;
+                        margin-top: 4px;
+                    }
                 </style>
 
                 <!--

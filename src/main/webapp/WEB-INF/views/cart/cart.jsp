@@ -8,10 +8,11 @@
 
 <main class="cart-page">
     <div class="cart-shell">
-        <c:set var="itemCount" value="${empty cart or empty cart.items ? 0 : fn:length(cart.items)}" />
+        <c:set var="itemCount" value="0" />
         <c:set var="totalPrice" value="0" />
-        <c:if test="${itemCount > 0}">
+        <c:if test="${not empty cart and not empty cart.items}">
             <c:forEach var="item" items="${cart.items}">
+                <c:set var="itemCount" value="${itemCount + item.quantity}" />
                 <c:set var="totalPrice" value="${totalPrice + item.price}" />
             </c:forEach>
         </c:if>
@@ -38,13 +39,25 @@
                         <div class="cart-group-header">
                             <form class="cart-clear-form" action="<c:url value='/users/cart/clear'/>" method="post">
                                 <input type="hidden" name="cartId" value="${cart.cartId}" />
-                                <button type="submit" class="btn-text">전체 비우기</button>
+                                <input type="hidden" name="redirect" value="/cart" />
+                                <button type="submit" class="btn btn-outline btn-clear">전체 비우기</button>
                             </form>
                         </div>
                         <ul class="cart-item-list">
                             <c:forEach var="item" items="${cart.items}">
                                 <li class="cart-item">
-                                    <div class="cart-item-thumb" aria-hidden="true"></div>
+                                    <div class="cart-item-thumb" aria-hidden="true">
+                                        <c:choose>
+                                            <c:when test="${not empty item.productPhoto}">
+                                                <img src="${item.productPhoto}"
+                                                     alt="${item.productName}"
+                                                     onerror="this.src='/banners/mascot.png'; this.onerror=null;" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="/banners/mascot.png" alt="CodePress Mascot" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
                                     <div class="cart-item-info">
                                         <div class="cart-item-header">
                                             <h3>${item.productName}</h3>
@@ -177,16 +190,22 @@
         box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.6);
     }
 
-    .cart-item-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+    .cart-item-list { list-style: none; margin: 0; padding: 0; display: block; }
     .cart-item {
         display: grid;
         grid-template-columns: 96px 1fr;
         gap: 20px;
-        padding: 22px 26px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 20px 36px rgba(15,23,42,0.08);
+        padding: 16px 4px 16px 0;
+        background: transparent;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
         position: relative;
+    }
+    .cart-item + .cart-item {
+        border-top: 1px dashed rgba(255, 122, 162, 0.35);
+        margin-top: 12px;
+        padding-top: 28px;
     }
     .cart-item-group {
         background: rgba(255, 255, 255, 0.85);
@@ -195,13 +214,12 @@
         box-shadow: 0 24px 48px rgba(15, 23, 42, 0.1);
         backdrop-filter: blur(6px);
     }
-    .cart-item-group .cart-item-list { gap: 20px; }
+    .cart-item-group .cart-item-list { display: block; }
     .cart-item-thumb {
-        width: 96px; height: 96px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #ffd5e4, #ffafcc);
-        box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.45);
+        background: linear-gradient(135deg, var(--pink-3), var(--pink-4));
+        position: relative;
     }
+    .cart-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cart-item-info { display: grid; gap: 12px; }
     .cart-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
     .cart-item-header h3 { margin: 0; font-size: 20px; }
@@ -417,11 +435,27 @@
     .btn-block { width: 100%; }
     .btn-outline {
         background: #fff;
-        border: 1px solid rgba(0,0,0,0.12);
-        color: var(--text-1);
-        transition: box-shadow .2s ease, transform .08s ease;
+        border: 1px solid rgba(255,122,162,0.6);
+        color: var(--pink-1);
+        transition: box-shadow .2s ease, transform .08s ease, background .2s ease;
     }
-    .btn-outline:hover { box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12); }
+    .btn-outline:hover {
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+        border-color: var(--pink-1);
+        background: rgba(255,122,162,0.08);
+        color: var(--pink-1);
+    }
+    .btn-clear {
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--pink-1);
+    }
+    .btn-clear:hover {
+        color: var(--pink-1);
+        border-color: var(--pink-1);
+    }
     .btn-disabled { opacity: 0.6; pointer-events: none; }
 
     .add-card h3 { margin: 0; font-size: 18px; }
@@ -459,6 +493,8 @@
         }
         return headers;
     };
+
+    const cartBaseUrl = '<c:url value="/users/cart/" />';
 
     const clampQuantity = value => Math.max(1, Number.isNaN(value) ? 1 : value);
 
@@ -856,6 +892,17 @@
 
     hydrateSelectionFromServer();
 
+    // 주문하기 버튼: 선택된 매장 ID를 쿼리스트링으로 넘겨 결제 페이지로 이동
+    if (orderButton) {
+        orderButton.addEventListener('click', () => {
+            if (orderButton.disabled) return;
+            const id = selectedBranchIdInput ? String(selectedBranchIdInput.value || '').trim() : '';
+            const url = new URL('/payments', window.location.origin);
+            if (id) url.searchParams.set('branchId', id);
+            window.location.href = url.toString();
+        });
+    }
+
     document.querySelectorAll('.qty-control').forEach(control => {
         const input = control.querySelector('input');
         control.addEventListener('click', event => {
@@ -875,25 +922,78 @@
     document.querySelectorAll('[data-update]').forEach(button => {
         button.addEventListener('click', () => {
             const item = button.closest('.cart-item');
-            const control = item.querySelector('.qty-control');
-            const input = control.querySelector('input');
-            const quantity = clampQuantity(parseInt(input.value, 10));
-            const id = button.dataset.update;
+            if (!item) return;
 
-            fetch(`/users/cart/${id}?quantity=${quantity}`, {
+            const input = item.querySelector('.qty-control input');
+            const quantity = clampQuantity(parseInt(input?.value, 10));
+            const cartItemId = button.dataset.update;
+            if (!cartItemId) return;
+
+            const requestUrl = cartBaseUrl + cartItemId;
+            fetch(requestUrl, {
                 method: 'PATCH',
-                headers: withCsrf(),
-                credentials: 'include'
-            }).then(() => window.location.reload());
+                headers: withCsrf({ 'Content-Type': 'application/json' }),
+                credentials: 'include',
+                body: JSON.stringify({ quantity })
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error(`수정 실패: ${res.status}`);
+                    return res.text();
+                })
+                .then(() => window.location.reload())
+                .catch(err => console.error(err));
         });
     });
 
-    document.addEventListener('click', event => {
-        const deleteBtn = event.target.closest('[data-delete]');
-        if (!deleteBtn) return;
+    const clearForm = document.querySelector('.cart-clear-form');
+    if (clearForm) {
+        clearForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const formData = new URLSearchParams();
+            Array.from(new FormData(clearForm).entries()).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
 
-        const id = deleteBtn.getAttribute('data-delete');
-        window.location.href = `/users/cart/${id}/delete`;
+            fetch(clearForm.action, {
+                method: 'POST',
+                headers: withCsrf({
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }),
+                credentials: 'include',
+                body: formData.toString()
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`Failed to clear cart: ${res.status}`);
+                    }
+                })
+                .then(() => window.location.reload())
+                .catch(error => {
+                    console.error(error);
+                    alert('장바구니를 비우지 못했습니다. 잠시 후 다시 시도해주세요.');
+                });
+        });
+    }
+
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('[data-delete]');
+        if (!btn) return;
+        const cartItemId = btn.dataset.delete;
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+
+        const requestUrl = cartBaseUrl + cartItemId;
+        fetch(requestUrl, {
+            method: 'DELETE',
+            headers: withCsrf(),
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`삭제 실패 (${res.status})`);
+                btn.closest('.cart-item').remove();
+            })
+            .then(() => window.location.reload())
+            .catch(err => {
+                alert(err.message || '삭제 실패');
+            });
     });
 </script>
 

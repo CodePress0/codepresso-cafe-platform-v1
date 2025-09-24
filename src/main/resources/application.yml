@@ -33,8 +33,28 @@ spring:
       ddl-auto: update    # 빈 DB는 생성, 기존 스키마는 보존하며 변경 반영
     show-sql: true        # 실행되는 SQL 쿼리를 콘솔에 출력
 
-  
+  # 이메일 발송 설정 (Naver SMTP)
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username:  #  ${EMAIL_USERNAME}  환경변수로 설정
+    password:  #  ${EMAIL_PASSWORD}  앱 비밀번호 사용
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.naver.com
+
 # MyBatis는 비활성화(의존성 제거). 필요 시 추후 재도입
+
+# 애플리케이션 커스텀 설정
+app:
+  email:
+    verification:
+      expiry-minutes: 5  # 인증번호 만료 시간 (분)
 
 server:
   servlet:

@@ -1,9 +1,33 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" session="false" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
-<body>
+<body class="auth-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<main class="hero">
+<style>
+    .auth-page {
+        background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+    }
+
+    .hero.auth-hero {
+        background: transparent;
+        padding: 72px 0 96px;
+    }
+
+    .hero-card.login-card {
+        background: #fff !important;
+        border-radius: 28px;
+        box-shadow: 0 32px 60px rgba(15,23,42,0.15);
+        border: 1px solid rgba(255,122,162,0.18);
+        grid-template-columns: 1fr !important;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 44px;
+        text-align: center;
+    }
+</style>
+
+<main class="hero auth-hero">
     <div class="container">
         <!--
           로그인 화면 카드
@@ -35,13 +59,18 @@
                     .row { display: flex; align-items: center; justify-content: space-between; }
                     label { font-weight: 700; }
                     input[type=text], input[type=password] {
-                        width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,.12);
+                        width: 100%; padding: 12px; border-radius: 10px;
+                        border: 1px solid rgba(255,122,162,0.35);
                         outline: none; transition: border .2s, box-shadow .2s;
+                        background: rgba(255,255,255,0.9);
                     }
-                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.18); }
+                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.22); }
+                    input[type=checkbox] { accent-color: var(--pink-1); }
                     .actions { display: grid; gap: 10px; margin-top: 10px; } /* 로그인 버튼 위 여백 */
                     .sub-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 6px; }
-                    .link { color: var(--pink-1); text-decoration: none; font-weight: 700; text-align: right; display: inline-block; margin-top: 12px; }
+                    .links { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 14px; font-weight: 700; }
+                    .links a { color: var(--pink-1); text-decoration: none; }
+                    .links span { color: var(--text-2); font-weight: 500; }
                 </style>
 
                 <!--
@@ -70,13 +99,14 @@
                     </div>
 
                     <div class="actions">
-                        <button type="submit" class="btn btn-primary">Log In</button>
+                        <button type="submit" class="btn btn-primary">로그인</button>
                     </div>
 
                     <!-- 실패 시 쿼리파라미터 error=1로 돌아옴(SecurityConfig.failureUrl) -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
-                        <a class="link" href="/auth/password-find">비밀번호 찾기</a>
-                        <a class="link" href="/auth/signup">Sign Up</a>
+                    <div class="links">
+                        <a href="#" onclick="alert('아이디 찾기 화면 (준비중)'); return false;">아이디 찾기</a>
+                        <a href="<c:url value="/auth/password-find"/>">비밀번호 찾기</a>
+                        <a href="<c:url value="/auth/signup"/>">회원가입</a>
                     </div>
                 </form>
             </div>

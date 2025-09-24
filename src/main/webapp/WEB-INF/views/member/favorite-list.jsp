@@ -2,12 +2,45 @@
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<body>
+<body class="favorite-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
+<style>
+  .favorite-page .hero { background: transparent; }
+  .favorite-page .hero-card {
+    background: #fff;
+    border-radius: 28px;
+    border: 1px solid rgba(255,122,162,0.18);
+    box-shadow: 0 32px 60px rgba(15,23,42,0.12);
+    grid-template-columns: 1fr;
+  }
+  .favorite-page .favorite-item {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid rgba(255,122,162,0.2);
+    box-shadow: 0 24px 48px rgba(15,23,42,0.08);
+    padding: 18px;
+    transition: transform .12s ease, box-shadow .2s ease;
+  }
+  .favorite-page .favorite-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 60px rgba(15,23,42,0.14);
+  }
+  .favorite-page .btn.btn-ghost {
+    background: #fff;
+    color: var(--pink-1);
+    border: 1px solid rgba(255,122,162,0.6);
+  }
+  .favorite-page .btn.btn-ghost:hover {
+    border-color: var(--pink-1);
+    background: rgba(255,122,162,0.08);
+    color: var(--pink-1);
+  }
+</style>
 
 <main class="hero">
   <div class="container">
-    <div class="hero-card" style="grid-template-columns: 1fr;">
+    <div class="hero-card">
       <div>
         <div class="badge">CodePress · 즐겨찾기</div>
         <h1>내 즐겨찾기</h1>
@@ -29,7 +62,7 @@
             <!-- 즐겨찾기 목록 -->
             <div class="favorite-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; margin-top:16px;">
                 <c:forEach var="favorite" items="${favoriteList.favorites}" varStatus="status">
-                    <div class="favorite-item" style="background: var(--white); border-radius: 16px; box-shadow: var(--shadow); padding: 14px;">
+                    <div class="favorite-item">
                         <div class="orderby-info" style="font-size:12px;color:var(--text-2);">순서: ${favorite.orderby}</div>
                         
                         <c:if test="${not empty favorite.productPhoto}">
