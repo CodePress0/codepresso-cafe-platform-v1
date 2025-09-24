@@ -28,6 +28,10 @@
         padding: 40px 44px;
         text-align: center;
     }
+
+    .links { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 14px; font-weight: 700; }
+    .links a { color: var(--pink-1); text-decoration: none; }
+    .links span { color: var(--text-2); font-weight: 500; }
 </style>
 
 <main class="hero auth-hero">
@@ -162,8 +166,6 @@
                     </div>
                 </div>
             </div>
-
-            
         </div>
     </div>
 </main>
