@@ -220,9 +220,18 @@
         const contentCount = document.getElementById('contentCount');
         const submitBtn = document.getElementById('submitBtn');
 
+        // 수정 모드 확인
+        const isEditMode = window.location.pathname.includes('/edit/');
+        const boardId = isEditMode ? window.location.pathname.split('/edit/')[1] : null;
+
         // 페이지 로드 시 이벤트 리스너 설정
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
+            
+            // 수정 모드인 경우 기존 데이터 로드
+            if (isEditMode && boardId) {
+                loadBoardData(boardId);
+            }
         });
 
         // 이벤트 리스너 설정
@@ -261,6 +270,37 @@
             }
         }
 
+        // 기존 게시글 데이터 로드 (수정 모드)
+        function loadBoardData(boardId) {
+            fetch(`/boards/${boardId}`, {
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('게시글을 불러올 수 없습니다.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 폼에 기존 데이터 채우기
+                titleInput.value = data.title || '';
+                contentInput.value = data.content || '';
+                document.getElementById('boardTypeId').value = data.boardTypeId || 1;
+                
+                // 글자 수 업데이트
+                updateCharCount(titleInput, titleCount, 200);
+                updateCharCount(contentInput, contentCount);
+                
+                // 제목 변경
+                document.querySelector('.page-header h1').textContent = '게시글 수정';
+                submitBtn.textContent = '수정하기';
+            })
+            .catch(error => {
+                console.error('Error loading board data:', error);
+                showError('게시글을 불러오는 중 오류가 발생했습니다.');
+            });
+        }
+
         // 폼 제출
         function submitForm() {
             // 유효성 검사
@@ -270,7 +310,7 @@
 
             // 제출 버튼 비활성화
             submitBtn.disabled = true;
-            submitBtn.textContent = '제출 중...';
+            submitBtn.textContent = isEditMode ? '수정 중...' : '제출 중...';
 
             // 폼 데이터 수집
             const formData = {
@@ -280,9 +320,12 @@
                 boardTypeId: parseInt(document.getElementById('boardTypeId').value)
             };
 
-            // API 호출
-            fetch('/boards', {
-                method: 'POST',
+            // API 호출 (수정 모드인지 확인)
+            const url = isEditMode ? `/boards/${boardId}` : '/boards';
+            const method = isEditMode ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -292,22 +335,25 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showSuccess('게시글이 성공적으로 작성되었습니다.');
+                    const message = isEditMode ? '게시글이 성공적으로 수정되었습니다.' : '게시글이 성공적으로 작성되었습니다.';
+                    showSuccess(message);
                     setTimeout(() => {
                         window.location.href = '/boards/list';
                     }, 1500);
                 } else {
-                    showError('게시글 작성 중 오류가 발생했습니다: ' + data.message);
+                    const errorMessage = isEditMode ? '게시글 수정에 실패했습니다.' : '게시글 작성에 실패했습니다.';
+                    showError(data.message || errorMessage);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('게시글 작성 중 오류가 발생했습니다.');
+                const errorMessage = isEditMode ? '게시글 수정 중 오류가 발생했습니다.' : '게시글 작성 중 오류가 발생했습니다.';
+                showError(errorMessage);
             })
             .finally(() => {
                 // 제출 버튼 활성화
                 submitBtn.disabled = false;
-                submitBtn.textContent = '제출하기';
+                submitBtn.textContent = isEditMode ? '수정하기' : '제출하기';
             });
         }
 

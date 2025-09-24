@@ -55,6 +55,10 @@ app:
   email:
     verification:
       expiry-minutes: 5  # 인증번호 만료 시간 (분)
+  file:
+    upload:
+      path: /uploads/profile-images/  # 프로필 이미지 업로드 경로
+      max-size: 5MB  # 최대 파일 크기
 
 server:
   servlet:

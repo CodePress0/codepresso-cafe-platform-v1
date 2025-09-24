@@ -71,4 +71,31 @@ public class EmailService {
             throw new RuntimeException("이메일 발송에 실패했습니다. 이메일 주소를 확인해주세요.");
         }
     }
+
+    public void sendIdFindEmail(String toEmail, String nickname, String verificationCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        try {
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("[CodePresso] 아이디 찾기 인증번호 안내");
+            String text = String.format(
+                    "안녕하세요, %s님.\n\n" +
+                            "아이디 찾기를 위한 인증번호는 다음과 같습니다:\n\n" +
+                            "인증번호: %s\n\n" +
+                            "이 인증번호는 5분간 유효합니다. 인증번호를 입력하여 아이디를 확인해주세요.\n\n" +
+                            "감사합니다.\n" +
+                            "CodePresso 팀 드림",
+                    nickname, verificationCode
+            );
+            message.setText(text);
+
+            mailSender.send(message);
+            log.info("아이디 찾기 이메일 발송 성공: to={}, subject={}", toEmail, message.getSubject());
+            
+        } catch (MailException e) {
+            log.error("아이디 찾기 이메일 발송 실패: to={}, subject={}, error={}", toEmail, message.getSubject(), e.getMessage(), e);
+            throw new RuntimeException("이메일 발송에 실패했습니다. 이메일 주소를 확인해주세요.");
+        }
+    }
 }
