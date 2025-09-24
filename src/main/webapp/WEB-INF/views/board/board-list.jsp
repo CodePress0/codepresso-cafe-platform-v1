@@ -5,245 +5,275 @@
 <body>
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
     <style>
-        /* 게시판 페이지 전용 스타일 - 헤더에 영향 주지 않도록 메인 콘텐츠만 타겟팅 */
-        .board-main-container {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+        .board-page {
+            background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+            padding: 72px 0 96px;
         }
 
-        .board-main-container * {
-            box-sizing: border-box;
-        }
-
-        .board-main-container .container {
-            max-width: 100%;
-            width: 100%;
+        .board-container {
+            max-width: 1120px;
             margin: 0 auto;
-            padding: 20px 200px;
+            padding: 0 24px;
         }
 
-        .board-main-container .main-content {
-            background: white;
-            border-radius: 12px;
-            padding: 80px 120px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 2000px;
-            width: 100%;
-            margin: 0 auto;
+        .board-card {
+            background: #fff;
+            border-radius: 28px;
+            box-shadow: 0 32px 60px rgba(15, 23, 42, 0.15);
+            padding: 48px 56px;
+            display: grid;
+            gap: 32px;
+        }
+
+        .board-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .board-heading h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-1);
         }
 
         .category-tabs {
             display: flex;
-            border-bottom: 2px solid #e9ecef;
-            margin-bottom: 30px;
+            gap: 16px;
+            border-bottom: 1px solid rgba(15,23,42,0.08);
+            padding-bottom: 12px;
         }
 
-        .tab {
-            padding: 15px 25px;
-            cursor: pointer;
+        .category-tabs .tab {
             border: none;
             background: none;
-            font-size: 16px;
-            font-weight: 500;
-            color: #6c757d;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-2);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease;
         }
 
-        .tab.active {
-            color: #007bff;
-            border-bottom-color: #007bff;
+        .category-tabs .tab:hover {
+            background: rgba(255, 122, 162, 0.12);
+            color: var(--pink-1);
         }
 
-        .tab:hover {
-            color: #007bff;
+        .category-tabs .tab.active {
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(255, 122, 162, 0.35);
         }
 
         .board-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            font-size: 15px;
+            color: var(--text-2);
         }
 
-        .board-table th,
-        .board-table td {
-            padding: 15px 10px;
+        .board-table thead th {
             text-align: left;
-            border-bottom: 1px solid #e9ecef;
+            padding: 14px 12px;
+            font-weight: 700;
+            color: var(--text-1);
+            background: rgba(255, 122, 162, 0.08);
         }
 
-        .board-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
+        .board-table tbody td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(15,23,42,0.08);
         }
 
         .board-table tbody tr:hover {
-            background-color: #f8f9fa;
+            background: rgba(255, 122, 162, 0.05);
         }
 
         .post-title-container {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .post-title {
-            color: #333;
             text-decoration: none;
-            font-weight: 500;
+            color: var(--text-1);
+            font-weight: 600;
         }
 
         .post-title:hover {
-            color: #007bff;
+            color: var(--pink-1);
         }
 
         .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 999px;
+            padding: 4px 10px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
         }
 
         .status-badge.pending {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
+            background: rgba(255, 122, 162, 0.15);
+            color: var(--pink-1);
         }
 
         .status-badge.answered {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .write-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .write-btn:hover {
-            transform: translateY(-2px);
-        }
-
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        .page-btn {
-            padding: 8px 12px;
-            border: 1px solid #dee2e6;
-            background: white;
-            color: #495057;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .page-btn:hover {
-            background-color: #e9ecef;
-        }
-
-        .page-btn.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 10px;
-            color: #495057;
-        }
-
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .delete-btn:hover {
-            background: #c82333;
-        }
-
-        .action-cell {
-            width: 80px;
-            text-align: center;
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
         }
 
         .cta {
             display: flex;
+            justify-content: flex-end;
             gap: 12px;
-            margin-top: 30px;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
+            border-radius: 999px;
+            font-weight: 700;
             font-size: 14px;
-            transition: all 0.2s ease;
-            border: none;
+            text-decoration: none;
             cursor: pointer;
+            border: none;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(255, 122, 162, 0.35);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            filter: brightness(1.02);
         }
 
-        .btn-ghost {
-            background: transparent;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
+        .write-btn {
+            background: #fff;
+            color: var(--pink-1);
+            border: 1px solid rgba(255, 122, 162, 0.4);
         }
 
-        .btn-ghost:hover {
-            background: #f8f9fa;
-            color: #495057;
+        .write-btn:hover {
+            background: rgba(255, 122, 162, 0.08);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-2);
+        }
+
+        .empty-state h3 {
+            margin: 0 0 8px;
+            color: var(--text-1);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.12);
+            color: #b91c1c;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            color: var(--text-2);
+            text-decoration: none;
+            transition: background .2s ease, color .2s ease;
+        }
+
+        .page-btn:hover {
+            background: rgba(255, 122, 162, 0.12);
+            color: var(--pink-1);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 20px rgba(255, 122, 162, 0.3);
+        }
+
+        @media (max-width: 900px) {
+            .board-card {
+                padding: 32px 24px;
+            }
+
+            .board-heading {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .category-tabs {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .board-table {
+                font-size: 14px;
+            }
+
+            .board-table thead th,
+            .board-table tbody td {
+                padding: 12px 8px;
+            }
+
+            .cta {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn,
+            .write-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="board-main-container">
-        <div class="container">
-            <!-- 메인 콘텐츠 영역 -->
-            <div class="main-content">
-            <!-- 카테고리 탭 -->
+    <main class="board-page">
+        <div class="board-container">
+            <section class="board-card">
+            <div class="board-heading">
+                <h1>커뮤니티 게시판</h1>
+                <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
+            </div>
+
             <div class="category-tabs">
                 <button class="tab" onclick="loadBoard(1, 0)">공지사항</button>
                 <button class="tab active" onclick="loadBoard(2, 0)">1대1문의</button>
@@ -281,13 +311,12 @@
 
                 <!-- CTA 버튼들 -->
                 <div class="cta">
-                    <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
-                    <button class="write-btn" onclick="goToWrite()">글쓰기</button>
+                    <button class="btn write-btn" onclick="goToWrite()">글쓰기</button>
                 </div>
             </div>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script>
         // 전역 변수 선언

@@ -1,9 +1,36 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" session="false" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
-<body>
+<body class="auth-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<main class="hero">
+<style>
+    .auth-page {
+        background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+
+    .hero.auth-hero {
+        background: transparent;
+        padding: 72px 0 96px;
+    }
+
+    .hero-card.signup-card {
+        background: #fff !important;
+        border-radius: 28px;
+        box-shadow: 0 32px 60px rgba(15,23,42,0.15);
+        border: 1px solid rgba(255,122,162,0.18);
+        grid-template-columns: 1fr !important;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 44px;
+        text-align: center;
+    }
+</style>
+
+<main class="hero auth-hero">
     <div class="container">
         <div class="hero-card signup-card">
             <div>
@@ -27,11 +54,22 @@
                     .row > button { white-space: nowrap; }
                     label { font-weight: 700; }
                     input[type=text], input[type=password], input[type=email] {
-                        width: 100%; padding: 12px 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,.12);
+                        width: 100%; padding: 12px 12px; border-radius: 10px;
+                        border: 1px solid rgba(255,122,162,0.6);
                         outline: none; transition: border .2s, box-shadow .2s;
+                        background: rgba(255,255,255,0.9);
                     }
-                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.18); }
-                    .btn.secondary { background: var(--white); color: var(--text-1); border: 1px solid rgba(0,0,0,.06); }
+                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.22); }
+                    .btn.secondary {
+                        background: var(--white);
+                        color: var(--pink-1);
+                        border: 1px solid rgba(255,122,162,0.6);
+                    }
+                    .btn.secondary:hover {
+                        border-color: var(--pink-1);
+                        background: rgba(255,122,162,0.08);
+                        color: var(--pink-1);
+                    }
                     .hint { font-size: 12px; color: var(--text-2); }
                     /* 라벨 옆 힌트 간격+톤 조정 */
                     .field label .hint { margin-left: 10px; color: #6b7280; font-weight: 400; }
@@ -97,7 +135,7 @@
 
                     <div class="links">
                         <a href="#" onclick="alert('아이디 찾기 화면 (준비중)'); return false;">아이디 찾기</a>
-                        <a href="#" onclick="alert('비밀번호 찾기 화면 (준비중)'); return false;">비밀번호 찾기</a>
+                        <a href="<c:url value="/auth/password-find"/>">비밀번호 찾기</a>
                     </div>
                 </div>
             </div>

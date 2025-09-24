@@ -5,7 +5,7 @@
             <div>
                 <div class="badge">CodePress · 카페 플랫폼</div>
                 <h1>주문하려면 로그인해주세요!</h1>
-                <p>분홍빛 설렘 속에서, 당신의 하루를 담은 커피 한 잔!<br>CodePress에서 오늘의 기분을 담은 한 잔을 만나보세요.</p>
+                <p>CodePress에서 당신의 하루를 담은 커피 한 잔 한 잔을 만나보세요.</p>
                 <div class="cta">
                     <a class="btn btn-primary" href="/auth/login">로그인</a>
                     <a class="btn btn-ghost" href="/auth/signup">회원가입</a>
@@ -15,7 +15,7 @@
                 <div class="sprinkle"></div>
                 <div class="cup" aria-label="CodePresso Mascot">
                     <img class="cup-img" src="/banners/mascot.png" alt="CodePresso Mascot" />
-                    <div class="cup-label">CodePresso</div>
+<%--                    <div class="cup-label">CodePresso</div>--%>
                 </div>
             </div>
         </div>
