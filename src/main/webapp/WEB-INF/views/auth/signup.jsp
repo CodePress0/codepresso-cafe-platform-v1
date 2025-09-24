@@ -161,7 +161,7 @@
                     </div>
 
                     <div class="links">
-                        <a href="#" onclick="alert('아이디 찾기 화면 (준비중)'); return false;">아이디 찾기</a>
+                        <a href="<c:url value="/auth/id-find"/>">아이디 찾기</a>
                         <a href="<c:url value="/auth/password-find"/>">비밀번호 찾기</a>
                     </div>
                 </div>
