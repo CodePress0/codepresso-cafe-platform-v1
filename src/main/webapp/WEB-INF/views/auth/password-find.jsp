@@ -103,8 +103,8 @@
                 <div id="step2" class="step">
                     <form class="password-find-form" id="verificationForm">
                         <div class="verification-info">
-                            <strong>인증번호가 발급되었습니다!</strong><br>
-                            개발용 인증번호: <strong>123</strong>
+                            <strong>인증번호가 이메일로 발송되었습니다!</strong><br>
+                            이메일을 확인하고 인증번호를 입력해주세요.<br>
                         </div>
 
                         <div class="field">
@@ -148,6 +148,7 @@
 <script>
     let currentStep = 1;
     let userInfo = {};
+    let verificationCode = '';
 
     // 1단계: 아이디/이메일로 사용자 확인
     document.getElementById('findForm').addEventListener('submit', async function(e) {
@@ -169,6 +170,7 @@
             
             if (data.success) {
                 userInfo = { accountId, email };
+                verificationCode = data.verificationCode; // 서버에서 받은 인증번호 저장
                 goToStep2();
             } else {
                 alert(data.message || '오류가 발생했습니다.');
@@ -183,9 +185,9 @@
     document.getElementById('verificationForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const verificationCode = document.getElementById('verificationCode').value;
+        const inputCode = document.getElementById('verificationCode').value;
         
-        if (verificationCode === '123') {
+        if (inputCode === verificationCode) {
             goToStep3();
         } else {
             alert('인증번호가 일치하지 않습니다.');
@@ -217,7 +219,7 @@
                 },
                 body: JSON.stringify({
                     ...userInfo,
-                    verificationCode: '123',
+                    verificationCode: verificationCode, // 실제 인증번호 사용
                     newPassword,
                     confirmPassword
                 })

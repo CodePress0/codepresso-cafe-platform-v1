@@ -1,10 +1,10 @@
-package com.codepresso.codepresso.controller.member;
+package com.codepresso.codepresso.controller.auth;
 
 import com.codepresso.codepresso.dto.member.PasswordFindRequest;
 import com.codepresso.codepresso.dto.member.PasswordFindResponse;
 import com.codepresso.codepresso.dto.member.PasswordResetRequest;
 import com.codepresso.codepresso.dto.member.PasswordResetResponse;
-import com.codepresso.codepresso.service.member.PasswordFindService;
+import com.codepresso.codepresso.service.auth.PasswordFindService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
