@@ -2,10 +2,12 @@ package com.codepresso.codepresso.controller.payment;
 
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
+import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.payment.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,7 @@ public class PaymentController {
      * */
     @PostMapping("/checkout")
     public ResponseEntity<CheckoutResponse> checkout(
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody @Valid CheckoutRequest request  // 고객이 보낸 주문정보를 받음
     ) {
         // 결제 서비스에게 "이 주문 처리해줘" 요청

@@ -870,6 +870,17 @@
 
     hydrateSelectionFromServer();
 
+    // 주문하기 버튼: 선택된 매장 ID를 쿼리스트링으로 넘겨 결제 페이지로 이동
+    if (orderButton) {
+        orderButton.addEventListener('click', () => {
+            if (orderButton.disabled) return;
+            const id = selectedBranchIdInput ? String(selectedBranchIdInput.value || '').trim() : '';
+            const url = new URL('/payments', window.location.origin);
+            if (id) url.searchParams.set('branchId', id);
+            window.location.href = url.toString();
+        });
+    }
+
     document.querySelectorAll('.qty-control').forEach(control => {
         const input = control.querySelector('input');
         control.addEventListener('click', event => {

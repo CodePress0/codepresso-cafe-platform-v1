@@ -1,8 +1,11 @@
 package com.codepresso.codepresso.service.payment;
 
+import com.codepresso.codepresso.dto.cart.CartItemResponse;
+import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
 import com.codepresso.codepresso.entity.branch.Branch;
+import com.codepresso.codepresso.entity.cart.Cart;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
@@ -10,10 +13,12 @@ import com.codepresso.codepresso.entity.order.OrdersItemOptions;
 import com.codepresso.codepresso.entity.product.Product;
 import com.codepresso.codepresso.entity.product.ProductOption;
 import com.codepresso.codepresso.repository.branch.BranchRepository;
+import com.codepresso.codepresso.repository.cart.CartRepository;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import com.codepresso.codepresso.repository.product.ProductOptionRepository;
 import com.codepresso.codepresso.repository.product.ProductRepository;
+import com.codepresso.codepresso.service.cart.CartService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 결제 서비스
@@ -35,6 +41,8 @@ public class PaymentService {
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
     private final ProductOptionRepository productOptionRepository;
+    private final CartRepository cartRepository;
+    private final CartService cartService;
 
     /**
      * 주문 및 결제 처리 ( 결제없이 주문만 생성 )
@@ -49,17 +57,33 @@ public class PaymentService {
         Branch branch = branchRepository.findById(request.getBranchId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지점입니다."));
 
-        // 2. 주문생성
+        // 2. 주문생성 ( 장바구니, 단일상품 동일하게 처리 )
         Orders orders = createOrder(request, member, branch);
 
         // 3. 주문 상세 생성
         List<OrdersDetail> ordersDetails = createOrderDetails(request.getOrderItems(), orders);
         orders.setOrdersDetails(ordersDetails);
 
-        // 4. 주문 저장 - orderRepository 만든 후 주석 해제
+        // 4. 주문 저장
         Orders savedOrder = ordersRepository.save(orders);
 
-        // 5. 응답 데이터 생성
+        // 5. 장바구니에서 온 주문인 경우 장바구니 비우기
+        if (Boolean.TRUE.equals(request.getIsFromCart())) {
+            System.out.println("🛒 장바구니 결제 감지 - 장바구니 비우기 실행 시작 (memberId: " + member.getId() + ")");
+            try {
+                CartResponse cartData = cartService.getCartByMemberId(member.getId());
+                cartService.clearCart(member.getId(), cartData.getCartId());
+                System.out.println("✅ 장바구니 비우기 성공 - memberId: " + member.getId() + ", cartId: " + cartData.getCartId());
+            } catch (Exception e) {
+                // 장바구니 비우기 실패해도 주문은 유지 (로그 남기고 계속 진행)
+                System.err.println("❌ 장바구니 비우기 실패 - memberId: " + member.getId() + ", 오류: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("📦 단일 상품 결제 - 장바구니 비우기 건너뛰기 (isFromCart: " + request.getIsFromCart() + ")");
+        }
+
+        // 6. 응답 데이터 생성
         return buildCheckoutResponse(savedOrder);
     }
 
@@ -67,12 +91,12 @@ public class PaymentService {
         return Orders.builder()
                 .member(member)
                 .branch(branch)
-                .productionStatus("주문접수")
+                .productionStatus("픽업완료")
                 .isTakeout(request.getIsTakeout())
                 .pickupTime(request.getPickupTime())
                 .orderDate(LocalDateTime.now())
                 .requestNote(request.getRequestNote())
-                .isPickup(false) // 초기값: 픽업 전
+                .isPickup(true)
                 .build();
     }
 
@@ -84,11 +108,12 @@ public class PaymentService {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + item.getProductId()));
 
-
+            // 주문 상세 생성 (총액 = 단가*수량, 수량은 OrdersDetail에 저장)
             OrdersDetail orderDetail = OrdersDetail.builder()
                     .orders(orders)
                     .product(product)
                     .price(item.getPrice() * item.getQuantity())
+                    .quantity(item.getQuantity())
                     .build();
 
             // 옵션 추가
@@ -102,6 +127,7 @@ public class PaymentService {
 
         return orderDetails;
     }
+
 
     private List<OrdersItemOptions> createOrderItemOptions(List<Long> optionIds, OrdersDetail orderDetail) {
         List<OrdersItemOptions> orderItemOptions = new ArrayList<>();
@@ -139,7 +165,7 @@ public class PaymentService {
             CheckoutResponse.OrderItem orderItem = CheckoutResponse.OrderItem.builder()
                     .orderDetailId(detail.getId())
                     .productName(detail.getProduct().getProductName())
-                    .quantity(1) // OrdersDetail에 quantity 필드가 없어서 일단 1로 설정
+                    .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
                     .price(detail.getPrice())
                     .optionNames(optionNames)
                     .build();
@@ -164,6 +190,60 @@ public class PaymentService {
                 .totalAmount(totalAmount)
                 .orderItems(orderItems)
                 .build();
+    }
+
+    // === 합계 계산 유틸 메서드 추가 ===
+    public int calculateTotalAmountFromCart(CartResponse cart) {
+        if (cart == null || cart.getItems() == null) return 0;
+        return cart.getItems().stream()
+                .mapToInt(CartItemResponse::getPrice) // CartItemResponse.price는 이미 총액
+                .sum();
+    }
+
+    public int calculateTotalQuantityFromCart(CartResponse cart) {
+        if (cart == null || cart.getItems() == null) return 0;
+        return cart.getItems().stream()
+                .mapToInt(CartItemResponse::getQuantity)
+                .sum();
+    }
+
+    public int calculateTotalAmount(List<CheckoutRequest.OrderItem> items) {
+        if (items == null) return 0;
+        return items.stream()
+                .mapToInt(i -> i.getPrice() * i.getQuantity())
+                .sum();
+    }
+
+    public int calculateTotalQuantity(List<CheckoutRequest.OrderItem> items) {
+        if (items == null) return 0;
+        return items.stream()
+                .mapToInt(CheckoutRequest.OrderItem::getQuantity)
+                .sum();
+    }
+
+    // 지점 검증 메서드
+    public Branch getValidBranch(String branchId) {
+        if (branchId == null || branchId.trim().isEmpty()) {
+            return branchRepository.findById(1L)
+                    .orElseThrow(() -> new IllegalArgumentException("기본매장 찾을 수 없음"));
+            //throw new IllegalArgumentException("매장을 선택해주세요");
+        }
+        try {
+            Long branchIdLong = Long.parseLong(branchId);
+            return branchRepository.findById(branchIdLong)
+                    .orElseThrow(() -> new IllegalArgumentException("선택한 매장을 찾을 수 없습니다"));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("잘못된 매장 정보입니다");
+        }
+    }
+
+    // 장바구니 검증 메서드
+    public CartResponse getValidCart(Long memberId) {
+        CartResponse cartData = cartService.getCartByMemberId(memberId);
+        if (cartData == null || cartData.getItems() == null || cartData.getItems().isEmpty()) {
+            throw new IllegalArgumentException("장바구니가 비어있습니다");
+        }
+        return cartData;
     }
 
 }
