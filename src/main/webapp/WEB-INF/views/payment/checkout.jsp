@@ -24,7 +24,14 @@
             <!-- 주문내역 -->
             <div class="order-section">
                 <div class="section-header">
-                    <h2 class="section-title">주문내역 (<span id="itemCount">2</span>개)</h2>
+                    <h2 class="section-title">주문내역 
+                        <c:if test="${not empty cartData and not empty cartData.items}">
+                            (<span id="itemCount">${cartData.items.size()}</span>개)
+                        </c:if>
+                        <c:if test="${empty cartData or empty cartData.items}">
+                            (0개)
+                        </c:if>
+                    </h2>
                     <button class="collapse-btn" id="collapseBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                             <path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -33,33 +40,62 @@
                 </div>
 
                 <div class="order-items" id="orderItems">
-                    <div class="order-item">
-                        <img src="https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755487145785.jpg"
-                             alt="복숭아요거트드링크" class="item-image">
-                        <div class="item-details">
-                            <div class="item-name">복숭아요거트드링크</div>
-                            <div class="item-price">4,300원</div>
-                            <div class="item-quantity">총 2개</div>
+                    <!-- 에러 메시지 표시 -->
+                    <c:if test="${not empty error}">
+                        <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+                             ${error}
                         </div>
-                        <div class="item-total">4,300원</div>
-                    </div>
-
-                    <div class="order-item">
-                        <img src="https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755487121681.jpg"
-                             alt="망고주스" class="item-image">
-                        <div class="item-details">
-                            <div class="item-name">망고주스</div>
-                            <div class="item-price">4,000원</div>
-                            <div class="item-quantity">총 2개</div>
+                    </c:if>
+                    
+                    <!-- 카트 데이터가 있는 경우 -->
+                    <c:if test="${not empty cartData and not empty cartData.items}">
+                        <c:forEach var="item" items="${cartData.items}" varStatus="status">
+                            <div class="order-item">
+                                <img src="${not empty item.productPhoto ? item.productPhoto : ''}"
+                                     alt="${item.productName}" class="item-image">
+                                <div class="item-details">
+                                    <div class="item-name">${item.productName}</div>
+                                    <div class="item-price">
+                                        <fmt:formatNumber value="${item.price}" type="currency" currencySymbol="₩"/>
+                                    </div>
+                                    <div class="item-quantity">총 ${item.quantity}개</div>
+                                    <!-- 옵션 표시 -->
+                                    <c:if test="${not empty item.options}">
+                                        <div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">
+                                            <c:forEach var="option" items="${item.options}" varStatus="optStatus">
+                                                ${option.optionName}<c:if test="${!optStatus.last}">, </c:if>
+                                            </c:forEach>
+                                        </div>
+                                    </c:if>
+                                </div>
+                                <div class="item-total">
+                                    <fmt:formatNumber value="${item.price}" type="currency" currencySymbol="₩"/>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:if>
+                    
+                    <!-- 카트가 비어있는 경우 -->
+                    <c:if test="${empty cartData or empty cartData.items}">
+                        <div class="empty-cart" style="text-align: center; padding: 40px; color: var(--text-2);">
+                            <h3>🛒 장바구니가 비어있습니다</h3>
+                            <p>상품을 담고 결제를 진행해주세요.</p>
+                            <a href="/branch/list" class="btn btn-primary" style="margin-top: 16px;">상품 보러가기</a>
                         </div>
-                        <div class="item-total">4,000원</div>
-                    </div>
+                    </c:if>
                 </div>
             </div>
 
-            <!-- 한타대로점 정보 -->
+            <!-- 매장 정보 -->
             <div class="store-section">
-                <h2 class="section-title">한타대로점</h2>
+                <h2 class="section-title">
+                    <c:if test="${not empty branch}">
+                        ${branch.branchName}
+                    </c:if>
+                    <c:if test="${empty branch}">
+                        매장 정보 없음
+                    </c:if>
+                </h2>
                 <div class="store-info">
                     <div class="info-item">
                         <span class="info-label">요청사항</span>
@@ -133,14 +169,31 @@
                             <span>신용카드</span>
                         </div>
                     </label>
-                    <label class="payment-method">
-                        <input type="radio" name="payment" value="coupon">
-                        <div class="method-content">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 12C21 16.418 16.418 21 12 21C7.582 21 3 16.418 3 12C3 7.582 7.582 3 12 3C16.418 3 21 7.582 21 12Z" stroke="currentColor" stroke-width="2"/>
-                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>쿠폰 사용</span>
+                </div>
+            </div>
+
+            <!-- 할인 및 혜택 -->
+            <div class="discount-section">
+                <h2 class="section-title">할인 및 혜택</h2>
+                <div class="discount-options">
+                    <label class="coupon-option">
+                        <input type="checkbox" id="useCoupon" name="useCoupon">
+                        <div class="coupon-content">
+                            <div class="coupon-info">
+                                <div class="coupon-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 12C21 16.418 16.418 21 12 21C7.582 21 3 16.418 3 12C3 7.582 7.582 3 12 3C16.418 3 21 7.582 21 12Z" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="coupon-details">
+                                    <span class="coupon-name">할인 쿠폰 사용</span>
+                                    <span class="coupon-discount">2,000원 할인</span>
+                                </div>
+                            </div>
+                            <div class="coupon-checkbox">
+                                <div class="checkbox-custom"></div>
+                            </div>
                         </div>
                     </label>
                 </div>
@@ -155,11 +208,25 @@
                 <div class="summary-content">
                     <div class="summary-row">
                         <span>주문 금액</span>
-                        <span id="orderAmount">8,300원</span>
+                        <span id="orderAmount">
+                            <c:if test="${not empty totalAmount}">
+                                <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="₩"/>
+                            </c:if>
+                            <c:if test="${empty totalAmount}">
+                                0원
+                            </c:if>
+                        </span>
                     </div>
                     <div class="summary-row">
                         <span>총 수량</span>
-                        <span>4개</span>
+                        <span>
+                            <c:if test="${not empty totalQuantity}">
+                                ${totalQuantity}개
+                            </c:if>
+                            <c:if test="${empty totalQuantity}">
+                                0개
+                            </c:if>
+                        </span>
                     </div>
                     <div class="summary-row coupon-discount" id="couponRow" style="display: none;">
                         <span>쿠폰 할인</span>
@@ -168,14 +235,28 @@
                     <div class="summary-divider"></div>
                     <div class="summary-row total">
                         <span>총 결제금액</span>
-                        <span class="total-amount" id="totalAmount">8,300원</span>
+                        <span class="total-amount" id="totalAmount">
+                            <c:if test="${not empty totalAmount}">
+                                <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="₩"/>
+                            </c:if>
+                            <c:if test="${empty totalAmount}">
+                                0원
+                            </c:if>
+                        </span>
                     </div>
                 </div>
 
                 <!-- 결제 버튼 -->
                 <div class="payment-actions">
                     <button class="btn-cancel" onclick="history.back()">취소</button>
-                    <button class="btn-payment" id="paymentBtn" onclick="processPayment()">8,300원 결제하기</button>
+                    <button class="btn-payment" id="paymentBtn" onclick="processPayment()">
+                        <c:if test="${not empty totalAmount}">
+                            <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="₩"/> 결제하기
+                        </c:if>
+                        <c:if test="${empty totalAmount}">
+                            0원 결제하기
+                        </c:if>
+                    </button>
                 </div>
             </div>
         </div>
@@ -233,7 +314,7 @@
         gap: 24px;
     }
 
-    .order-section, .store-section, .pickup-section, .payment-section, .payment-summary {
+    .order-section, .store-section, .pickup-section, .payment-section, .discount-section, .payment-summary {
         background: var(--white);
         border-radius: 18px;
         padding: 24px;
@@ -433,6 +514,102 @@
         color: #333;
     }
 
+    /* 할인 섹션 스타일 */
+    .discount-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .coupon-option {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--white);
+    }
+
+    .coupon-option:hover {
+        border-color: var(--pink-2);
+        background: linear-gradient(135deg, var(--pink-4), var(--white));
+    }
+
+    .coupon-option:has(input:checked) {
+        border-color: var(--pink-1);
+        background: linear-gradient(135deg, var(--pink-4), var(--white));
+    }
+
+    .coupon-option input {
+        display: none;
+    }
+
+    .coupon-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .coupon-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .coupon-icon {
+        color: var(--pink-1);
+    }
+
+    .coupon-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .coupon-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .coupon-discount {
+        font-size: 13px;
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .coupon-checkbox {
+        position: relative;
+    }
+
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .coupon-option:has(input:checked) .checkbox-custom {
+        background-color: var(--pink-1);
+        border-color: var(--pink-1);
+    }
+
+    .coupon-option:has(input:checked) .checkbox-custom::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
     .summary-content {
         margin-bottom: 24px;
     }
@@ -539,7 +716,7 @@
             gap: 16px;
         }
 
-        .order-section, .store-section, .pickup-section, .payment-section, .payment-summary {
+        .order-section, .store-section, .pickup-section, .payment-section, .discount-section, .payment-summary {
             padding: 16px;
         }
 
@@ -584,42 +761,83 @@
             document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
             this.classList.add('selected');
             this.querySelector('input').checked = true;
-            
-            // 쿠폰 사용 시 할인 적용
-            updatePaymentSummary();
         });
+    });
+
+
+
+    // 쿠폰 체크박스 직접 클릭 시 이벤트 버블링 방지
+    document.querySelector('#useCoupon').addEventListener('click', function(e) {
+        e.stopPropagation();
+        updatePaymentSummary();
     });
 
     // 결제 요약 업데이트
     function updatePaymentSummary() {
-        const selectedPayment = document.querySelector('input[name="payment"]:checked');
+        const useCouponCheckbox = document.getElementById('useCoupon');
         const couponRow = document.getElementById('couponRow');
         const totalAmount = document.getElementById('totalAmount');
         const paymentBtn = document.getElementById('paymentBtn');
         
-        const originalAmount = 8300;
+        // 원래 금액을 JSP에서 가져오거나 기본값 사용
+        const originalAmount = ${totalAmount != null ? totalAmount : 8300};
         const discountAmount = 2000;
         
-        if (selectedPayment && selectedPayment.value === 'coupon') {
+        if (useCouponCheckbox && useCouponCheckbox.checked) {
             // 쿠폰 사용 시
             couponRow.style.display = 'flex';
             const finalAmount = originalAmount - discountAmount;
             totalAmount.textContent = finalAmount.toLocaleString() + '원';
             paymentBtn.textContent = finalAmount.toLocaleString() + '원 결제하기';
         } else {
-            // 신용카드 사용 시
+            // 쿠폰 사용 안함
             couponRow.style.display = 'none';
             totalAmount.textContent = originalAmount.toLocaleString() + '원';
             paymentBtn.textContent = originalAmount.toLocaleString() + '원 결제하기';
         }
     }
 
+    // 현재 로그인한 사용자 ID 저장 변수
+    let currentMemberId = null;
+
+    // 현재 로그인 사용자 정보 조회
+    async function fetchCurrentUser() {
+        try {
+            const res = await fetch('/api/users/me', { credentials: 'same-origin' });
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (data && data.memberId) {
+                currentMemberId = data.memberId;
+                return currentMemberId;
+            }
+            return null;
+        } catch (e) {
+            console.log('사용자 정보 조회 실패:', e);
+            return null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 페이지 로드 시 사용자 정보 미리 조회
+        fetchCurrentUser();
+    });
+
     // 결제 처리
-    function processPayment() {
+    async function processPayment() {
+        // 사용자 정보가 없으면 한번 더 시도
+        if (!currentMemberId) {
+            await fetchCurrentUser();
+        }
+        if (!currentMemberId) {
+            alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+            try { window.location.href = '/login'; } catch (e) {}
+            return;
+        }
         const selectedPayment = document.querySelector('input[name="payment"]:checked');
         const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
         const selectedPackage = document.querySelector('input[name="package"]:checked');
         const selectedPickupTime = document.querySelector('input[name="pickupTime"]:checked');
+        const useCouponCheckbox = document.getElementById('useCoupon');
         const requestNote = document.getElementById('requestNote').value;
 
         if (!selectedPayment) {
@@ -631,25 +849,35 @@
         const now = new Date();
         const pickupTime = new Date(now.getTime() + (parseInt(selectedPickupTime.value) * 60 * 1000));
 
+        // 쿠폰 사용 여부에 따른 최종 금액 계산
+        const originalAmount = ${totalAmount != null ? totalAmount : 0};
+        const discountAmount = useCouponCheckbox && useCouponCheckbox.checked ? 2000 : 0;
+        const finalAmount = originalAmount - discountAmount;
+
+        // 장바구니 아이템을 주문 아이템으로 변환
+        const orderItems = [];
+        <c:if test="${not empty cartData and not empty cartData.items}">
+            <c:forEach var="item" items="${cartData.items}">
+                orderItems.push({
+                    productId: ${item.productId},
+                    quantity: ${item.quantity},
+                    price: Math.round(${item.price} / ${item.quantity})
+                });
+            </c:forEach>
+        </c:if>
+
         const paymentData = {
-            memberId: 1,
-            branchId: 1,
+            memberId: currentMemberId,
+            branchId: ${not empty branch ? branch.id : 1},
             isTakeout: selectedOrderType.value === 'takeout',
             pickupTime: pickupTime.toISOString(),
             requestNote: requestNote,
             pickupMethod: selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함',
-            orderItems: [
-                {
-                    productId: 87,
-                    quantity: 2,
-                    price: 4300
-                },
-                {
-                    productId: 85,
-                    quantity: 2,
-                    price: 4000
-                }
-            ]
+            isFromCart: true, // 장바구니에서 온 결제임을 명시
+            useCoupon: useCouponCheckbox ? useCouponCheckbox.checked : false,
+            discountAmount: discountAmount,
+            finalAmount: finalAmount,
+            orderItems: orderItems
         };
 
         const payButton = document.querySelector('.btn-payment');
@@ -668,38 +896,53 @@
                 if (data.orderId) {
                     alert('결제가 완료되었습니다!');
                     
+                    // 현재 페이지의 정보 수집
+                    const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
+                    const selectedPackage = document.querySelector('input[name="package"]:checked');
+                    const selectedPayment = document.querySelector('input[name="payment"]:checked');
+                    const requestNote = document.getElementById('requestNote').value;
+                    // 선택된 분 수를 기반으로 픽업 예정 시각(ISO) 계산
+                    const pickupTimeIso = (() => {
+                        try {
+                            const rt = document.querySelector('input[name="pickupTime"]:checked');
+                            const mins = parseInt(rt ? rt.value : '5', 10);
+                            const now2 = new Date();
+                            return new Date(now2.getTime() + (mins * 60 * 1000)).toISOString();
+                        } catch (e) { return null; }
+                    })();
+                    
+                    // 카트 아이템 정보 수집 (JSP에서 렌더링된 데이터 활용)
+                    const orderItems = [];
+                    <c:if test="${not empty cartData and not empty cartData.items}">
+                        <c:forEach var="item" items="${cartData.items}">
+                            orderItems.push({
+                                name: '${item.productName}',
+                                image: '${item.productPhoto}',
+                                price: Math.round(${item.price} / ${item.quantity}),
+                                quantity: ${item.quantity},
+                                total: ${item.price}
+                            });
+                        </c:forEach>
+                    </c:if>
+                    
                     // 주문 데이터를 세션스토리지에 저장
                     const orderData = {
                         orderId: data.orderId,
-                        orderItems: [
-                            {
-                                name: '복숭아요거트드링크',
-                                image: 'https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755487145785.jpg',
-                                price: 4300,
-                                quantity: 2,
-                                total: 4300
-                            },
-                            {
-                                name: '망고주스',
-                                image: 'https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755487121681.jpg',
-                                price: 4000,
-                                quantity: 2,
-                                total: 4000
-                            }
-                        ],
-                        orderType: selectedOrderType.value === 'takeout' ? '테이크아웃' : '매장',
-                        pickupMethod: selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함',
-                        pickupTime: pickupTime,
-                        requestNote: requestNote,
-                        paymentMethod: selectedPayment.value === 'card' ? '신용카드' : '쿠폰',
-                        totalAmount: selectedPayment.value === 'coupon' ? 6300 : 8300,
-                        orderAmount: 8300,
-                        discountAmount: selectedPayment.value === 'coupon' ? 2000 : 0,
-                        storeName: '한타대로점'
+                        orderItems: orderItems,
+                        orderType: selectedOrderType ? (selectedOrderType.value === 'takeout' ? '테이크아웃' : '매장') : '테이크아웃',
+                        pickupMethod: selectedPackage ? (selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함') : '포장안함',
+                        pickupTime: pickupTimeIso || '',
+                        requestNote: requestNote || '',
+                        paymentMethod: '신용카드',
+                        useCoupon: useCouponCheckbox ? useCouponCheckbox.checked : false,
+                        totalAmount: finalAmount,
+                        orderAmount: originalAmount,
+                        discountAmount: discountAmount,
+                        storeName: '${not empty branch ? branch.branchName : "매장 정보 없음"}'
                     };
                     
                     sessionStorage.setItem('orderData', JSON.stringify(orderData));
-                    window.location.href = '/orderDetail';
+                    window.location.href = '/orders/' + data.orderId;
                 } else {
                     throw new Error('결제 응답 오류');
                 }
@@ -708,10 +951,10 @@
                 console.error('결제 오류:', error);
                 alert('결제 중 오류가 발생했습니다. 다시 시도해주세요.');
                 
-                // 현재 선택된 결제수단에 따라 버튼 텍스트 복원
-                const currentPayment = document.querySelector('input[name="payment"]:checked');
-                const amount = (currentPayment && currentPayment.value === 'coupon') ? '6,300' : '8,300';
-                payButton.textContent = amount + '원 결제하기';
+                // 쿠폰 사용 여부에 따라 버튼 텍스트 복원
+                const isUsingCoupon = useCouponCheckbox && useCouponCheckbox.checked;
+                const amount = isUsingCoupon ? (originalAmount - 2000) : originalAmount;
+                payButton.textContent = amount.toLocaleString() + '원 결제하기';
                 payButton.disabled = false;
             });
     }

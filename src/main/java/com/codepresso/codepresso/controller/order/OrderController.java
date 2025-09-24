@@ -2,9 +2,11 @@ package com.codepresso.codepresso.controller.order;
 
 import com.codepresso.codepresso.dto.order.OrderDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderListResponse;
+import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -25,8 +27,9 @@ public class OrderController {
      * */
     @GetMapping
     public ResponseEntity<OrderListResponse> getOrderList(
-            @RequestParam Long memberId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam(value = "period", defaultValue = "1개월") String period ){
+        Long memberId = loginUser.getMemberId();
         OrderListResponse response = orderService.getOrderList(memberId, period);
         return ResponseEntity.ok(response);
     }
@@ -36,7 +39,9 @@ public class OrderController {
      * /users/orders/{orderId}
      * */
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable Long orderId){
+    public ResponseEntity<OrderDetailResponse> getOrderDetail(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long orderId){
         OrderDetailResponse response = orderService.getOrderDetail(orderId);
         return ResponseEntity.ok(response);
     }

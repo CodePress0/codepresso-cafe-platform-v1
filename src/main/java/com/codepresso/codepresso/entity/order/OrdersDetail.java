@@ -28,6 +28,10 @@ public class OrdersDetail {
     @Column(name = "price")
     private Integer price;
 
+    // 수량 (같은 옵션 조합의 상품이 여러 개 담긴 경우를 표현)
+    @Column(name = "quantity")
+    private Integer quantity;
+
     @OneToMany(mappedBy = "ordersDetail", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItemOptions> options;
 }
