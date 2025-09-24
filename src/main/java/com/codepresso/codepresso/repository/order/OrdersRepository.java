@@ -72,4 +72,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByProductionStatusAndOrderDateBefore(
             @Param("status") String status,
             @Param("cutoffTime") LocalDateTime cutoffTime);
+
+
+
 }
