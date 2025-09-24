@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
     private Long reviewId;
     private Long orderDetailId;
+    private Long branchName;
     private Long memberId;
     private BigDecimal rating;
     private String content;

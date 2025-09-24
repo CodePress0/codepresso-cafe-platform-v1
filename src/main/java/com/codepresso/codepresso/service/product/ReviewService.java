@@ -59,13 +59,7 @@ public class ReviewService {
     }
 
     public ReviewResponse editReview(Long memberId, Long reviewId, ReviewUpdateRequest request) {
-        Review review = reviewRepo.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다"));
-
-        // 권한 확인
-        if (!review.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 리뷰만 수정할 수 있습니다");
-        }
+        Review review = validateReviewOwnership(memberId, reviewId);
 
         review = Review.builder()
                 .id(review.getId())
@@ -82,7 +76,21 @@ public class ReviewService {
         return ReviewResponse.fromEntity(savedReview);
     }
 
-    public void delete(Long id) {
-        reviewRepo.deleteById(id);
+    public void deleteReview(Long memberId, Long reviewId) {
+        validateReviewOwnership(memberId, reviewId);
+
+        reviewRepo.deleteById(reviewId);
+    }
+
+    private Review validateReviewOwnership(Long memberId, Long reviewId) {
+        Review review = reviewRepo.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다"));
+
+        // 권한 확인
+        if (!review.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("본인의 리뷰만 수정할 수 있습니다");
+        }
+
+        return review;
     }
 }
