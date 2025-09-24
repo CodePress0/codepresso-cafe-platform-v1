@@ -21,7 +21,8 @@
       "Bash(SuperClaude install:*)",
       "Bash(printf:*)",
       "Bash(echo $PATH)",
-      "Bash(~/.local/bin/SuperClaude:*)"
+      "Bash(~/.local/bin/SuperClaude:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

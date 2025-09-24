@@ -221,21 +221,6 @@ public class PaymentService {
                 .sum();
     }
 
-    // 지점 검증 메서드
-    public Branch getValidBranch(String branchId) {
-        if (branchId == null || branchId.trim().isEmpty()) {
-            return branchRepository.findById(1L)
-                    .orElseThrow(() -> new IllegalArgumentException("기본매장 찾을 수 없음"));
-            //throw new IllegalArgumentException("매장을 선택해주세요");
-        }
-        try {
-            Long branchIdLong = Long.parseLong(branchId);
-            return branchRepository.findById(branchIdLong)
-                    .orElseThrow(() -> new IllegalArgumentException("선택한 매장을 찾을 수 없습니다"));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("잘못된 매장 정보입니다");
-        }
-    }
 
     // 장바구니 검증 메서드
     public CartResponse getValidCart(Long memberId) {

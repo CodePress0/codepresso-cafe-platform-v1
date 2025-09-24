@@ -17,6 +17,10 @@
             <h1 class="page-title">결제하기</h1>
         </div>
 
+        <!-- 선택된 매장 정보 전달용 (컨트롤러 비의존) -->
+        <input type="hidden" id="selectedBranchIdInput" value="${branchId != null ? branchId : ''}" />
+        <input type="hidden" id="selectedBranchNameInput" value="${branchName != null ? branchName : ''}" />
+
         <!-- 메인 컨텐츠 -->
         <div class="checkout-content">
         <!-- 좌측: 주문 정보 -->
@@ -25,12 +29,17 @@
             <div class="order-section">
                 <div class="section-header">
                     <h2 class="section-title">주문내역 
-                        <c:if test="${not empty cartData and not empty cartData.items}">
-                            (<span id="itemCount">${cartData.items.size()}</span>개)
-                        </c:if>
-                        <c:if test="${empty cartData or empty cartData.items}">
-                            (0개)
-                        </c:if>
+                        <c:choose>
+                            <c:when test="${not empty directItems}">
+                                (<span id="itemCount">${directItemsCount}</span>개)
+                            </c:when>
+                            <c:when test="${not empty cartData and not empty cartData.items}">
+                                (<span id="itemCount">${cartData.items.size()}</span>개)
+                            </c:when>
+                            <c:otherwise>
+                                (0개)
+                            </c:otherwise>
+                        </c:choose>
                     </h2>
                     <button class="collapse-btn" id="collapseBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -47,6 +56,33 @@
                         </div>
                     </c:if>
                     
+                    <!-- 직접주문 데이터가 있는 경우 -->
+                    <c:if test="${not empty directItems}">
+                        <c:forEach var="d" items="${directItems}">
+                            <div class="order-item">
+                                <img src="${not empty d.productPhoto ? d.productPhoto : ''}"
+                                     alt="${d.productName}" class="item-image">
+                                <div class="item-details">
+                                    <div class="item-name">${d.productName}</div>
+                                    <div class="item-price">
+                                        <fmt:formatNumber value="${d.unitPrice}" type="currency" currencySymbol="₩"/>
+                                    </div>
+                                    <div class="item-quantity">총 ${d.quantity}개</div>
+                                    <c:if test="${not empty d.optionNames}">
+                                        <div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">
+                                            <c:forEach var="on" items="${d.optionNames}" varStatus="os">
+                                                ${on}<c:if test="${!os.last}">, </c:if>
+                                            </c:forEach>
+                                        </div>
+                                    </c:if>
+                                </div>
+                                <div class="item-total">
+                                    <fmt:formatNumber value="${d.lineTotal}" type="currency" currencySymbol="₩"/>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:if>
+
                     <!-- 카트 데이터가 있는 경우 -->
                     <c:if test="${not empty cartData and not empty cartData.items}">
                         <c:forEach var="item" items="${cartData.items}" varStatus="status">
@@ -75,8 +111,8 @@
                         </c:forEach>
                     </c:if>
                     
-                    <!-- 카트가 비어있는 경우 -->
-                    <c:if test="${empty cartData or empty cartData.items}">
+                    <!-- 아무 데이터가 없는 경우 -->
+                    <c:if test="${(empty directItems) and (empty cartData or empty cartData.items)}">
                         <div class="empty-cart" style="text-align: center; padding: 40px; color: var(--text-2);">
                             <h3>🛒 장바구니가 비어있습니다</h3>
                             <p>상품을 담고 결제를 진행해주세요.</p>
@@ -89,12 +125,13 @@
             <!-- 매장 정보 -->
             <div class="store-section">
                 <h2 class="section-title">
-                    <c:if test="${not empty branch}">
-                        ${branch.branchName}
-                    </c:if>
-                    <c:if test="${empty branch}">
-                        매장 정보 없음
-                    </c:if>
+                    <span id="checkoutStoreName">
+                        <c:choose>
+                            <c:when test="${not empty branch}">${branch.branchName}</c:when>
+                            <c:when test="${not empty branchName}">${branchName}</c:when>
+                            <c:otherwise>매장 정보 없음</c:otherwise>
+                        </c:choose>
+                    </span>
                 </h2>
                 <div class="store-info">
                     <div class="info-item">
@@ -187,7 +224,11 @@
                                     </svg>
                                 </div>
                                 <div class="coupon-details">
-                                    <span class="coupon-name">할인 쿠폰 사용</span>
+                                    <span class="coupon-name">할인 쿠폰 사용
+                                        <c:if test="${not empty validCouponCount}">
+                                            (보유 ${validCouponCount}장)
+                                        </c:if>
+                                    </span>
                                     <span class="coupon-discount">2,000원 할인</span>
                                 </div>
                             </div>
@@ -206,6 +247,10 @@
             <div class="payment-summary">
                 <h2 class="section-title">결제정보</h2>
                 <div class="summary-content">
+                    <div class="summary-row">
+                        <span>매장</span>
+                        <span id="checkoutBranchName">-</span>
+                    </div>
                     <div class="summary-row">
                         <span>주문 금액</span>
                         <span id="orderAmount">
@@ -738,9 +783,17 @@
             flex-direction: column;
         }
     }
-</style>
+ </style>
+
+ <c:if test="${not empty orderItemsPayloadJson}">
+     <script id="orderItemsPayloadJson" type="application/json">${orderItemsPayloadJson}</script>
+ </c:if>
 
 <script>
+    // 서버가 direct 주문 payload를 내려주는 경우, 해당 JSON을 사용합니다.
+    // 안전을 위해 클라이언트 direct 함수는 no-op로 둡니다.
+    function getDirectOrderItem(){ return null; }
+    function currencyText(n){ try { return Number(n||0).toLocaleString() + '원'; } catch(e){ return '0원'; } }
     // 주문내역 접기/펼치기
     document.getElementById('collapseBtn').addEventListener('click', function() {
         const orderItems = document.getElementById('orderItems');
@@ -820,7 +873,48 @@
     document.addEventListener('DOMContentLoaded', () => {
         // 페이지 로드 시 사용자 정보 미리 조회
         fetchCurrentUser();
+
+        // (서버 주도 direct 모드) 클라이언트 렌더링 비활성화
+        const direct = null;
+        if (direct) {
+            const itemsEl = document.getElementById('orderItems');
+            if (itemsEl) {
+                const optionsText = (direct.optionNames && direct.optionNames.length) ? direct.optionNames.join(', ') : '';
+                const html = '\n'
+                    + '<div class="order-item">'
+                    +   '<img src="' + (direct.productPhoto || '') + '" alt="' + (direct.productName || '') + '" class="item-image">'
+                    +   '<div class="item-details">'
+                    +     '<div class="item-name">' + (direct.productName || '') + '</div>'
+                    +     '<div class="item-price">' + currencyText(direct.unitPrice) + '</div>'
+                    +     '<div class="item-quantity">총 ' + direct.quantity + '개</div>'
+                    +     (optionsText ? ('<div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">' + optionsText + '</div>') : '')
+                    +   '</div>'
+                    +   '<div class="item-total">' + currencyText(direct.unitPrice * direct.quantity) + '</div>'
+                    + '</div>';
+                itemsEl.innerHTML = html;
+                const countEl = document.getElementById('itemCount');
+                if (countEl) countEl.textContent = '1';
+            }
+            // 요약 갱신
+            const orderAmountEl = document.getElementById('orderAmount');
+            const totalQtyEl = document.getElementById('totalQty');
+            const totalAmountEl = document.getElementById('totalAmount');
+            const paymentBtn = document.getElementById('paymentBtn');
+            const total = (direct.unitPrice || 0) * (direct.quantity || 1);
+            if (orderAmountEl) orderAmountEl.textContent = currencyText(total);
+            if (totalQtyEl) totalQtyEl.textContent = String(direct.quantity || 1) + '개';
+            if (totalAmountEl) totalAmountEl.textContent = currencyText(total);
+            if (paymentBtn) paymentBtn.textContent = currencyText(total) + ' 결제하기';
+            // 빈 카트 메시지 제거
+            document.querySelectorAll('.empty-cart').forEach(n => n.remove());
+        }
     });
+
+    // 로컬 타임존 기준 ISO 문자열(yyyy-MM-ddTHH:mm:ss) 생성 util (Z/오프셋 제거)
+    function toLocalISOStringNoZ(date) {
+        const t = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return t.toISOString().slice(0, 19);
+    }
 
     // 결제 처리
     async function processPayment() {
@@ -845,35 +939,42 @@
             return;
         }
 
-        // 현재 시간에 선택된 분 추가
+        // 현재 시간에 선택된 분 추가 (서버 LocalDateTime과 정확히 일치하도록 로컬 ISO 문자열로 전송)
         const now = new Date();
         const pickupTime = new Date(now.getTime() + (parseInt(selectedPickupTime.value) * 60 * 1000));
+        const pickupTimeLocal = toLocalISOStringNoZ(pickupTime);
 
-        // 쿠폰 사용 여부에 따른 최종 금액 계산
-        const originalAmount = ${totalAmount != null ? totalAmount : 0};
+        // 금액 계산은 서버 제공 totalAmount 사용
+        let originalAmount = ${totalAmount != null ? totalAmount : 0};
         const discountAmount = useCouponCheckbox && useCouponCheckbox.checked ? 2000 : 0;
         const finalAmount = originalAmount - discountAmount;
 
-        // 장바구니 아이템을 주문 아이템으로 변환
-        const orderItems = [];
-        <c:if test="${not empty cartData and not empty cartData.items}">
-            <c:forEach var="item" items="${cartData.items}">
-                orderItems.push({
-                    productId: ${item.productId},
-                    quantity: ${item.quantity},
-                    price: Math.round(${item.price} / ${item.quantity})
-                });
-            </c:forEach>
-        </c:if>
+        // 주문 아이템 구성: 서버 제공 payload 우선
+        let orderItems = [];
+        const payloadNode = document.getElementById('orderItemsPayloadJson');
+        if (payloadNode && payloadNode.textContent.trim().length > 0) {
+            try { orderItems = JSON.parse(payloadNode.textContent); } catch(e) { orderItems = []; }
+        } else {
+            <c:if test="${not empty cartData and not empty cartData.items}">
+                <c:forEach var="item" items="${cartData.items}">
+                    orderItems.push({
+                        productId: ${item.productId},
+                        quantity: ${item.quantity},
+                        price: Math.round(${item.price} / ${item.quantity})
+                    });
+                </c:forEach>
+            </c:if>
+        }
 
         const paymentData = {
             memberId: currentMemberId,
             branchId: ${not empty branch ? branch.id : 1},
             isTakeout: selectedOrderType.value === 'takeout',
-            pickupTime: pickupTime.toISOString(),
+            // LocalDateTime으로 정확히 매핑되도록 로컬 시간 문자열 전송
+            pickupTime: pickupTimeLocal,
             requestNote: requestNote,
             pickupMethod: selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함',
-            isFromCart: true, // 장바구니에서 온 결제임을 명시
+            isFromCart: ${orderItemsPayloadJson != null ? "false" : "true"},
             useCoupon: useCouponCheckbox ? useCouponCheckbox.checked : false,
             discountAmount: discountAmount,
             finalAmount: finalAmount,
@@ -895,35 +996,82 @@
             .then(data => {
                 if (data.orderId) {
                     alert('결제가 완료되었습니다!');
-                    
+
+                    // 백엔드에서 장바구니를 비워도, 브라우저 캐시/동시성으로 화면에 남아 보일 수 있음
+                    // 여기서 한 번 더 장바구니 비우기 API를 호출하여 UI 일관성 보강
+                    if (${orderItemsPayloadJson != null ? "false" : "true"}) (async () => {
+                        try {
+                            // CSRF 메타에서 토큰/헤더 읽기
+                            const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+                            const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+                            const csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : null;
+                            const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
+
+                            // 장바구니 조회 후 cartId로 비우기 호출 (이미 서버에서 비운 경우에도 안전)
+                            const res = await fetch('/users/cart', { credentials: 'include' });
+                            if (res.ok) {
+                                const cartJson = await res.json();
+                                if (cartJson && cartJson.cartId) {
+                                    await fetch('/users/cart/clear', {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' },
+                                            (csrfHeaderName && csrfToken) ? { [csrfHeaderName]: csrfToken } : {}),
+                                        body: new URLSearchParams({ cartId: String(cartJson.cartId) }).toString()
+                                    }).catch(() => {});
+                                }
+                            }
+                        } catch (e) { /* 네트워크/권한 문제는 무시하고 계속 진행 */ }
+                    })();
+
                     // 현재 페이지의 정보 수집
                     const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
                     const selectedPackage = document.querySelector('input[name="package"]:checked');
                     const selectedPayment = document.querySelector('input[name="payment"]:checked');
                     const requestNote = document.getElementById('requestNote').value;
-                    // 선택된 분 수를 기반으로 픽업 예정 시각(ISO) 계산
+                    // 선택된 분 수를 기반으로 픽업 예정 시각(로컬 ISO, Z 제거) 계산
                     const pickupTimeIso = (() => {
                         try {
                             const rt = document.querySelector('input[name="pickupTime"]:checked');
                             const mins = parseInt(rt ? rt.value : '5', 10);
                             const now2 = new Date();
-                            return new Date(now2.getTime() + (mins * 60 * 1000)).toISOString();
+                            const pt = new Date(now2.getTime() + (mins * 60 * 1000));
+                            return toLocalISOStringNoZ(pt);
                         } catch (e) { return null; }
                     })();
                     
-                    // 카트 아이템 정보 수집 (JSP에서 렌더링된 데이터 활용)
+                    // 주문 아이템 정보 수집 (server direct payload 우선)
                     const orderItems = [];
-                    <c:if test="${not empty cartData and not empty cartData.items}">
-                        <c:forEach var="item" items="${cartData.items}">
-                            orderItems.push({
-                                name: '${item.productName}',
-                                image: '${item.productPhoto}',
-                                price: Math.round(${item.price} / ${item.quantity}),
-                                quantity: ${item.quantity},
-                                total: ${item.price}
-                            });
-                        </c:forEach>
-                    </c:if>
+                    (function(){
+                        const payloadNode = document.getElementById('orderItemsPayloadJson');
+                        if (payloadNode && payloadNode.textContent.trim().length > 0) {
+                            try {
+                                const arr = JSON.parse(payloadNode.textContent);
+                                if (Array.isArray(arr) && arr.length > 0) {
+                                    const it = arr[0];
+                                    orderItems.push({
+                                        name: document.querySelector('.item-name')?.textContent || '',
+                                        image: document.querySelector('.item-image')?.getAttribute('src') || '',
+                                        price: Number(it.price || 0),
+                                        quantity: Number(it.quantity || 1),
+                                        total: Number(it.price || 0) * Number(it.quantity || 1)
+                                    });
+                                    return;
+                                }
+                            } catch (e) {}
+                        }
+                        <c:if test="${not empty cartData and not empty cartData.items}">
+                            <c:forEach var="item" items="${cartData.items}">
+                                orderItems.push({
+                                    name: '${item.productName}',
+                                    image: '${item.productPhoto}',
+                                    price: Math.round(${item.price} / ${item.quantity}),
+                                    quantity: ${item.quantity},
+                                    total: ${item.price}
+                                });
+                            </c:forEach>
+                        </c:if>
+                    })();
                     
                     // 주문 데이터를 세션스토리지에 저장
                     const orderData = {
@@ -938,7 +1086,17 @@
                         totalAmount: finalAmount,
                         orderAmount: originalAmount,
                         discountAmount: discountAmount,
-                        storeName: '${not empty branch ? branch.branchName : "매장 정보 없음"}'
+                        storeName: (function(){
+                            try {
+                                var el = document.getElementById('selectedBranchNameInput');
+                                var byHidden = (el && el.value) ? String(el.value).trim() : '';
+                                if (byHidden) return byHidden;
+                                var loaded = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+                                return (loaded && loaded.name) ? loaded.name : '매장 정보 없음';
+                            } catch (e) {
+                                return '매장 정보 없음';
+                            }
+                        })()
                     };
                     
                     sessionStorage.setItem('orderData', JSON.stringify(orderData));
@@ -958,6 +1116,45 @@
                 payButton.disabled = false;
             });
     }
+</script>
+
+<!-- 결제 페이지: 선택 매장명 하이드레이션 (컨트롤러 비의존) -->
+<script>
+  (function(){
+    var nameTarget = document.getElementById('checkoutBranchName');
+    var storeTitleTarget = document.getElementById('checkoutStoreName');
+    var idInput = document.getElementById('selectedBranchIdInput');
+    var nameInput = document.getElementById('selectedBranchNameInput');
+
+    function setName(name){
+      var display = name && String(name).trim() ? String(name).trim() : '-';
+      if (nameTarget) nameTarget.textContent = display;
+      if (storeTitleTarget) storeTitleTarget.textContent = display === '-' ? '매장 정보 없음' : display;
+      if (nameInput) nameInput.value = name ? String(name).trim() : '';
+    }
+
+    function hydrate(){
+      var id = idInput && idInput.value ? String(idInput.value).trim() : '';
+      var nm = nameInput && nameInput.value ? String(nameInput.value).trim() : '';
+      if (nm) { setName(nm); return; }
+      if (id) {
+        setName('매장 정보를 불러오는 중...');
+        fetch('/branch/info/' + encodeURIComponent(id))
+          .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+          .then(function(d){ setName(d && (d.name || d.branchName) ? (d.name || d.branchName) : ('ID ' + id)); })
+          .catch(function(){ setName('매장 정보를 불러오지 못했습니다'); });
+        return;
+      }
+      try {
+        var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+        setName(sel && sel.name ? sel.name : '');
+      } catch(e) {
+        setName('');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', hydrate);
+  })();
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

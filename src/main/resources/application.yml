@@ -37,8 +37,8 @@ spring:
   mail:
     host: smtp.naver.com
     port: 587
-    username:  #  ${EMAIL_USERNAME}  환경변수로 설정
-    password:  #  ${EMAIL_PASSWORD}  앱 비밀번호 사용
+    username:  codepresso5@naver.com    #  ${EMAIL_USERNAME}  환경변수로 설정
+    password:  D4L4GB37HUJM             #  ${EMAIL_PASSWORD}  앱 비밀번호 사용
     properties:
       mail:
         smtp:

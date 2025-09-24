@@ -483,6 +483,13 @@
 </style>
 
 <script>
+    // 브라우저 뒤로가기 캐시로 인해 비워진 장바구니가 다시 보이는 문제 방지
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            try { window.location.reload(); } catch (_) {}
+        }
+    });
+
     const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
     const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
     const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
