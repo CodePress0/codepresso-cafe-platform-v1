@@ -1,9 +1,32 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" session="false" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
-<body>
+<body class="auth-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<main class="hero">
+<style>
+    .auth-page {
+        background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+    }
+
+    .hero.auth-hero {
+        background: transparent;
+        padding: 72px 0 96px;
+    }
+
+    .hero-card.login-card {
+        background: #fff !important;
+        border-radius: 28px;
+        box-shadow: 0 32px 60px rgba(15,23,42,0.15);
+        border: 1px solid rgba(255,122,162,0.18);
+        grid-template-columns: 1fr !important;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 44px;
+        text-align: center;
+    }
+</style>
+
+<main class="hero auth-hero">
     <div class="container">
         <!--
           비밀번호 찾기 화면 카드
@@ -35,10 +58,12 @@
                     .field { display: grid; gap: 6px; }
                     label { font-weight: 700; }
                     input[type=text], input[type=email], input[type=password] {
-                        width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,.12);
+                        width: 100%; padding: 12px; border-radius: 10px;
+                        border: 1px solid rgba(255,122,162,0.35);
                         outline: none; transition: border .2s, box-shadow .2s;
+                        background: rgba(255,255,255,0.9);
                     }
-                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.18); }
+                    input:focus { border-color: var(--pink-1); box-shadow: 0 0 0 3px rgba(255,122,162,.22); }
                     .actions { display: grid; gap: 10px; margin-top: 10px; }
                     .link { color: var(--pink-1); text-decoration: none; font-weight: 700; text-align: center; display: inline-block; margin-top: 12px; }
                     .step { display: none; }

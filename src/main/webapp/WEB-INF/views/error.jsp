@@ -7,70 +7,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오류 발생</title>
     <style>
+        :root {
+            --pink-1: #ff7aa2;
+            --pink-2: #ff9bb7;
+            --pink-4: #ffe5ec;
+            --text-1: #1f2937;
+            --text-2: #4b5563;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 48px 20px;
+            color: var(--text-1);
         }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+        .error-shell {
+            max-width: 520px;
+            width: 100%;
+            background: #fff;
+            border-radius: 32px;
+            box-shadow: 0 36px 68px rgba(255, 122, 162, 0.32);
+            padding: 48px 44px;
             text-align: center;
+            display: grid;
+            gap: 24px;
         }
+
         .error-icon {
-            font-size: 64px;
-            color: #dc3545;
-            margin-bottom: 20px;
+            font-size: 60px;
+            color: var(--pink-1);
         }
+
         h1 {
-            color: #dc3545;
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--text-1);
         }
+
         .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
-            border-left: 4px solid #dc3545;
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: rgba(255, 122, 162, 0.12);
+            color: var(--pink-1);
+            font-weight: 600;
         }
+
         .error-description {
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
+            color: var(--text-2);
+            line-height: 1.7;
         }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 10px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
+
         .actions {
-            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 26px;
+            border-radius: 999px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(255,122,162,0.3);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.02);
+        }
+
+        .btn-secondary {
+            background: rgba(15,23,42,0.06);
+            color: var(--text-1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15,23,42,0.1);
+        }
+
+        @media (max-width: 540px) {
+            .error-shell {
+                padding: 36px 28px;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="error-shell">
     <div class="error-icon">⚠️</div>
     <h1>오류가 발생했습니다</h1>
 
@@ -94,7 +142,7 @@
     </div>
 
     <div class="actions">
-        <a href="/" class="btn">홈으로 돌아가기</a>
+        <a href="/" class="btn btn-primary">홈으로 돌아가기</a>
         <a href="javascript:history.back()" class="btn btn-secondary">이전 페이지로</a>
     </div>
 </div>
