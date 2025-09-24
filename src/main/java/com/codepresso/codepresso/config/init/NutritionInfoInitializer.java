@@ -21,12 +21,12 @@ import java.sql.Statement;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1) // MemberInitializer 다음
 @RequiredArgsConstructor
-public class ProductInitializer implements ApplicationRunner {
+public class NutritionInfoInitializer implements ApplicationRunner {
 
     private final DataSource dataSource;
 
     // 위에서 복사한 경로대로!
-    @Value("classpath:db/seed/product_seed_insert.sql")
+    @Value("classpath:db/seed/nutritionInfo_seed_insert.sql")
     private Resource branchSeed;
 
     @Override
@@ -40,7 +40,7 @@ public class ProductInitializer implements ApplicationRunner {
 
         try (Connection c = dataSource.getConnection();
              Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM product")) {
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM nutrition_info")) {
             if (rs.next()) {
                 log.info("[Init] branch rows now: {}", rs.getInt(1));
             }
