@@ -77,6 +77,34 @@ public class MemberProfileService {
     }
 
     /**
+     * 프로필 이미지 URL 조회
+     * 
+     * @param memberId 조회할 회원 ID
+     * @return 프로필 이미지 URL
+     * @throws NoSuchElementException 회원이 존재하지 않는 경우
+     */
+    public String getProfileImage(Long memberId) {
+        Member member = memberProfileRepository.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("회원을 찾을 수 없습니다. ID: " + memberId));
+        return member.getProfileImage();
+    }
+
+    /**
+     * 프로필 이미지 URL 업데이트
+     * 
+     * @param memberId 수정할 회원 ID
+     * @param imageUrl 새로운 프로필 이미지 URL
+     * @throws NoSuchElementException 회원이 존재하지 않는 경우
+     */
+    @Transactional
+    public void updateProfileImage(Long memberId, String imageUrl) {
+        Member member = memberProfileRepository.findById(memberId)
+                .orElseThrow(() -> new NoSuchElementException("회원을 찾을 수 없습니다. ID: " + memberId));
+        member.setProfileImage(imageUrl);
+        memberProfileRepository.save(member);
+    }
+
+    /**
      * Member 엔티티를 UserDetailResponse DTO로 변환
      * 
      * @param member 변환할 Member 엔티티
