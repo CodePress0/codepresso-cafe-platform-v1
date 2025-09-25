@@ -36,6 +36,16 @@
     background: rgba(255,122,162,0.08);
     color: var(--pink-1);
   }
+  
+  /* 상품 이미지 크기 조정 */
+  .favorite-page .product-image {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+  }
 </style>
 
 <main class="hero">
@@ -80,7 +90,7 @@
                         </div>
                         
                         <div class="favorite-actions" style="display:flex; gap:8px; justify-content:space-between;">
-                          <a href="#" class="btn btn-ghost" onclick="alert('상품 상세 페이지는 준비 중입니다!'); return false;">상품 보기</a>
+                          <a href="/products/${favorite.productId}" class="btn btn-ghost">상품 보기</a>
                           <button class="btn btn-primary" onclick="removeFavorite('${favorite.productId}')">즐겨찾기 삭제</button>
                         </div>
                     </div>

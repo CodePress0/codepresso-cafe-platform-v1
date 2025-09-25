@@ -93,6 +93,78 @@
             background: rgba(255, 122, 162, 0.05);
         }
 
+        /* FAQ 아코디언 스타일 */
+        .faq-container {
+            display: none;
+        }
+
+        .faq-item {
+            background: #fff;
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(15,23,42,0.1);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            cursor: pointer;
+            background: #fff;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-1);
+            transition: background-color 0.2s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 122, 162, 0.05);
+        }
+
+        .faq-question .q-prefix {
+            color: var(--pink-1);
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .faq-question .arrow {
+            color: var(--text-2);
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(255, 122, 162, 0.02);
+        }
+
+        .faq-answer.active {
+            max-height: 1000px;
+        }
+
+        .faq-answer-content {
+            padding: 0 24px 24px 24px;
+            line-height: 1.6;
+            color: var(--text-1);
+            white-space: pre-wrap;
+        }
+
         .post-title-container {
             display: flex;
             align-items: center;
@@ -282,7 +354,8 @@
 
             <!-- 게시글 목록 -->
             <div id="boardList">
-                <table class="board-table">
+                <!-- 일반 게시판 테이블 -->
+                <table class="board-table" id="boardTable">
                     <thead>
                         <tr>
                             <th style="width: 80px;">번호</th>
@@ -298,6 +371,11 @@
                     </tbody>
                 </table>
 
+                <!-- FAQ 아코디언 -->
+                <div id="faqContainer" class="faq-container">
+                    <!-- FAQ 항목들이 여기에 동적으로 로드됩니다 -->
+                </div>
+
                 <!-- 빈 상태 -->
                 <div id="emptyState" class="empty-state" style="display: none;">
                     <h3>게시글이 없습니다</h3>
@@ -310,8 +388,8 @@
                 </div>
 
                 <!-- CTA 버튼들 -->
-                <div class="cta">
-                    <button class="btn write-btn" onclick="goToWrite()">글쓰기</button>
+                <div class="cta" id="writeButtonContainer">
+                    <button class="btn write-btn" onclick="goToWrite()" id="writeButton">글쓰기</button>
                 </div>
             </div>
             </section>
@@ -324,6 +402,7 @@
         var currentPage = 0;
         var totalPages = 0;
         var currentMemberId = null; // 현재 로그인한 사용자 ID
+        var currentUserRole = null; // 현재 로그인한 사용자 역할
 
         // 페이지 로드 시 초기 데이터 로드
         document.addEventListener('DOMContentLoaded', function() {
@@ -388,6 +467,9 @@
             if (boardTypeId === 1) tabs[0].classList.add('active');
             else if (boardTypeId === 2) tabs[1].classList.add('active');
             else if (boardTypeId === 3) tabs[2].classList.add('active');
+            
+            // 글쓰기 버튼 표시 제어
+            controlWriteButton(finalBoardTypeId);
 
             // API 호출 전 최종 검증
             if (!boardTypeId || boardTypeId === '' || isNaN(boardTypeId)) {
@@ -438,11 +520,25 @@
             console.log('data:', data);
             console.log('data.boards:', data.boards);
             console.log('data.boards.length:', data.boards ? data.boards.length : 'undefined');
+            console.log('currentBoardType:', currentBoardType);
             
             const tbody = document.getElementById('boardTableBody');
+            const faqContainer = document.getElementById('faqContainer');
+            const boardTable = document.getElementById('boardTable');
             const emptyState = document.getElementById('emptyState');
             const pagination = document.getElementById('pagination');
 
+            // FAQ 화면인 경우 아코디언으로 표시
+            if (currentBoardType === 3) {
+                displayFAQList(data);
+                return;
+            }
+
+            // 일반 게시판 화면 - 테이블 표시하고 FAQ 컨테이너 숨기기
+            boardTable.style.display = 'table';
+            faqContainer.style.display = 'none';
+
+            // 일반 게시판 화면
             if (data.boards && data.boards.length > 0) {
                 console.log('Displaying board list with', data.boards.length, 'items');
                 tbody.innerHTML = '';
@@ -473,12 +569,14 @@
                         deleteButtonHtml = '<button class="delete-btn" onclick="deletePost(' + board.id + ')">삭제</button>';
                     }
                     
-                    // 답변상태 배지 생성
+                    // 답변상태 배지 생성 (공지사항이 아닌 경우에만)
                     var statusBadge = '';
-                    if (board.statusTag === 'ANSWERED') {
-                        statusBadge = '<span class="status-badge answered">답변완료</span>';
-                    } else {
-                        statusBadge = '<span class="status-badge pending">답변대기</span>';
+                    if (currentBoardType !== 1) { // 공지사항(board_type_id=1)이 아닌 경우에만
+                        if (board.statusTag === 'ANSWERED') {
+                            statusBadge = '<span class="status-badge answered">답변완료</span>';
+                        } else {
+                            statusBadge = '<span class="status-badge pending">답변대기</span>';
+                        }
                     }
                     
                     // HTML을 문자열 연결로 생성
@@ -501,11 +599,135 @@
             }
         }
 
+        // FAQ 목록 표시 (아코디언 형태)
+        function displayFAQList(data) {
+            console.log('=== displayFAQList called ===');
+            console.log('data:', data);
+            
+            const faqContainer = document.getElementById('faqContainer');
+            const boardTable = document.getElementById('boardTable');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
+
+            // 일반 테이블 숨기고 FAQ 컨테이너 표시
+            boardTable.style.display = 'none';
+            faqContainer.style.display = 'block';
+
+            if (data.boards && data.boards.length > 0) {
+                console.log('Displaying FAQ list with', data.boards.length, 'items');
+                faqContainer.innerHTML = '';
+                
+                data.boards.forEach((faq, index) => {
+                    console.log('Processing FAQ:', faq);
+                    console.log('FAQ Title:', faq.title);
+                    console.log('FAQ Content:', faq.content);
+                    
+                    const faqItem = document.createElement('div');
+                    faqItem.className = 'faq-item';
+                    
+                    // HTML을 직접 생성하여 이스케이프 문제 방지
+                    const questionButton = document.createElement('button');
+                    questionButton.className = 'faq-question';
+                    questionButton.setAttribute('onclick', 'toggleFAQ(' + faq.id + ')');
+                    
+                    const questionSpan = document.createElement('span');
+                    const qPrefix = document.createElement('span');
+                    qPrefix.className = 'q-prefix';
+                    qPrefix.textContent = 'Q.';
+                    const titleText = document.createElement('span');
+                    titleText.textContent = faq.title;
+                    
+                    questionSpan.appendChild(qPrefix);
+                    questionSpan.appendChild(document.createTextNode(' '));
+                    questionSpan.appendChild(titleText);
+                    
+                    const arrowSpan = document.createElement('span');
+                    arrowSpan.className = 'arrow';
+                    arrowSpan.textContent = '▼';
+                    
+                    questionButton.appendChild(questionSpan);
+                    questionButton.appendChild(arrowSpan);
+                    
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = 'faq-answer';
+                    answerDiv.id = 'faq-answer-' + faq.id;
+                    
+                    const answerContent = document.createElement('div');
+                    answerContent.className = 'faq-answer-content';
+                    answerContent.textContent = faq.content;
+                    
+                    answerDiv.appendChild(answerContent);
+                    
+                    faqItem.appendChild(questionButton);
+                    faqItem.appendChild(answerDiv);
+                    
+                    faqContainer.appendChild(faqItem);
+                });
+
+                emptyState.style.display = 'none';
+                displayPagination(data);
+            } else {
+                console.log('No FAQ found, showing empty state');
+                showEmptyState();
+            }
+        }
+
+        // FAQ 토글 함수
+        function toggleFAQ(faqId) {
+            console.log('toggleFAQ called with faqId:', faqId);
+            
+            const question = document.querySelector('button[onclick="toggleFAQ(' + faqId + ')"]');
+            const answer = document.getElementById('faq-answer-' + faqId);
+            
+            if (!question || !answer) {
+                console.error('FAQ elements not found for ID:', faqId);
+                console.error('Question element:', question);
+                console.error('Answer element:', answer);
+                return;
+            }
+            
+            // 현재 상태 확인
+            const isActive = question.classList.contains('active');
+            console.log('Current active state:', isActive);
+            
+            // 모든 FAQ 닫기
+            document.querySelectorAll('.faq-question').forEach(q => {
+                q.classList.remove('active');
+            });
+            document.querySelectorAll('.faq-answer').forEach(a => {
+                a.classList.remove('active');
+            });
+            
+            // 클릭한 FAQ가 닫혀있었다면 열기
+            if (!isActive) {
+                question.classList.add('active');
+                answer.classList.add('active');
+                console.log('FAQ opened:', faqId);
+            } else {
+                console.log('FAQ closed:', faqId);
+            }
+        }
+
         // 빈 상태 표시
         function showEmptyState() {
-            document.getElementById('boardTableBody').innerHTML = '';
-            document.getElementById('emptyState').style.display = 'block';
-            document.getElementById('pagination').innerHTML = '';
+            const boardTable = document.getElementById('boardTable');
+            const faqContainer = document.getElementById('faqContainer');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
+            
+            // FAQ 화면인 경우
+            if (currentBoardType === 3) {
+                boardTable.style.display = 'none';
+                faqContainer.style.display = 'none';
+            } else {
+                // 일반 게시판 화면
+                document.getElementById('boardTableBody').innerHTML = '';
+                boardTable.style.display = 'table';
+                faqContainer.style.display = 'none';
+            }
+            
+            emptyState.style.display = 'block';
+            pagination.innerHTML = '';
         }
 
         // 페이지네이션 표시
@@ -574,9 +796,37 @@
             window.location.href = detailUrl;
         }
 
+        // 글쓰기 버튼 표시 제어
+        function controlWriteButton(boardTypeId) {
+            const writeButton = document.getElementById('writeButton');
+            const writeButtonContainer = document.getElementById('writeButtonContainer');
+            
+            if (boardTypeId === 1) { // 공지사항
+                if (currentUserRole === 'ADMIN') {
+                    writeButtonContainer.style.display = 'flex';
+                    writeButton.textContent = '공지사항 작성';
+                } else {
+                    writeButtonContainer.style.display = 'none';
+                }
+            } else if (boardTypeId === 2) { // 1:1문의
+                writeButtonContainer.style.display = 'flex';
+                writeButton.textContent = '글쓰기';
+            } else if (boardTypeId === 3) { // FAQ
+                writeButtonContainer.style.display = 'none';
+            }
+        }
+
         // 글쓰기 페이지로 이동
         function goToWrite() {
-            window.location.href = '/boards/write';
+            // 공지사항 게시판인 경우 ADMIN만 글쓰기 가능
+            if (currentBoardType === 1) {
+                if (currentUserRole !== 'ADMIN') {
+                    alert('공지사항은 관리자만 작성할 수 있습니다.');
+                    return;
+                }
+            }
+            // URL 파라미터로 게시판 타입 전달
+            window.location.href = '/boards/write?boardType=' + currentBoardType;
         }
 
         // 현재 로그인한 사용자 정보 가져오기
@@ -595,7 +845,9 @@
             .then(data => {
                 if (data && data.memberId) {
                     currentMemberId = data.memberId;
+                    currentUserRole = data.role;
                     console.log('Current user ID:', currentMemberId);
+                    console.log('Current user role:', currentUserRole);
                 } else {
                     console.log('No user data available');
                 }
