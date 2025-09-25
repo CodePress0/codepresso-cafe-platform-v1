@@ -24,13 +24,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
             @Param("startDate") LocalDateTime startDate);
 
     /**
-     * 특정 기간 내 주문 개수 조회 (주문번호 생성용)
-     * */
-    long countByOrderDateBetween(
-            @Param("startOfDay") LocalDateTime startOfDay,
-            @Param("endOfDay") LocalDateTime endOfDay);
-
-    /**
      * 해당 일자(startOfDay~endOfDay) 중에서 특정 주문시각(orderDate)까지 생성된 주문 수
      * (일일 순번 계산용)
      */
@@ -44,43 +37,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
      * */
     long countByMemberId(Long memberId);
 
-    /**
-     * 지점별 주문 목록 조회
-     * */
-    @Query("SELECT o FROM Orders o WHERE o.branch.id = :branchId order by o.orderDate DESC")
-    List<Orders> findByBranchIdOrderByOrderDateDesc(@Param("branchId") Long branchId);
 
-    /**
-     * 주문 상태별 조회
-     * */
-    List<Orders> findByProductionStatusOrderByOrderDateDesc(String productionStatus);
-
-    /**
-     * 회원 + 상태별 주문 조회
-     * */
-    List<Orders> findByMemberIdAndProductionStatusOrderByOrderDateDesc(
-            @Param("memberId") Long memberId,
-            @Param("status") String productionStatus);
-
-    /**
-     * 픽업 시간 기준 조회 (픽업 예정 주문들)
-     * */
-    List<Orders> findByPickupTimeBetweenOrderByPickupTimeAsc(
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
-
-    /**
-     * 테이크아웃 여부별 주문 조회
-     */
-    List<Orders> findByIsTakeoutOrderByOrderDateDesc(Boolean isTakeout);
-
-    /**
-     * 특정 상태이면서 특정 시간 이전에 주문된 것들 조회 (상태 업데이트용)
-     */
-    @Query("SELECT o FROM Orders o WHERE o.productionStatus = :status AND o.orderDate <= :cutoffTime ORDER BY o.orderDate ASC")
-    List<Orders> findByProductionStatusAndOrderDateBefore(
-            @Param("status") String status,
-            @Param("cutoffTime") LocalDateTime cutoffTime);
 
 
 

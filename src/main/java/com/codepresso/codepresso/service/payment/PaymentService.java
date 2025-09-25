@@ -30,8 +30,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 /**
  * 결제 서비스
@@ -95,6 +97,65 @@ public class PaymentService {
                 .totalAmount(totalAmount)
                 .isFromCart(false)
                 .build();
+    }
+
+    /**
+     * 결제 페이지(JSP)에서 사용할 모델 속성 조립 (기존 DTO 재사용)
+     */
+    public Map<String, Object> buildDirectViewModel(Long productId, Integer quantity, List<Long> optionIds) {
+        DirectCheckoutResponse direct = prepareDirectCheckout(productId, quantity, optionIds);
+
+        int qty = direct.getQuantity() != null ? direct.getQuantity() : 1;
+        int total = direct.getTotalAmount() != null ? direct.getTotalAmount() : 0;
+        int unitPrice = qty > 0 ? (total / qty) : total;
+
+        List<String> optionNames = new ArrayList<>();
+        if (direct.getSelectedOptions() != null) {
+            for (ProductOptionDTO dto : direct.getSelectedOptions()) {
+                optionNames.add(dto.getOptionStyleName());
+            }
+        }
+
+        Map<String, Object> directItem = new HashMap<>();
+        directItem.put("productName", direct.getProductDetail().getProductName());
+        directItem.put("productPhoto", direct.getProductDetail().getProductPhoto());
+        directItem.put("unitPrice", unitPrice);
+        directItem.put("quantity", qty);
+        directItem.put("lineTotal", total);
+        directItem.put("optionNames", optionNames);
+
+        // orderItemsPayloadJson 구성 (CheckoutRequest.OrderItem 규격)
+        String optionIdsJson;
+        if (optionIds == null || optionIds.isEmpty()) {
+            optionIdsJson = "[]";
+        } else {
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < optionIds.size(); i++) {
+                if (i > 0) sb.append(',');
+                sb.append(optionIds.get(i));
+            }
+            sb.append(']');
+            optionIdsJson = sb.toString();
+        }
+
+        String orderItemsPayloadJson = "[{" +
+                "\"productId\":" + direct.getProductDetail().getProductId() +
+                ",\"quantity\":" + qty +
+                ",\"price\":" + unitPrice +
+                ",\"optionIds\":" + optionIdsJson +
+                "}]";
+
+        Map<String, Object> model = new HashMap<>();
+        List<Map<String, Object>> directItems = new ArrayList<>();
+        directItems.add(directItem);
+
+        model.put("directItems", directItems);
+        model.put("directItemsCount", 1);
+        model.put("totalAmount", total);
+        model.put("isFromCart", false);
+        model.put("orderItemsPayloadJson", orderItemsPayloadJson);
+
+        return model;
     }
     /**
      * 총 가격 계산 및 선택된 옵션 수집

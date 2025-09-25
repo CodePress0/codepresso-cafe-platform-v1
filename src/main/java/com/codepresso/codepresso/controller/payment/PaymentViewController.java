@@ -1,20 +1,13 @@
 package com.codepresso.codepresso.controller.payment;
 
 import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
-import com.codepresso.codepresso.dto.payment.CheckoutRequest;
-import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.payment.PaymentService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,13 +27,22 @@ public class PaymentViewController {
     @GetMapping("/cart")
     public String cartCheckoutPage(
             @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam(required = false) Long branchId,
             Model model) {
         try {
+            if (loginUser == null) {
+                return "redirect:/auth/login?redirect=/payments/cart";
+            }
+
             CartCheckoutResponse checkoutData = paymentService.prepareCartCheckout(loginUser.getMemberId());
             model.addAttribute("cartData", checkoutData.getCartData());
             model.addAttribute("totalAmount", checkoutData.getTotalAmount());
             model.addAttribute("totalQuantity", checkoutData.getTotalQuantity());
             model.addAttribute("isFromCart", true);
+
+            if (branchId != null) {
+                model.addAttribute("branchId", branchId);
+            }
 
         } catch (Exception e) {
             model.addAttribute("errorMessage", "장바구니 정보를 불러올 수 없습니다: " + e.getMessage());
@@ -51,56 +53,26 @@ public class PaymentViewController {
     }
 
     /**
-     * 상품상세에서 바로 결제페이지로
-     * GET /payments/direct
+     * 상품상세에서 바로 결제페이지로 (POST)
+     * POST /payments/direct
      */
-    @GetMapping("/direct")
-    public String directCheckoutPage(
-            @AuthenticationPrincipal LoginUser loginUser,
+    @PostMapping("/direct")
+    public String directCheckoutPost(
             @RequestParam Long productId,
             @RequestParam Integer quantity,
-            @RequestParam(required = false) String optionIds,
-            Model model) {
-
+            @RequestParam(required = false) List<Long> optionIds,
+            Model model
+    ) {
         try {
-            // optionIds를 List<Long>으로 변환
-            List<Long> optionIdList = new ArrayList<>();
-            if (optionIds != null && !optionIds.isEmpty()) {
-                String[] ids = optionIds.split(",");
-                for (String id : ids) {
-                    try {
-                        optionIdList.add(Long.parseLong(id.trim()));
-                    } catch (NumberFormatException ignored) {
-                        // 잘못된 optionId는 무시
-                    }
-                }
+            var vm = paymentService.buildDirectViewModel(productId, quantity, optionIds);
+            for (var entry : vm.entrySet()) {
+                model.addAttribute(entry.getKey(), entry.getValue());
             }
-
-            DirectCheckoutResponse checkoutData = paymentService.prepareDirectCheckout(
-                    productId, quantity, optionIdList);
-            model.addAttribute("directItems", checkoutData);
-            model.addAttribute("isFromCart", false);
-
         } catch (Exception e) {
             model.addAttribute("errorMessage", "결제 정보를 준비하는 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/products/" + productId + "?error=" + e.getMessage();
         }
-
         return "payment/checkout";
-    }
-
-    /**
-     * POST /payments/checkout
-     */
-    @PostMapping("/checkout")
-    public String processCheckout(@AuthenticationPrincipal LoginUser loginUser,
-                                  @ModelAttribute @Valid CheckoutRequest request,
-                                  Model model){
-        request.setMemberId(loginUser.getMemberId());
-
-        CheckoutResponse checkoutData = paymentService.processCheckout(request);
-
-        return "orders/Details";
     }
 
 }

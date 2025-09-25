@@ -96,8 +96,13 @@ async function loadOrders() {
         // 로딩 상태 숨김
         document.getElementById('loading').style.display = 'none';
         
+        const totalCount = (typeof data.totalCount === 'number') ? data.totalCount : (data.orders ? data.orders.length : 0);
+        const filteredCount = (typeof data.filteredCount === 'number') ? data.filteredCount : (data.orders ? data.orders.length : 0);
+        const totalEl = document.getElementById('total-orders');
+        if (totalEl) totalEl.textContent = '총 ' + totalCount + '개 주문 (기간 ' + filteredCount + '개)';
+
         if (data.orders && data.orders.length > 0) {
-            displayOrders(data.orders);
+            displayOrders(data);
         } else {
             showEmptyState();
         }
@@ -110,14 +115,17 @@ async function loadOrders() {
 }
 
 // 주문 목록 표시
-function displayOrders(orders) {
+function displayOrders(data) {
     document.getElementById('order-list').style.display = 'block';
-    document.getElementById('total-orders').textContent = '총 ' + orders.length + '개 주문';
-    
+    const totalEl = document.getElementById('total-orders');
+    const totalCount = (typeof data.totalCount === 'number') ? data.totalCount : (data.orders ? data.orders.length : 0);
+    const filteredCount = (typeof data.filteredCount === 'number') ? data.filteredCount : (data.orders ? data.orders.length : 0);
+    if (totalEl) totalEl.textContent = '총 ' + totalCount + '개 주문 (기간 ' + filteredCount + '개)';
+
     const container = document.getElementById('orders-container');
     container.innerHTML = '';
-    
-    orders.forEach(order => {
+
+    (data.orders || []).forEach(order => {
         const orderCard = createOrderCard(order);
         container.appendChild(orderCard);
     });

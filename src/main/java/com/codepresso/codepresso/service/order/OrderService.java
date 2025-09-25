@@ -38,7 +38,16 @@ public class OrderService {
         // 기간 계산
         LocalDateTime startDate = calculateStartDate(period);
 
-        List<Orders> orders = ordersRepository.findByMemberIdOrderByOrderDateDesc(memberId);
+        // 전체 건수 (기간 무관)
+        long totalCount = ordersRepository.countByMemberId(memberId);
+
+        // 기간 필터 적용된 목록 조회
+        List<Orders> orders;
+        if ("전체".equals(period)) {
+            orders = ordersRepository.findByMemberIdOrderByOrderDateDesc(memberId);
+        } else {
+            orders = ordersRepository.findByMemberIdAndOrderDateAfterOrderByOrderDateDesc(memberId, startDate);
+        }
         List<OrderListResponse.OrderSummary> orderSummaries = new ArrayList<>();
         for (Orders order : orders) {
             OrderListResponse.OrderSummary orderSummary = convertToOrderSummary(order);
@@ -47,6 +56,8 @@ public class OrderService {
 
         return OrderListResponse.builder()
                 .orders(orderSummaries)
+                .totalCount(totalCount)
+                .filteredCount(orderSummaries.size())
                 .build();
     }
 

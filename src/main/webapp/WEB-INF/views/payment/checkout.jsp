@@ -99,7 +99,7 @@
                                     <c:if test="${not empty item.options}">
                                         <div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">
                                             <c:forEach var="option" items="${item.options}" varStatus="optStatus">
-                                                ${option.optionName}<c:if test="${!optStatus.last}">, </c:if>
+                                                ${option.optionStyle}<c:if test="${!optStatus.last}">, </c:if>
                                             </c:forEach>
                                         </div>
                                     </c:if>
@@ -794,6 +794,8 @@
     // 안전을 위해 클라이언트 direct 함수는 no-op로 둡니다.
     function getDirectOrderItem(){ return null; }
     function currencyText(n){ try { return Number(n||0).toLocaleString() + '원'; } catch(e){ return '0원'; } }
+    // 서버 장바구니 cartId 힌트 (없으면 null 렌더)
+    const __serverCartId = ${not empty cartData ? cartData.cartId : 'null'};
     // 주문내역 접기/펼치기
     document.getElementById('collapseBtn').addEventListener('click', function() {
         const orderItems = document.getElementById('orderItems');
@@ -910,6 +912,71 @@
         }
     });
 
+    // 세션스토리지 기반 '바로 주문하기' 하이드레이션 (컨트롤러 비의존)
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const raw = sessionStorage.getItem('directOrderRequest');
+            if (!raw) return;
+            const req = JSON.parse(raw);
+            if (!req || !req.productId || !req.quantity) return;
+
+            const res = await fetch('/api/products/' + encodeURIComponent(req.productId));
+            if (!res.ok) throw new Error('상품 정보를 불러올 수 없습니다.');
+            const product = await res.json();
+
+            const base = Number(product.price || 0);
+            const optIds = Array.isArray(req.optionIds) ? req.optionIds : [];
+            const options = Array.isArray(product.productOptions) ? product.productOptions : [];
+            const selected = options.filter(o => optIds.includes(o.optionId));
+            const extra = selected.reduce((s, o) => s + Number(o.extraPrice || 0), 0);
+            const unit = base + extra;
+            const qty = Number(req.quantity || 1);
+            const line = unit * qty;
+
+            const itemsEl = document.getElementById('orderItems');
+            if (itemsEl) {
+                const optNames = selected.map(o => o.optionStyleName || o.optionStyle).filter(Boolean);
+                itemsEl.innerHTML = '';
+                itemsEl.insertAdjacentHTML('beforeend',
+                    '<div class="order-item">' +
+                    '  <img src="' + (product.productPhoto || '') + '" alt="' + (product.productName || '') + '" class="item-image">' +
+                    '  <div class="item-details">' +
+                    '    <div class="item-name">' + (product.productName || '') + '</div>' +
+                    '    <div class="item-price">' + currencyText(unit) + '</div>' +
+                    '    <div class="item-quantity">총 ' + qty + '개</div>' +
+                    (optNames.length ? ('<div class="item-options" style="font-size:12px;color:#666;margin-top:4px;">' + optNames.join(', ') + '</div>') : '') +
+                    '  </div>' +
+                    '  <div class="item-total">' + currencyText(line) + '</div>' +
+                    '</div>'
+                );
+            }
+            const ic = document.getElementById('itemCount'); if (ic) ic.textContent = '1';
+            const orderAmountEl = document.getElementById('orderAmount'); if (orderAmountEl) orderAmountEl.textContent = currencyText(line);
+            const totalQtyEl = document.getElementById('totalQty'); if (totalQtyEl) totalQtyEl.textContent = String(qty) + '개';
+            const totalAmountEl = document.getElementById('totalAmount'); if (totalAmountEl) totalAmountEl.textContent = currencyText(line);
+            const paymentBtn = document.getElementById('paymentBtn'); if (paymentBtn) paymentBtn.textContent = currencyText(line) + ' 결제하기';
+
+            // 빈카트 메시지 제거
+            document.querySelectorAll('.empty-cart').forEach(n => n.remove());
+
+            // 결제용 payload 주입 (processPayment가 읽도록)
+            let payloadNode = document.getElementById('orderItemsPayloadJson');
+            if (!payloadNode) {
+                payloadNode = document.createElement('script');
+                payloadNode.type = 'application/json';
+                payloadNode.id = 'orderItemsPayloadJson';
+                document.body.appendChild(payloadNode);
+            }
+            payloadNode.textContent = JSON.stringify([{ productId: product.productId, quantity: qty, price: unit, optionIds: optIds }]);
+
+            // 런타임 플래그
+            window.__directOrderMode = true;
+
+            // 세션스토리지 정리
+            sessionStorage.removeItem('directOrderRequest');
+        } catch (e) { console.error('direct order hydrate error:', e); }
+    });
+
     // 로컬 타임존 기준 ISO 문자열(yyyy-MM-ddTHH:mm:ss) 생성 util (Z/오프셋 제거)
     function toLocalISOStringNoZ(date) {
         const t = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -982,12 +1049,19 @@
             pickupTime: pickupTimeLocal,
             requestNote: requestNote,
             pickupMethod: selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함',
-            isFromCart: ${orderItemsPayloadJson != null ? "false" : "true"},
+            // 런타임에서 결정 (payload 존재 시 direct)
+            isFromCart: true,
             useCoupon: useCouponCheckbox ? useCouponCheckbox.checked : false,
             discountAmount: discountAmount,
             finalAmount: finalAmount,
             orderItems: orderItems
         };
+
+        // 런타임 기준 isFromCart 재평가
+        try {
+            const p = document.getElementById('orderItemsPayloadJson');
+            paymentData.isFromCart = !(p && p.textContent && p.textContent.trim().length > 0);
+        } catch (_) { paymentData.isFromCart = true; }
 
         const payButton = document.querySelector('.btn-payment');
         payButton.textContent = '결제 처리 중...';
@@ -1006,8 +1080,13 @@
                     alert('결제가 완료되었습니다!');
 
                     // 백엔드에서 장바구니를 비워도, 브라우저 캐시/동시성으로 화면에 남아 보일 수 있음
-                    // 여기서 한 번 더 장바구니 비우기 API를 호출하여 UI 일관성 보강
-                    if (${orderItemsPayloadJson != null ? "false" : "true"}) (async () => {
+                    // 장바구니 기반 주문인 경우에만 추가로 비우기 시도 (런타임 판단)
+                    (async () => {
+                        try {
+                            const p = document.getElementById('orderItemsPayloadJson');
+                            const isFromCartRuntime = !(p && p.textContent && p.textContent.trim().length > 0);
+                            if (!isFromCartRuntime) return; // direct 주문이면 스킵
+                        } catch (_) { return; }
                         try {
                             // CSRF 메타에서 토큰/헤더 읽기
                             const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
@@ -1015,18 +1094,35 @@
                             const csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : null;
                             const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
 
-                            // 장바구니 조회 후 cartId로 비우기 호출 (이미 서버에서 비운 경우에도 안전)
-                            const res = await fetch('/users/cart', { credentials: 'include' });
-                            if (res.ok) {
-                                const cartJson = await res.json();
-                                if (cartJson && cartJson.cartId) {
+                            // 우선 서버가 내려준 cartId로 비우기 시도
+                            let cleared = false;
+                            if (typeof __serverCartId === 'number') {
+                                try {
                                     await fetch('/users/cart/clear', {
                                         method: 'POST',
                                         credentials: 'include',
                                         headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' },
                                             (csrfHeaderName && csrfToken) ? { [csrfHeaderName]: csrfToken } : {}),
-                                        body: new URLSearchParams({ cartId: String(cartJson.cartId) }).toString()
-                                    }).catch(() => {});
+                                        body: new URLSearchParams({ cartId: String(__serverCartId) }).toString()
+                                    });
+                                    cleared = true;
+                                } catch (_) {}
+                            }
+
+                            // 실패 시 장바구니 조회 후 cartId로 비우기 (백업 경로)
+                            if (!cleared) {
+                                const res = await fetch('/users/cart', { credentials: 'include' });
+                                if (res.ok) {
+                                    const cartJson = await res.json();
+                                    if (cartJson && cartJson.cartId) {
+                                        await fetch('/users/cart/clear', {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                (csrfHeaderName && csrfToken) ? { [csrfHeaderName]: csrfToken } : {}),
+                                            body: new URLSearchParams({ cartId: String(cartJson.cartId) }).toString()
+                                        }).catch(() => {});
+                                    }
                                 }
                             }
                         } catch (e) { /* 네트워크/권한 문제는 무시하고 계속 진행 */ }
