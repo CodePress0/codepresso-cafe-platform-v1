@@ -91,11 +91,90 @@
             border: 1px solid rgba(15,23,42,0.08);
             line-height: 1.6;
             white-space: pre-wrap;
+            position: relative;
+        }
+
+        .answer-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .answer-actions .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
         }
 
         .answer-label {
             font-weight: 700;
             color: var(--text-1);
+        }
+
+        .admin-answer-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(15,23,42,0.08);
+        }
+
+        .answer-form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .answer-form-content {
+            margin-top: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(15,23,42,0.16);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--pink-1);
+            box-shadow: 0 0 0 3px rgba(255,122,162,0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .answer-title-display {
+            padding: 12px 16px;
+            background: rgba(15,23,42,0.04);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-1);
+            border: 1px solid rgba(15,23,42,0.08);
         }
 
         .action-buttons {
@@ -201,6 +280,50 @@
                         <span id="answerStatus" class="answer-status"></span>
                         <span class="answer-label">답변내용</span>
                         <div id="answerContent" class="answer-content"></div>
+                        
+                        <!-- ADMIN용 답변 작성 폼 -->
+                        <div id="adminAnswerForm" class="admin-answer-form" style="display: none;">
+                            <div class="answer-form-header">
+                                <span class="answer-label">답변 작성</span>
+                                <button id="toggleAnswerForm" class="btn btn-outline" onclick="toggleAnswerForm()">답변 작성</button>
+                            </div>
+                            <div id="answerFormContent" class="answer-form-content" style="display: none;">
+                                <form id="answerForm">
+                                    <div class="form-group">
+                                        <label for="answerContentText">답변 내용</label>
+                                        <textarea id="answerContentText" name="content" placeholder="답변 내용을 입력하세요" rows="6" required></textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="button" class="btn btn-outline" onclick="cancelAnswerForm()">취소</button>
+                                        <button type="submit" class="btn btn-primary">답변 등록</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- ADMIN용 답변 수정 폼 -->
+                        <div id="adminAnswerEditForm" class="admin-answer-form" style="display: none;">
+                            <div class="answer-form-header">
+                                <span class="answer-label">답변 수정</span>
+                                <button id="toggleAnswerEditForm" class="btn btn-outline" onclick="toggleAnswerEditForm()">답변 수정</button>
+                            </div>
+                            <div id="answerEditFormContent" class="answer-form-content" style="display: none;">
+                                <form id="answerEditForm">
+                                    <div class="form-group">
+                                        <label>제목</label>
+                                        <div id="answerEditTitleDisplay" class="answer-title-display"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="answerEditContentText">답변 내용</label>
+                                        <textarea id="answerEditContentText" name="content" placeholder="답변 내용을 입력하세요" rows="6" required></textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="button" class="btn btn-outline" onclick="cancelAnswerEditForm()">취소</button>
+                                        <button type="submit" class="btn btn-primary">답변 수정</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 액션 버튼들 -->
@@ -218,6 +341,8 @@
         // 전역 변수 선언
         var currentBoardId = null;
         var currentUserId = null;
+        var currentUserRole = null;
+        var currentBoardTypeId = null;
 
         // 페이지 로드 시 게시글 상세 정보 로드
         document.addEventListener('DOMContentLoaded', function() {
@@ -250,7 +375,9 @@
                 .then(data => {
                     console.log('User data received:', data);
                     currentUserId = data.memberId; // data.id가 아니라 data.memberId 사용
+                    currentUserRole = data.role; // 사용자 역할 저장
                     console.log('currentUserId set to:', currentUserId, 'type:', typeof currentUserId);
+                    console.log('currentUserRole set to:', currentUserRole, 'type:', typeof currentUserRole);
                 })
                 .catch(error => {
                     console.error('Error loading user:', error);
@@ -310,37 +437,74 @@
             console.log('Setting post author:', data.memberNickname);
             console.log('Setting post date:', data.field);
             console.log('Setting post content:', data.content);
+            console.log('Setting board type ID:', data.boardTypeId);
             
             document.getElementById('postTitle').textContent = data.title;
             document.getElementById('postAuthor').textContent = data.memberNickname;
             document.getElementById('postDate').textContent = formatDate(data.field);
             document.getElementById('postContentText').textContent = data.content;
+            
+            // boardTypeId 저장
+            currentBoardTypeId = data.boardTypeId;
 
             // 답변 상태 확인 (statusTag 기반)
             var answerSection = document.getElementById('answerSection');
             var answerStatus = document.getElementById('answerStatus');
             var answerContent = document.getElementById('answerContent');
+            var adminAnswerForm = document.getElementById('adminAnswerForm');
 
             console.log('Status tag:', data.statusTag);
+            console.log('Current user role:', currentUserRole);
+            console.log('Board type ID:', currentBoardTypeId);
             
-            if (data.statusTag === 'ANSWERED') {
-                answerSection.style.display = 'block';
-                answerStatus.textContent = '답변상태: 답변완료';
-                answerStatus.className = 'answer-status completed';
-                
-                // 실제 댓글(답변) 내용 표시
-                if (data.children && data.children.length > 0) {
-                    // 가장 최근 댓글을 답변으로 표시
-                    var latestComment = data.children[data.children.length - 1];
-                    answerContent.textContent = latestComment.content;
-                } else {
-                    answerContent.textContent = '답변이 등록되었습니다.';
-                }
+            // 공지사항(board_type_id=1)인 경우 답변 섹션 완전히 숨김
+            if (currentBoardTypeId === 1) {
+                answerSection.style.display = 'none';
             } else {
+                // 답변 섹션 표시 (1:1문의, FAQ)
                 answerSection.style.display = 'block';
-                answerStatus.textContent = '답변상태: 답변대기';
-                answerStatus.className = 'answer-status pending';
-                answerContent.textContent = '아직 답변이 등록되지 않았습니다. 빠른 시일 내에 답변드리겠습니다.';
+            }
+            
+            // 공지사항이 아닌 경우에만 답변 관련 로직 실행
+            if (currentBoardTypeId !== 1) {
+                if (data.statusTag === 'ANSWERED') {
+                    answerStatus.textContent = '답변상태: 답변완료';
+                    answerStatus.className = 'answer-status completed';
+                    
+                    // 실제 댓글(답변) 내용 표시
+                    if (data.children && data.children.length > 0) {
+                        // 가장 최근 댓글을 답변으로 표시
+                        var latestComment = data.children[data.children.length - 1];
+                        answerContent.innerHTML = latestComment.content + 
+                            '<div class="answer-actions" id="answerActions" style="display: none;">' +
+                            '<button class="btn btn-outline" onclick="editAnswer(' + latestComment.id + ')">수정</button>' +
+                            '<button class="btn btn-secondary" onclick="deleteAnswer(' + latestComment.id + ')">삭제</button>' +
+                            '</div>';
+                        
+                        // ADMIN인 경우에만 답변 수정/삭제 버튼 표시
+                        if (currentUserRole === 'ADMIN') {
+                            document.getElementById('answerActions').style.display = 'flex';
+                        }
+                    } else {
+                        answerContent.textContent = '답변이 등록되었습니다.';
+                    }
+                    
+                    // ADMIN인 경우 답변 작성 폼 숨기기 (이미 답변 완료)
+                    if (currentUserRole === 'ADMIN') {
+                        adminAnswerForm.style.display = 'none';
+                    }
+                } else {
+                    answerStatus.textContent = '답변상태: 답변대기';
+                    answerStatus.className = 'answer-status pending';
+                    answerContent.textContent = '아직 답변이 등록되지 않았습니다. 빠른 시일 내에 답변드리겠습니다.';
+                    
+                    // ADMIN인 경우 답변 작성 폼 표시
+                    if (currentUserRole === 'ADMIN') {
+                        adminAnswerForm.style.display = 'block';
+                    } else {
+                        adminAnswerForm.style.display = 'none';
+                    }
+                }
             }
 
             // 작성자만 수정/삭제 버튼 표시
@@ -428,6 +592,266 @@
                 });
             }
         }
+
+        // 답변 작성 폼 토글
+        function toggleAnswerForm() {
+            var formContent = document.getElementById('answerFormContent');
+            var toggleBtn = document.getElementById('toggleAnswerForm');
+            
+            if (formContent.style.display === 'none') {
+                formContent.style.display = 'block';
+                toggleBtn.textContent = '답변 작성 취소';
+            } else {
+                formContent.style.display = 'none';
+                toggleBtn.textContent = '답변 작성';
+                // 폼 초기화
+                document.getElementById('answerForm').reset();
+            }
+        }
+
+        // 답변 작성 폼 취소
+        function cancelAnswerForm() {
+            var formContent = document.getElementById('answerFormContent');
+            var toggleBtn = document.getElementById('toggleAnswerForm');
+            
+            formContent.style.display = 'none';
+            toggleBtn.textContent = '답변 작성';
+            document.getElementById('answerForm').reset();
+        }
+
+        // 답변 작성 폼 제출
+        function submitAnswer(event) {
+            event.preventDefault();
+            
+            var content = document.getElementById('answerContentText').value.trim();
+            
+            if (!content) {
+                alert('답변 내용을 입력해주세요.');
+                return;
+            }
+            
+            // 답변 제목 자동 생성 (현재 날짜/시간 기반)
+            var now = new Date();
+            var title = '답변 - ' + now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+            
+            var answerData = {
+                title: title,
+                content: content,
+                statusTag: 'ANSWERED',
+                boardTypeId: currentBoardTypeId, // 부모 게시글의 boardTypeId 사용
+                parentId: currentBoardId // 현재 게시글을 부모로 설정
+            };
+            
+            console.log('Submitting answer:', answerData);
+            
+            var url = '/boards/' + currentBoardId + '/comments';
+            console.log('Answer API URL:', url);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(answerData)
+            })
+            .then(response => {
+                console.log('Answer response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Answer response data:', data);
+                if (data.success) {
+                    alert('답변이 등록되었습니다.');
+                    // 페이지 새로고침하여 최신 상태 반영
+                    location.reload();
+                } else {
+                    alert('답변 등록 중 오류가 발생했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Answer submission error:', error);
+                alert('답변 등록 중 오류가 발생했습니다.');
+            });
+        }
+
+        // 답변 수정 폼 토글
+        function toggleAnswerEditForm() {
+            var formContent = document.getElementById('answerEditFormContent');
+            var toggleBtn = document.getElementById('toggleAnswerEditForm');
+            
+            if (formContent.style.display === 'none') {
+                formContent.style.display = 'block';
+                toggleBtn.textContent = '답변 수정 취소';
+            } else {
+                formContent.style.display = 'none';
+                toggleBtn.textContent = '답변 수정';
+                // 폼 초기화
+                document.getElementById('answerEditForm').reset();
+            }
+        }
+
+        // 답변 수정 폼 취소
+        function cancelAnswerEditForm() {
+            var formContent = document.getElementById('answerEditFormContent');
+            var toggleBtn = document.getElementById('toggleAnswerEditForm');
+            
+            formContent.style.display = 'none';
+            toggleBtn.textContent = '답변 수정';
+            document.getElementById('answerEditForm').reset();
+        }
+
+        // 답변 수정
+        function editAnswer(commentId) {
+            console.log('Editing answer with ID:', commentId);
+            
+            // 답변 ID를 전역 변수로 저장
+            window.currentAnswerId = commentId;
+            
+            // 답변 수정 폼 표시
+            var editForm = document.getElementById('adminAnswerEditForm');
+            editForm.style.display = 'block';
+            
+            // 기존 답변 내용을 폼에 채우기
+            loadAnswerForEdit(commentId);
+            
+            // 답변 수정 폼 토글
+            toggleAnswerEditForm();
+        }
+
+        // 답변 수정을 위한 기존 답변 내용 로드
+        function loadAnswerForEdit(commentId) {
+            // 현재 게시글 데이터에서 해당 댓글 찾기
+            var url = '/boards/' + currentBoardId;
+            fetch(url, {
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.children && data.children.length > 0) {
+                    var targetComment = data.children.find(comment => comment.id == commentId);
+                    if (targetComment) {
+                        // 제목은 표시만 하고 수정 불가
+                        document.getElementById('answerEditTitleDisplay').textContent = targetComment.title || '';
+                        document.getElementById('answerEditContentText').value = targetComment.content || '';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading answer for edit:', error);
+            });
+        }
+
+        // 답변 삭제
+        function deleteAnswer(commentId) {
+            if (confirm('정말로 이 답변을 삭제하시겠습니까?')) {
+                console.log('Deleting answer with ID:', commentId);
+                
+                var url = '/boards/' + currentBoardId + '/comments/' + commentId;
+                console.log('Delete answer API URL:', url);
+                
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    console.log('Delete answer response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Delete answer response data:', data);
+                    if (data.success) {
+                        alert('답변이 삭제되었습니다.');
+                        // 페이지 새로고침하여 최신 상태 반영
+                        location.reload();
+                    } else {
+                        alert('답변 삭제 중 오류가 발생했습니다: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete answer error:', error);
+                    alert('답변 삭제 중 오류가 발생했습니다.');
+                });
+            }
+        }
+
+        // 답변 수정 폼 제출
+        function submitAnswerEdit(event) {
+            event.preventDefault();
+            
+            var content = document.getElementById('answerEditContentText').value.trim();
+            
+            if (!content) {
+                alert('답변 내용을 입력해주세요.');
+                return;
+            }
+            
+            // 답변 ID를 전역 변수로 저장해야 함 (editAnswer에서 설정)
+            if (!window.currentAnswerId) {
+                alert('답변 ID를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 기존 제목 유지 (수정하지 않음)
+            var title = document.getElementById('answerEditTitleDisplay').textContent;
+            
+            var answerData = {
+                title: title,
+                content: content,
+                statusTag: 'ANSWERED',
+                boardTypeId: currentBoardTypeId, // 부모 게시글의 boardTypeId 사용
+                parentId: currentBoardId // 현재 게시글을 부모로 설정
+            };
+            
+            console.log('Submitting answer edit:', answerData);
+            console.log('Answer ID:', window.currentAnswerId);
+            
+            var url = '/boards/' + currentBoardId + '/comments/' + window.currentAnswerId;
+            console.log('Answer edit API URL:', url);
+            
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(answerData)
+            })
+            .then(response => {
+                console.log('Answer edit response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Answer edit response data:', data);
+                if (data.success) {
+                    alert('답변이 수정되었습니다.');
+                    // 페이지 새로고침하여 최신 상태 반영
+                    location.reload();
+                } else {
+                    alert('답변 수정 중 오류가 발생했습니다: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Answer edit submission error:', error);
+                alert('답변 수정 중 오류가 발생했습니다.');
+            });
+        }
+
+        // 답변 작성 폼 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', function() {
+            var answerForm = document.getElementById('answerForm');
+            if (answerForm) {
+                answerForm.addEventListener('submit', submitAnswer);
+            }
+            
+            var answerEditForm = document.getElementById('answerEditForm');
+            if (answerEditForm) {
+                answerEditForm.addEventListener('submit', submitAnswerEdit);
+            }
+        });
 
         // 날짜 포맷팅
         function formatDate(dateString) {

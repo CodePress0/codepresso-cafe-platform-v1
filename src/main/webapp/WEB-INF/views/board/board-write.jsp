@@ -180,15 +180,6 @@
                 </div>
 
                 <form id="writeForm" class="board-form">
-                    <div class="form-group">
-                        <label for="boardTypeId" class="required">게시판 선택</label>
-                        <select id="boardTypeId" name="boardTypeId" required>
-                            <option value="">게시판을 선택하세요</option>
-                            <option value="1">공지사항</option>
-                            <option value="2" selected>1대1문의</option>
-                            <option value="3">FAQ</option>
-                        </select>
-                    </div>
 
                     <div class="form-group">
                         <label for="title" class="required">제목</label>
@@ -219,6 +210,10 @@
         const titleCount = document.getElementById('titleCount');
         const contentCount = document.getElementById('contentCount');
         const submitBtn = document.getElementById('submitBtn');
+        
+        // 사용자 정보
+        let currentUserRole = null;
+        let currentBoardTypeId = null;
 
         // 수정 모드 확인
         const isEditMode = window.location.pathname.includes('/edit/');
@@ -228,11 +223,54 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             
+            // URL에서 게시판 타입 가져오기
+            getBoardTypeFromUrl();
+            
+            // 사용자 역할 확인
+            checkUserRole();
+            
             // 수정 모드인 경우 기존 데이터 로드
             if (isEditMode && boardId) {
                 loadBoardData(boardId);
             }
         });
+
+        // URL에서 게시판 타입 가져오기
+        function getBoardTypeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const boardType = urlParams.get('boardType');
+            
+            if (boardType) {
+                currentBoardTypeId = parseInt(boardType);
+                console.log('Board type from URL:', currentBoardTypeId);
+            } else {
+                // 기본값: 1:1문의
+                currentBoardTypeId = 2;
+                console.log('No board type in URL, defaulting to 1:1문의');
+            }
+        }
+
+        // 사용자 역할 확인
+        function checkUserRole() {
+            fetch('/api/users/me', {
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('User not logged in');
+                }
+                return response.json();
+            })
+            .then(data => {
+                currentUserRole = data.role;
+                console.log('Current user role:', currentUserRole);
+            })
+            .catch(error => {
+                console.error('Error checking user role:', error);
+                // 기본적으로 USER로 처리
+                currentUserRole = 'USER';
+            });
+        }
 
         // 이벤트 리스너 설정
         function setupEventListeners() {
@@ -285,7 +323,7 @@
                 // 폼에 기존 데이터 채우기
                 titleInput.value = data.title || '';
                 contentInput.value = data.content || '';
-                document.getElementById('boardTypeId').value = data.boardTypeId || 1;
+                currentBoardTypeId = data.boardTypeId || currentBoardTypeId;
                 
                 // 글자 수 업데이트
                 updateCharCount(titleInput, titleCount, 200);
@@ -317,7 +355,7 @@
                 title: titleInput.value.trim(),
                 content: contentInput.value.trim(),
                 statusTag: 'PENDING', // 항상 답변대기로 설정
-                boardTypeId: parseInt(document.getElementById('boardTypeId').value)
+                boardTypeId: currentBoardTypeId
             };
 
             // API 호출 (수정 모드인지 확인)
@@ -361,12 +399,6 @@
         function validateForm() {
             const title = titleInput.value.trim();
             const content = contentInput.value.trim();
-            const boardTypeId = document.getElementById('boardTypeId').value;
-
-            if (!boardTypeId) {
-                showError('게시판을 선택해주세요.');
-                return false;
-            }
 
             if (!title) {
                 showError('제목을 입력해주세요.');
