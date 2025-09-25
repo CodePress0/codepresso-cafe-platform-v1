@@ -24,7 +24,7 @@ public class ReviewService {
     private final MemberRepository memberRepo;
     private final OrdersDetailRepository ordersDetailRepo;
 
-    public ReviewResponse createReview(Long memberId, ReviewCreateRequest request) {
+    public ReviewResponse createReview(Long memberId, ReviewCreateRequest request, String photoUrl) {
         Long orderDetailId = request.getOrderDetailId();
 
         // 1. 회원 조회 및 검증
@@ -47,7 +47,7 @@ public class ReviewService {
         Review review = Review.builder()
                 .rating(request.getRating())
                 .content(request.getContent())
-                .photoUrl(request.getPhotoUrl())
+                .photoUrl(photoUrl)
                 .member(member)
                 .ordersDetail(ordersDetail)
                 .createdAt(LocalDateTime.now())

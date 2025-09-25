@@ -748,7 +748,31 @@
                     if (!btn) return;
                     const odId = btn.getAttribute('data-review-id');
                     if (!odId) return;
-                    window.location.href = '/reviews/write?orderDetailId=' + encodeURIComponent(odId);
+
+                    // POST 폼을 동적으로 생성하여 리뷰 작성 페이지로 이동
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/users/reviews';
+
+                    const orderDetailIdInput = document.createElement('input');
+                    orderDetailIdInput.type = 'hidden';
+                    orderDetailIdInput.name = 'orderDetailId';
+                    orderDetailIdInput.value = odId;
+                    form.appendChild(orderDetailIdInput);
+
+                    // CSRF 토큰 추가
+                    const csrfToken = document.querySelector('meta[name="_csrf"]');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+                    if (csrfToken && csrfHeader) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_csrf';
+                        csrfInput.value = csrfToken.getAttribute('content');
+                        form.appendChild(csrfInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
                 });
             }
         }
