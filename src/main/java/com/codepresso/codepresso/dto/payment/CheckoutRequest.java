@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public class CheckoutRequest {
     private List<OrderItem> orderItems;     // 장바구니든 단일상품이든 여기에 담김
 
     @Data
+    @Builder
     public static class OrderItem {
         @NotNull
         private Long productId;

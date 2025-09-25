@@ -29,7 +29,26 @@ public class MemberCoupon {
     @Column(name = "issued_date")
     private LocalDateTime issuedDate;
 
-    @Column(name = "status", length = 30)
-    private String status;
+    // 만료일
+    @Column(name = "expiry_date")
+    private LocalDateTime expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private CouponStatus status;
+
+    public enum CouponStatus {
+        UNUSED, // 사용전
+        USED    // 사용후
+    }
+
+    // staus가 null일 경우 UNUSED로 자동 세팅 & 만료일 자동계산
+    @PrePersist
+    void onCreate() {
+        if (status == null) status = CouponStatus.UNUSED;
+        if (issuedDate != null && expiryDate == null) {
+            expiryDate = issuedDate.plusMonths(6); // 발급일로부터 6개월
+        }
+    }
 }
 
