@@ -16,7 +16,7 @@ public class ProductDetailResponse {
     private String productContent;
     private String categoryName;
     private List<Hashtag> hashtags;
-    private NutritionInfoDTO nutritionInfo;
+    private NutritionInfo nutritionInfo;
     private List<Allergen> allergens;
     private List<ProductOptionDTO> productOptions;
 
@@ -35,7 +35,7 @@ public class ProductDetailResponse {
                 .productContent(product.getProductContent())
                 .categoryName(product.getCategory() != null ? product.getCategory().getCategoryCode() : "COFFEE")
                 .hashtags(product.getProductHashtags())
-                .nutritionInfo(new NutritionInfoDTO(product.getNutritionInfo()))
+                .nutritionInfo(product.getNutritionInfo())
                 .allergens(product.getAllergens())
                 .productOptions(productOptionDTOs)
                 .build();
