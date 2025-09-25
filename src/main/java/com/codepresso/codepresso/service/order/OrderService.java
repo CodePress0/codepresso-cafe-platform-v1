@@ -1,24 +1,24 @@
 package com.codepresso.codepresso.service.order;
 
+import com.codepresso.codepresso.dto.review.OrdersDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
-import com.codepresso.codepresso.entity.payment.Payment;
 import com.codepresso.codepresso.entity.payment.PaymentDetail;
-import com.codepresso.codepresso.repository.branch.BranchRepository;
 import com.codepresso.codepresso.repository.member.MemberRepository;
+import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -26,6 +26,7 @@ public class OrderService {
 
     private final MemberRepository memberRepository;
     private final OrdersRepository ordersRepository;
+    private final OrdersDetailRepository ordersDetailRepository;
 
     /**
      * 주문 목록 조회
@@ -228,8 +229,13 @@ public class OrderService {
 
     // ========== 하드코딩 더미 데이터 생성 메서드들 (나중에 삭제) ==========
 
+    /**
+     * 특정 주문 상품
+     */
+    public OrdersDetailResponse getOrdersDetail(Long orderDetailId) {
+        Optional<OrdersDetail> ordersDetail = ordersDetailRepository.findById(orderDetailId);
 
-
-
+        return OrdersDetailResponse.of(ordersDetail);
+    }
 
 }

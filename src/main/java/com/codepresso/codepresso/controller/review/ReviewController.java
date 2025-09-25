@@ -19,7 +19,9 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    // 4. 리뷰 작성
+    /**
+     * 리뷰 작성
+     */
     @PostMapping("/")
     public ResponseEntity<ReviewResponse> createReview(@AuthenticationPrincipal LoginUser loginUser
             , @RequestBody ReviewCreateRequest request) {
@@ -29,7 +31,9 @@ public class ReviewController {
         return ResponseEntity.ok(review);
     }
 
-    // 5. 리뷰 수정
+    /**
+     * 리뷰 수정
+     */
     @PatchMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> editReview(@AuthenticationPrincipal LoginUser loginUser,
                                                      @PathVariable Long reviewId,
@@ -41,7 +45,9 @@ public class ReviewController {
     }
 
 
-    // 6. 리뷰 삭제
+    /**
+     * 리뷰 작성
+     */
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@AuthenticationPrincipal LoginUser loginUser,
                                              @PathVariable Long reviewId) {
