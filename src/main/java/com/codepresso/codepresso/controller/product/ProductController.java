@@ -3,8 +3,6 @@ package com.codepresso.codepresso.controller.product;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
-import com.codepresso.codepresso.security.LoginUser;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,30 +40,4 @@ public class ProductController {
         return ResponseEntity.ok(reviews);
     }
 
-//    // 4. 리뷰 수정 (현재 구현 수정 필요)
-//    @PutMapping("/{productId}/reviews/{reviewId}")
-//    public ResponseEntity<Review> editReview(
-//            @PathVariable Long productId,
-//            @PathVariable Long reviewId,
-//            @RequestBody Review review) {
-//        // TODO: 실제 리뷰 수정 로직 구현 필요
-//        Review updatedReview = productService.findByReviewId(reviewId);
-//        return ResponseEntity.ok(updatedReview);
-//    }
-
-    // TODO: 추가 구현 필요한 API들
-
-    // 5. 리뷰 작성
-    // @PostMapping("/reviews")
-    // public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewCreateRequest request) {
-    //     ReviewResponse review = reviewService.createReview(request);
-    //     return ResponseEntity.status(HttpStatus.CREATED).body(review);
-    // }
-
-    // 6. 리뷰 삭제
-    // @DeleteMapping("/reviews/{reviewId}")
-    // public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
-    //     reviewService.deleteReview(reviewId);
-    //     return ResponseEntity.noContent().build();
-    // }
 }

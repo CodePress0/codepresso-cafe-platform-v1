@@ -72,6 +72,21 @@
                 -->
                 <ul class="info-list">
                     <li class="info-item">
+                        <b>프로필 이미지</b>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div id="profile-image-container" style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 2px solid #ddd; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                <img id="profile-image" src="" alt="프로필 이미지" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                <span id="profile-placeholder" style="color: #999; font-size: 12px;">이미지 없음</span>
+                            </div>
+                            <div class="edit-mode" id="profile-image-edit" style="display: none; flex-direction: column; gap: 8px;">
+                                <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-ghost" onclick="document.getElementById('profile-image-input').click()" style="padding: 6px 12px; font-size: 12px;">이미지 선택</button>
+                                <button type="button" class="btn btn-ghost" onclick="deleteProfileImage()" style="padding: 6px 12px; font-size: 12px; color: #dc3545;">이미지 삭제</button>
+                            </div>
+                        </div>
+                        <div id="profile-image-status" style="font-size: 12px; margin-top: 4px; white-space: nowrap; word-wrap: break-word; overflow-wrap: break-word;"></div>
+                    </li>
+                    <li class="info-item">
                         <b>아이디</b> ${pageContext.request.userPrincipal.name}
                     </li>
                     <li class="info-item">
@@ -93,10 +108,23 @@
                         <span id="email-display">불러오는 중...</span>
                         <div class="edit-mode" id="email-edit">
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="email" id="email-input" placeholder="이메일을 입력하세요" style="flex: 1;">
-                                <button type="button" class="btn btn-ghost" onclick="checkEmailDuplicate()" style="padding: 8px 12px; font-size: 12px;">중복체크</button>
+                                <input type="email" id="email-input" placeholder="이메일을 입력하세요" style="flex: 1; min-width: 300px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                                <button type="button" class="btn btn-ghost" onclick="sendEmailVerification()" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">인증번호발송</button>
                             </div>
-                            <div id="email-status" style="font-size: 12px; margin-top: 4px;"></div>
+                            <div id="email-status" style="font-size: 12px; margin-top: 4px; white-space: nowrap; word-wrap: break-word; overflow-wrap: break-word;"></div>
+                            
+                            <!-- 이메일 인증 영역 -->
+                            <div class="email-verification" id="emailVerification" style="display: none; margin-top: 12px; padding: 16px 20px; background: #f8f9fa; border-radius: 8px; min-width: 500px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                                    <strong>인증번호가 이메일로 발송되었습니다!</strong><br>
+                                    이메일을 확인하고 인증번호를 입력해주세요.
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" id="emailVerificationCode" placeholder="인증번호 입력" style="flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                                    <button type="button" class="btn btn-ghost" onclick="confirmEmailVerification()" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">인증확인</button>
+                                </div>
+                                <div id="emailVerificationMsg" style="font-size: 12px; margin-top: 4px;"></div>
+                            </div>
                         </div>
                     </li>
                     <li class="info-item">
@@ -104,10 +132,10 @@
                         <span id="nickname-display">불러오는 중...</span>
                         <div class="edit-mode" id="nickname-edit">
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요" style="flex: 1;">
-                                <button type="button" class="btn btn-ghost" onclick="checkNicknameDuplicate()" style="padding: 8px 12px; font-size: 12px;">중복체크</button>
+                                <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요" style="flex: 1; min-width: 300px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                                <button type="button" class="btn btn-ghost" onclick="checkNicknameDuplicate()" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">중복체크</button>
                             </div>
-                            <div id="nickname-status" style="font-size: 12px; margin-top: 4px;"></div>
+                            <div id="nickname-status" style="font-size: 12px; margin-top: 4px; white-space: nowrap; word-wrap: break-word; overflow-wrap: break-word;"></div>
                         </div>
                     </li>
                 </ul>
@@ -126,6 +154,13 @@
                 <script>
                     let isEditMode = false;
                     let originalData = {};
+                    
+                    // 이메일 인증 관련 변수
+                    let isEmailVerified = false;
+                    let emailVerificationCode = '';
+
+                    // 프로필 이미지 관련 변수
+                    let currentProfileImage = null;
 
                     // 필요 시, 본인 정보 API(/api/users/me)를 호출해 닉네임/이메일을 채워 넣습니다.
                     function formatPhone(value){
@@ -156,7 +191,11 @@
                             // 모든 편집 필드 표시
                             document.querySelectorAll('.edit-mode').forEach(el => {
                                 if (el.id !== 'edit-controls') {
-                                    el.style.display = 'block';
+                                    if (el.id === 'profile-image-edit') {
+                                        el.style.display = 'flex'; // 프로필 이미지 편집 영역은 flex로
+                                    } else {
+                                        el.style.display = 'block'; // 나머지는 block으로
+                                    }
                                 }
                             });
                             
@@ -169,6 +208,15 @@
                             // 중복 확인 상태 초기화
                             document.getElementById('email-status').textContent = '';
                             document.getElementById('nickname-status').textContent = '';
+                            
+                            // 이메일 인증 상태 초기화
+                            isEmailVerified = false;
+                            document.getElementById('emailVerification').style.display = 'none';
+                            document.getElementById('emailVerificationCode').value = '';
+                            document.getElementById('emailVerificationMsg').textContent = '';
+                            
+                            // 프로필 이미지 상태 메시지 초기화
+                            document.getElementById('profile-image-status').textContent = '';
                             
                         } else {
                             // 보기 모드로 전환
@@ -213,8 +261,8 @@
                         
                         const q = encodeURIComponent(value);
                         try {
-                            // 1차 시도: 쿼리 파라미터 방식 (/check?type={field}&value=...)
-                            const url1 = '/api/auth/check?type=' + encodeURIComponent(field) + '&value=' + q;
+                            // 1차 시도: 쿼리 파라미터 방식 (/check?field={field}&value=...)
+                            const url1 = '/api/auth/check?field=' + encodeURIComponent(field) + '&value=' + q;
                             console.log('[dup-check] try1', field, url1);
                             let res = await fetch(url1);
                             
@@ -242,24 +290,116 @@
                         }
                     }
 
-                    // 이메일 중복 확인
-                    function checkEmailDuplicate() {
-                        const email = document.getElementById('email-input').value;
+                    // 이메일 인증번호 발송 (중복체크 + 인증번호 발송)
+                    async function sendEmailVerification() {
+                        const email = document.getElementById('email-input').value.trim();
                         const statusDiv = document.getElementById('email-status');
-                        
+                        const verificationSection = document.getElementById('emailVerification');
+                        const verificationMsg = document.getElementById('emailVerificationMsg');
+
                         if (!email) {
                             alert('이메일을 입력해주세요.');
                             return;
                         }
 
-                        // 현재 이메일과 같으면 중복 확인하지 않음
+                        // 현재 이메일과 같으면 인증 불필요
                         if (email === originalData.email) {
                             statusDiv.textContent = '현재 사용 중인 이메일입니다.';
                             statusDiv.style.color = '#666';
+                            verificationSection.style.display = 'none';
+                            isEmailVerified = true;
                             return;
                         }
 
-                        checkDup('email', email, statusDiv, '이메일');
+                        try {
+                            // 1. 이메일 중복체크
+                            const checkRes = await fetch('/api/auth/check?field=email&value=' + encodeURIComponent(email));
+                            if (!checkRes.ok) throw new Error('중복체크 실패');
+
+                            const checkData = await checkRes.json();
+                            if (checkData.duplicate) {
+                                statusDiv.textContent = '이미 사용 중인 이메일입니다.';
+                                statusDiv.style.color = '#dc3545';
+                                verificationSection.style.display = 'none';
+                                isEmailVerified = false;
+                                return;
+                            }
+
+                            // 2. 이메일 인증번호 발송
+                            const response = await fetch('/api/auth/send-email-verification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email })
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(errorData.message || '이메일 발송 실패');
+                            }
+
+                            const data = await response.json();
+                            emailVerificationCode = data.verificationCode;
+
+                            statusDiv.textContent = '인증번호가 이메일로 발송되었습니다.';
+                            statusDiv.style.color = '#28a745';
+                            verificationSection.style.display = 'block';
+                            isEmailVerified = false;
+
+                        } catch (error) {
+                            console.error('이메일 인증 발송 실패:', error);
+                            statusDiv.textContent = error.message || '이메일 발송에 실패했습니다. 다시 시도해주세요.';
+                            statusDiv.style.color = '#dc3545';
+                            verificationSection.style.display = 'none';
+                            isEmailVerified = false;
+                        }
+                    }
+
+                    // 이메일 인증번호 확인
+                    async function confirmEmailVerification() {
+                        const inputCode = document.getElementById('emailVerificationCode').value.trim();
+                        const verificationMsg = document.getElementById('emailVerificationMsg');
+                        const statusDiv = document.getElementById('email-status');
+
+                        if (!inputCode) {
+                            verificationMsg.textContent = '인증번호를 입력해주세요.';
+                            verificationMsg.style.color = '#dc3545';
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/api/auth/verify-email-code', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: document.getElementById('email-input').value.trim(),
+                                    code: inputCode
+                                })
+                            });
+
+                            const data = await response.json();
+
+                            if (data.valid) {
+                                verificationMsg.textContent = '이메일 인증이 완료되었습니다.';
+                                verificationMsg.style.color = '#28a745';
+                                statusDiv.textContent = '이메일 인증이 완료되었습니다.';
+                                statusDiv.style.color = '#28a745';
+                                isEmailVerified = true;
+                                
+                                // 인증 완료 후 3초 뒤 인증 영역 숨김
+                                setTimeout(() => {
+                                    document.getElementById('emailVerification').style.display = 'none';
+                                }, 3000);
+                            } else {
+                                verificationMsg.textContent = data.message || '인증번호가 일치하지 않습니다.';
+                                verificationMsg.style.color = '#dc3545';
+                                isEmailVerified = false;
+                            }
+                        } catch (error) {
+                            console.error('이메일 인증 확인 실패:', error);
+                            verificationMsg.textContent = '인증 중 오류가 발생했습니다.';
+                            verificationMsg.style.color = '#dc3545';
+                            isEmailVerified = false;
+                        }
                     }
 
                     // 닉네임 중복 확인
@@ -291,9 +431,9 @@
                         const emailStatus = document.getElementById('email-status').textContent;
                         const nicknameStatus = document.getElementById('nickname-status').textContent;
 
-                        // 이메일이 변경되었는데 중복 확인을 하지 않은 경우
-                        if (email && email !== originalData.email && !emailStatus.includes('사용 가능') && !emailStatus.includes('현재 사용 중')) {
-                            alert('이메일 중복체크를 해주세요.');
+                        // 이메일이 변경되었는데 인증을 하지 않은 경우
+                        if (email && email !== originalData.email && !isEmailVerified) {
+                            alert('이메일 인증을 완료해주세요.');
                             return;
                         }
 
@@ -342,6 +482,106 @@
                         });
                     }
 
+                    // 프로필 이미지 업로드
+                    function uploadProfileImage() {
+                        const fileInput = document.getElementById('profile-image-input');
+                        const file = fileInput.files[0];
+                        
+                        if (!file) {
+                            showProfileImageStatus('파일을 선택해주세요.', false);
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        fetch('/api/profile/image', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showProfileImageStatus('프로필 이미지가 업로드되었습니다.', true);
+                                displayProfileImage(data.imageUrl);
+                                currentProfileImage = data.imageUrl;
+                            } else {
+                                showProfileImageStatus(data.message || '업로드에 실패했습니다.', false);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('프로필 이미지 업로드 오류:', error);
+                            showProfileImageStatus('업로드 중 오류가 발생했습니다.', false);
+                        });
+                    }
+
+                    // 프로필 이미지 삭제
+                    function deleteProfileImage() {
+                        if (!currentProfileImage) {
+                            showProfileImageStatus('삭제할 이미지가 없습니다.', false);
+                            return;
+                        }
+
+                        if (!confirm('프로필 이미지를 삭제하시겠습니까?')) {
+                            return;
+                        }
+
+                        fetch('/api/profile/image', {
+                            method: 'DELETE',
+                            credentials: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showProfileImageStatus('프로필 이미지가 삭제되었습니다.', true);
+                                hideProfileImage();
+                                currentProfileImage = null;
+                            } else {
+                                showProfileImageStatus(data.message || '삭제에 실패했습니다.', false);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('프로필 이미지 삭제 오류:', error);
+                            showProfileImageStatus('삭제 중 오류가 발생했습니다.', false);
+                        });
+                    }
+
+                    // 프로필 이미지 표시
+                    function displayProfileImage(imageUrl) {
+                        const img = document.getElementById('profile-image');
+                        const placeholder = document.getElementById('profile-placeholder');
+                        
+                        img.src = imageUrl;
+                        img.style.display = 'block';
+                        placeholder.style.display = 'none';
+                    }
+
+                    // 프로필 이미지 숨김
+                    function hideProfileImage() {
+                        const img = document.getElementById('profile-image');
+                        const placeholder = document.getElementById('profile-placeholder');
+                        
+                        img.style.display = 'none';
+                        placeholder.style.display = 'block';
+                    }
+
+                    // 프로필 이미지 상태 메시지 표시
+                    function showProfileImageStatus(message, isSuccess) {
+                        const statusDiv = document.getElementById('profile-image-status');
+                        statusDiv.textContent = message;
+                        statusDiv.style.color = isSuccess ? '#28a745' : '#dc3545';
+                        
+                        if (isSuccess) {
+                            setTimeout(() => {
+                                statusDiv.textContent = '';
+                            }, 3000);
+                        }
+                    }
+
+                    // 파일 선택 이벤트 리스너
+                    document.getElementById('profile-image-input').addEventListener('change', uploadProfileImage);
+
                     // 페이지 로드 시 사용자 정보 가져오기
                     (async function(){
                         try {
@@ -364,6 +604,12 @@
                             if (data.phone) document.getElementById('phone-display').textContent = formatPhone(data.phone);
                             if (data.email) document.getElementById('email-display').textContent = data.email;
                             if (data.nickname) document.getElementById('nickname-display').textContent = data.nickname;
+                            
+                            // 프로필 이미지 표시
+                            if (data.profileImage) {
+                                displayProfileImage(data.profileImage);
+                                currentProfileImage = data.profileImage;
+                            }
                         } catch (e) { 
                             console.error('사용자 정보 로드 오류:', e);
                             alert('사용자 정보를 불러올 수 없습니다. 로그인 페이지로 이동합니다.');

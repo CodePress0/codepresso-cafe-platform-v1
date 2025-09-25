@@ -2,35 +2,88 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${product.productName} - 바나프레소</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/productDetailCss.css">
-</head>
-<body>
-<header class="header">
-    <div class="header-content">
-        <div class="logo-section">
-            <a href="${pageContext.request.contextPath}/" class="logo">codepresso</a>
-            <div class="order-location">
-                <span style="margin-left: 20px;"> 매장을 선택하세요. 선택 ▶</span>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button class="search-btn" onclick="showSearchModal()">🔍</button>
-            <button class="cart-btn" onclick="toggleCart()">
-                🛒
-                <span class="cart-count" id="cartCount">0</span>
-            </button>
-        </div>
-    </div>
-</header>
 
-<nav class="nav">
+<%@ include file="/WEB-INF/views/common/head.jspf" %>
+
+<style>
+    /* 전체 페이지 레이아웃 조정 */
+    body {
+        padding-top: 0; /* head.jspf의 기본 패딩 제거 */
+    }
+
+    /* nav 바 헤더 바로 아래 고정 스타일 */
+    .menu-nav {
+        position: fixed !important;
+        top: 0px; /* header와 붙이기 위해 0으로 변경 */
+        left: 0;
+        right: 0;
+        z-index: 999; /* 헤더보다 낮은 z-index */
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-top: 60px; /* header 높이만큼 margin으로 밀어냄 */
+    }
+
+    .nav-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 12px 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .nav-item {
+        text-decoration: none;
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+
+    .nav-item:hover {
+        color: #ff7aa2 !important; /* var(--pink-1) 대신 직접 색상 지정 */
+        background: #ffe5ec !important; /* var(--pink-4) 대신 직접 색상 지정 */
+    }
+
+    /* 푸터 바닥 고정 스타일 */
+    .footer {
+        margin-top: auto; /* head.jspf의 flexbox 레이아웃에서 푸터를 하단에 고정 */
+        background: rgba(255,255,255,0.9);
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+
+    /* 반응형 조정 */
+    @media (max-width: 768px) {
+        .nav-content {
+            gap: 12px;
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+
+        .pdcontainer {
+            margin-top: 140px; /* 모바일에서는 살짝 더 큰 여백 */
+        }
+    }
+</style>
+
+<body>
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
+
+<nav class="menu-nav">
     <div class="nav-content">
         <a href="${pageContext.request.contextPath}/products?category=COFFEE" class="nav-item">커피</a>
         <a href="${pageContext.request.contextPath}/products?category=LATTE" class="nav-item">라떼</a>
@@ -42,9 +95,9 @@
         <a href="${pageContext.request.contextPath}/products?category=MD_GOODS" class="nav-item">MD</a>
     </div>
 </nav>
+<!-- 뒤로가기 버튼 -->
 
-<div class="container">
-    <!-- 뒤로가기 버튼 -->
+<div class="pdcontainer">
     <div class="page-header">
         <button class="back-btn" onclick="history.back()">←</button>
         <h1 class="page-title">메뉴 상세</h1>
@@ -89,8 +142,18 @@
                         </c:choose>
                     </div>
 
+                    <!-- 좋아요 및 리뷰 뱃지 -->
+
+
                     <!-- 메뉴 정보 (제목, 가격, 설명) -->
                     <div class="menu-content">
+                        <div class="menu-info-badge">
+                            <div class="likes" onclick="toggleFavorite()">
+                                <span class="heart" id="favoriteHeart">♡</span>
+                                <span class="like-count">1천</span>
+                            </div>
+                            <div class="review-badge">리뷰 확인</div>
+                        </div>
                         <!-- 메뉴 제목 및 가격 -->
                         <div class="menu-header">
                             <h2 class="menu-title">${product.productName}</h2>
@@ -104,14 +167,7 @@
                             <p>${product.productContent}</p>
                         </div>
 
-                        <!-- 좋아요 및 리뷰 뱃지 -->
-                        <div class="menu-info-badge">
-                            <div class="likes">
-                                <span class="heart">♡</span>
-                                <span class="like-count">1천</span>
-                            </div>
-                            <div class="review-badge">리뷰픽</div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -290,37 +346,6 @@
     </c:if>
 </div>
 
-<!-- 검색 모달 -->
-<div id="searchModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="hideSearchModal()">&times;</span>
-        <h2>메뉴 검색</h2>
-        <form action="${pageContext.request.contextPath}/search" method="get">
-            <input type="text" name="keyword" placeholder="검색할 메뉴명을 입력하세요..." required>
-            <button type="submit">검색</button>
-        </form>
-    </div>
-</div>
-
-<!-- 장바구니 오버레이 -->
-<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
-
-<!-- 장바구니 패널 -->
-<div class="cart-panel" id="cartPanel">
-    <div class="cart-header">
-        <h3 class="cart-title">장바구니</h3>
-        <button class="close-cart" onclick="toggleCart()">✕</button>
-    </div>
-    <div class="cart-items" id="cartItems">
-        <div style="text-align: center; color: #666; padding: 40px 20px;">
-            장바구니가 비어있습니다
-        </div>
-    </div>
-    <div class="cart-total">
-        <div class="total-amount">총 금액: <span id="totalAmount">0</span>원</div>
-        <button class="order-btn" id="orderBtn" disabled onclick="placeOrder()">주문하기</button>
-    </div>
-</div>
 
 <!-- 성공 메시지 팝업 -->
 <div id="successMessage" class="success-message">장바구니에 담았습니다!</div>
@@ -340,6 +365,7 @@
     var currentQuantity = 1;
     var selectedOptions = {}; // 선택된 옵션들을 저장
     var totalExtraPrice = 0; // 추가 가격 총합
+    var isFavorite = false; // 즐겨찾기 상태
 
     // 동적으로 옵션 UI 생성
     function createOptionUI(groupedOptions) {
@@ -591,6 +617,52 @@
         }
     }
 
+    // 현재 즐겨찾기 상태 확인
+    function checkFavoriteStatus() {
+        <c:if test="${pageContext.request.userPrincipal != null}">
+            console.log('=== 즐겨찾기 상태 확인 시작 ===');
+
+            fetch('${pageContext.request.contextPath}/users/favorites', {
+                method: 'GET'
+            })
+            .then(response => {
+                console.log('즐겨찾기 목록 응답 상태:', response.status);
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error(`즐겨찾기 목록을 가져올 수 없습니다. 상태: ${response.status}`);
+            })
+            .then(data => {
+                console.log('즐겨찾기 목록 응답 데이터:', data);
+
+                // FavoriteListResponse 구조에 맞게 수정
+                if (data && data.favorites && Array.isArray(data.favorites)) {
+                    console.log('즐겨찾기 목록:', data.favorites);
+                    console.log('현재 상품 ID:', currentProduct.id);
+
+                    // 현재 상품이 즐겨찾기 목록에 있는지 확인
+                    isFavorite = data.favorites.some(favorite => {
+                        console.log('비교:', favorite.productId, '===', currentProduct.id);
+                        return favorite.productId === currentProduct.id;
+                    });
+
+                    console.log('즐겨찾기 상태:', isFavorite);
+                    updateFavoriteUI();
+                } else {
+                    console.log('즐겨찾기 목록이 없거나 형식이 잘못됨');
+                    isFavorite = false;
+                    updateFavoriteUI();
+                }
+            })
+            .catch(error => {
+                console.error('즐겨찾기 상태 확인 실패:', error);
+                // 에러 시 기본값으로 설정
+                isFavorite = false;
+                updateFavoriteUI();
+            });
+        </c:if>
+    }
+
     // 페이지 로드 시 기본 옵션 설정
     document.addEventListener('DOMContentLoaded', function() {
         // 각 옵션 그룹의 첫 번째 옵션을 기본 선택으로 설정
@@ -609,6 +681,7 @@
         });
 
         calculateTotalPrice();
+        checkFavoriteStatus(); // 즐겨찾기 상태 확인
     });
 
     // 선택된 옵션 ID들을 수집하는 함수
@@ -687,6 +760,224 @@
         }, 3000);
     }
 
+    // 즐겨찾기 토글 함수
+    function toggleFavorite() {
+        // 로그인 상태 확인
+        <c:choose>
+            <c:when test="${pageContext.request.userPrincipal != null}">
+                if (isFavorite) {
+                    // 즐겨찾기 제거
+                    removeFavorite();
+                } else {
+                    // 즐겨찾기 추가
+                    addFavorite();
+                }
+            </c:when>
+            <c:otherwise>
+                alert('로그인이 필요한 서비스입니다.');
+                return;
+            </c:otherwise>
+        </c:choose>
+    }
+
+    // CSRF 토큰 가져오기
+    function getCSRFToken() {
+        const token = document.querySelector('meta[name="_csrf"]');
+        const header = document.querySelector('meta[name="_csrf_header"]');
+
+        const tokenValue = token ? token.getAttribute('content') : null;
+        const headerName = header ? header.getAttribute('content') : 'X-CSRF-TOKEN';
+
+        console.log('🔑 CSRF 토큰 상태:', {
+            tokenExists: !!tokenValue,
+            headerName: headerName,
+            token: tokenValue ? tokenValue.substring(0, 10) + '...' : 'null'
+        });
+
+        return {
+            token: tokenValue,
+            header: headerName
+        };
+    }
+
+    // 즐겨찾기 추가
+    function addFavorite() {
+        console.log('=== 즐겨찾기 추가 시작 ===');
+        console.log('상품 ID:', currentProduct.id);
+
+        const requestData = {
+            productId: currentProduct.id
+        };
+
+        const csrf = getCSRFToken();
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // CSRF 토큰이 있으면 헤더에 추가
+        if (csrf.token) {
+            headers[csrf.header] = csrf.token;
+            console.log('✅ CSRF 토큰 추가됨:', csrf.header);
+        } else {
+            console.warn('⚠️ CSRF 토큰이 없습니다. 요청이 실패할 수 있습니다.');
+        }
+
+        console.log('요청 데이터:', requestData);
+        console.log('요청 헤더:', headers);
+
+        fetch('${pageContext.request.contextPath}/users/favorites', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            console.log('응답 상태:', response.status, response.statusText);
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    console.error('즐겨찾기 추가 실패:', text);
+
+                    // HTTP 상태 코드별 에러 메시지
+                    let errorMessage;
+                    switch (response.status) {
+                        case 401:
+                            errorMessage = '로그인이 필요합니다.';
+                            break;
+                        case 403:
+                            errorMessage = 'CSRF 토큰 오류입니다. 페이지를 새로고침한 후 다시 시도해주세요.';
+                            break;
+                        case 404:
+                            errorMessage = '상품을 찾을 수 없습니다.';
+                            break;
+                        case 500:
+                            errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                            break;
+                        default:
+                            errorMessage = `요청 실패 (${response.status}): ${text}`;
+                    }
+
+                    throw new Error(errorMessage);
+                });
+            }
+        })
+        .then(data => {
+            console.log('즐겨찾기 추가 응답:', data);
+
+            // AuthResponse 구조: { success: boolean, message: string }
+            if (data.success === true) {
+                console.log('즐겨찾기 추가 성공');
+                isFavorite = true;
+                updateFavoriteUI();
+                showSuccessMessage('즐겨찾기에 추가되었습니다.');
+            } else {
+                console.log('즐겨찾기 추가 실패:', data.message);
+                showSuccessMessage(data.message || '즐겨찾기 추가 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('즐겨찾기 추가 실패:', error);
+
+            // 네트워크 오류 vs API 응답 오류 구분
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                showSuccessMessage('네트워크 연결을 확인해주세요.');
+            } else {
+                showSuccessMessage(error.message);
+            }
+        });
+    }
+
+    // 즐겨찾기 제거
+    function removeFavorite() {
+        console.log('=== 즐겨찾기 제거 시작 ===');
+        console.log('상품 ID:', currentProduct.id);
+
+        const csrf = getCSRFToken();
+        const headers = {};
+
+        // CSRF 토큰이 있으면 헤더에 추가
+        if (csrf.token) {
+            headers[csrf.header] = csrf.token;
+            console.log('✅ CSRF 토큰 추가됨:', csrf.header);
+        } else {
+            console.warn('⚠️ CSRF 토큰이 없습니다. 요청이 실패할 수 있습니다.');
+        }
+
+        console.log('요청 헤더:', headers);
+
+        fetch('${pageContext.request.contextPath}/users/favorites/' + currentProduct.id, {
+            method: 'DELETE',
+            headers: headers
+        })
+        .then(response => {
+            console.log('응답 상태:', response.status, response.statusText);
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    console.error('즐겨찾기 제거 실패:', text);
+
+                    // HTTP 상태 코드별 에러 메시지
+                    let errorMessage;
+                    switch (response.status) {
+                        case 401:
+                            errorMessage = '로그인이 필요합니다.';
+                            break;
+                        case 403:
+                            errorMessage = 'CSRF 토큰 오류입니다. 페이지를 새로고침한 후 다시 시도해주세요.';
+                            break;
+                        case 404:
+                            errorMessage = '상품이나 즐겨찾기를 찾을 수 없습니다.';
+                            break;
+                        case 500:
+                            errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                            break;
+                        default:
+                            errorMessage = `요청 실패 (${response.status}): ${text}`;
+                    }
+
+                    throw new Error(errorMessage);
+                });
+            }
+        })
+        .then(data => {
+            console.log('즐겨찾기 제거 응답:', data);
+
+            // AuthResponse 구조: { success: boolean, message: string }
+            if (data.success === true) {
+                console.log('즐겨찾기 제거 성공');
+                isFavorite = false;
+                updateFavoriteUI();
+                showSuccessMessage('즐겨찾기에서 제거되었습니다.');
+            } else {
+                console.log('즐겨찾기 제거 실패:', data.message);
+                showSuccessMessage(data.message || '즐겨찾기 제거 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('즐겨찾기 제거 실패:', error);
+
+            // 네트워크 오류 vs API 응답 오류 구분
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                showSuccessMessage('네트워크 연결을 확인해주세요.');
+            } else {
+                showSuccessMessage(error.message);
+            }
+        });
+    }
+
+    // 즐겨찾기 UI 업데이트
+    function updateFavoriteUI() {
+        const heartElement = document.getElementById('favoriteHeart');
+        if (isFavorite) {
+            heartElement.textContent = '♥';
+            heartElement.style.color = '#ff69b4';
+        } else {
+            heartElement.textContent = '♡';
+            heartElement.style.color = '#ff69b4';
+        }
+    }
+
     // 검색 모달 관련 함수
     function showSearchModal() {
         document.getElementById('searchModal').style.display = 'block';
@@ -725,7 +1016,7 @@
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        padding: 15px 20px;
+        padding-top: 70px; /* nav와 header 높이 고려한 여백 */
         margin-bottom: 20px;
     }
 
@@ -773,19 +1064,19 @@
     /* 2열 레이아웃 */
     .menu-detail-container {
         display: flex;
-        gap: 40px;
-        max-width: 1200px;
+        gap: 20px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 20px 10px; /* 양쪽 여백을 20px에서 10px로 줄임 */
     }
 
     .menu-info-section {
-        flex: 1;
+        flex: 2; /* 비율을 더 늘려서 더 많은 공간 차지 */
         min-width: 0;
     }
 
     .order-section {
-        width: 400px;
+        width: 320px; /* 400px에서 320px로 축소 */
         flex-shrink: 0;
     }
 
@@ -863,6 +1154,16 @@
         align-items: center;
         gap: 5px;
         margin-bottom: 10px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .likes:hover {
+        transform: scale(1.05);
+    }
+
+    .likes:active {
+        transform: scale(0.95);
     }
 
     .heart {
@@ -1663,5 +1964,4 @@
     }
 </style>
 
-</body>
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

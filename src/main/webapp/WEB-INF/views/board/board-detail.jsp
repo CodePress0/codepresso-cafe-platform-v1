@@ -249,7 +249,8 @@
                 })
                 .then(data => {
                     console.log('User data received:', data);
-                    currentUserId = data.id;
+                    currentUserId = data.memberId; // data.id가 아니라 data.memberId 사용
+                    console.log('currentUserId set to:', currentUserId, 'type:', typeof currentUserId);
                 })
                 .catch(error => {
                     console.error('Error loading user:', error);
@@ -343,8 +344,36 @@
             }
 
             // 작성자만 수정/삭제 버튼 표시
-            if (currentUserId && currentUserId === data.memberId) {
-                document.getElementById('editBtn').style.display = 'inline-block';
+            console.log('=== 버튼 표시 로직 ===');
+            console.log('currentUserId:', currentUserId, 'type:', typeof currentUserId);
+            console.log('data.memberId:', data.memberId, 'type:', typeof data.memberId);
+            console.log('비교 결과:', currentUserId == data.memberId);
+            
+            if (currentUserId && currentUserId == data.memberId) {
+                var editBtn = document.getElementById('editBtn');
+                
+                // 답변완료 상태가 아닐 때만 수정 버튼 표시
+                if (data.statusTag !== 'ANSWERED') {
+                    editBtn.style.display = 'inline-block';
+                    editBtn.textContent = '수정';
+                    editBtn.style.background = '';
+                    editBtn.style.color = '';
+                    editBtn.style.cursor = 'pointer';
+                    editBtn.onclick = editPost; // 정상적인 수정 함수 연결
+                } else {
+                    // 답변완료 상태일 때는 수정 불가 안내
+                    editBtn.style.display = 'inline-block';
+                    editBtn.textContent = '수정불가 (답변완료)';
+                    editBtn.style.background = 'rgba(156, 163, 175, 0.2)';
+                    editBtn.style.color = '#6b7280';
+                    editBtn.style.cursor = 'not-allowed';
+                    editBtn.onclick = function() {
+                        alert('답변이 완료된 게시글은 수정할 수 없습니다.');
+                        return false;
+                    };
+                }
+                
+                // 삭제는 항상 가능 (작성자 본인만)
                 document.getElementById('deleteBtn').style.display = 'inline-block';
             }
         }

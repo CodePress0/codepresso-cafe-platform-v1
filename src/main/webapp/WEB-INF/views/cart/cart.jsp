@@ -82,7 +82,7 @@
                                             <ul class="cart-option-list">
                                                 <c:forEach var="opt" items="${item.options}">
                                                     <li>
-                                                        <span>${opt.optionName}</span>
+                                                        <span>${opt.optionStyle}</span>
                                                         <c:if test="${opt.extraPrice ne null && opt.extraPrice ne 0}">
                                                             <em>+<fmt:formatNumber value="${opt.extraPrice}" type="number" />원</em>
                                                         </c:if>

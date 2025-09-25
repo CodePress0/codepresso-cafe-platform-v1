@@ -22,7 +22,7 @@
       "Bash(printf:*)",
       "Bash(echo $PATH)",
       "Bash(~/.local/bin/SuperClaude:*)",
-      "WebFetch(domain:github.com)"
+      "Bash(git apply:*)"
     ],
     "deny": [],
     "ask": []

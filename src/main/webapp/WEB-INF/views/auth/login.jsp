@@ -104,7 +104,7 @@
 
                     <!-- 실패 시 쿼리파라미터 error=1로 돌아옴(SecurityConfig.failureUrl) -->
                     <div class="links">
-                        <a href="#" onclick="alert('아이디 찾기 화면 (준비중)'); return false;">아이디 찾기</a>
+                        <a href="<c:url value="/auth/id-find"/>">아이디 찾기</a>
                         <a href="<c:url value="/auth/password-find"/>">비밀번호 찾기</a>
                         <a href="<c:url value="/auth/signup"/>">회원가입</a>
                     </div>

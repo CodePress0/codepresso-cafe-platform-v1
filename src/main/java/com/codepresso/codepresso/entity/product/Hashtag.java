@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 public class Hashtag {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hashtag_id")
     private Long id;
 

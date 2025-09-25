@@ -80,6 +80,11 @@ public class ViewController {
         return "auth/password-find";
     }
 
+    @GetMapping("/auth/id-find") // 아이디 찾기 화면
+    public String idFindPage() {
+        return "auth/id-find";
+    }
+
     // 매장 목록은 BranchController에서 처리
 
     @GetMapping("/member/mypage") // GET /member/mypage → 마이페이지 (보안설정에서 보호)
@@ -157,32 +162,4 @@ public class ViewController {
         return "board/board-write";
     }
 
-    /**
-     * 상품 목록 페이지
-     */
-    @GetMapping("/products")
-    public String productList(@RequestParam(required = false, defaultValue = "COFFEE") String category, Model model) {
-        try {
-            List<ProductListResponse> products = productService.findProductsByCategory(category);
-            model.addAttribute("products", products);
-            model.addAttribute("currentCategory", category);
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "상품 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
-        }
-        return "product/productList";
-    }
-
-    /**
-     * 상품 상세 페이지
-     */
-    @GetMapping("/products/{productId}")
-    public String productDetail(@PathVariable Long productId, Model model) {
-        try {
-            ProductDetailResponse product = productService.findByProductId(productId);
-            model.addAttribute("product", product);
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
-        }
-        return "product/productDetail";
-    }
 }
