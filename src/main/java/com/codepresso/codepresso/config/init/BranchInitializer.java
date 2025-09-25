@@ -34,21 +34,30 @@ public class BranchInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         log.info("[Init] BranchInitializer start");
 
+        int existing = countBranches();
+        if (existing > 0) {
+            log.info("[Init] branch table already seeded ({} rows), skip seeding", existing);
+            return;
+        }
+
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator(branchSeed);
         populator.setSeparator(";");          // 문장 구분자
         populator.setContinueOnError(true);   // 일부 레코드 실패해도 계속
         populator.execute(dataSource);        // INSERT IGNORE라 중복은 무시됨
 
+        log.info("[Init] branch rows now: {}", countBranches());
+
+        log.info("[Init] BranchInitializer done");
+    }
+
+    private int countBranches() {
         try (Connection c = dataSource.getConnection();
              Statement st = c.createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM branch")) {
-            if (rs.next()) {
-                log.info("[Init] branch rows now: {}", rs.getInt(1));
-            }
+            return rs.next() ? rs.getInt(1) : 0;
         } catch (Exception e) {
             log.warn("[Init] count failed", e);
+            return 0;
         }
-
-        log.info("[Init] BranchInitializer done");
     }
 }
