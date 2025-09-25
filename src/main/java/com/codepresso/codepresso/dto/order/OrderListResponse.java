@@ -15,6 +15,8 @@ import java.util.List;
 public class OrderListResponse {
 
     private List<OrderSummary> orders;
+    private Long totalCount;    // 전체 주문 수
+    private Integer filteredCount; // 현재 기간 필터에 해당하는 주문 수
 
     @Data
     @Builder

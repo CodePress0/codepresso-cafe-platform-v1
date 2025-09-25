@@ -904,7 +904,7 @@
         orderButton.addEventListener('click', () => {
             if (orderButton.disabled) return;
             const id = selectedBranchIdInput ? String(selectedBranchIdInput.value || '').trim() : '';
-            const url = new URL('/payments', window.location.origin);
+            const url = new URL('/payments/cart', window.location.origin);
             if (id) url.searchParams.set('branchId', id);
             window.location.href = url.toString();
         });
