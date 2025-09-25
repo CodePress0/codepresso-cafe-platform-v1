@@ -47,8 +47,8 @@ public class CartController {
                 .options(savedItem.getOptions().stream().map(opt ->
                         new CartOptionResponse(
                                 opt.getProductOption().getId(),
-                                opt.getProductOption().getOptionStyle().getOptionName().getOptionName(),
-                                opt.getProductOption().getOptionStyle().getExtraPrice()
+                                opt.getProductOption().getOptionStyle().getExtraPrice(),
+                                opt.getProductOption().getOptionStyle().getOptionStyle()
                         )
                 ).toList())
                 .build();
