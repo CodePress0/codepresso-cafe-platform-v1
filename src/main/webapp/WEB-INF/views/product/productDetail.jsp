@@ -6,50 +6,106 @@
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
 
 <style>
+    @import url('${pageContext.request.contextPath}/css/menu.css');
+
     /* 전체 페이지 레이아웃 조정 */
-    body {
+    body.product-detail-page {
         padding-top: 0; /* head.jspf의 기본 패딩 제거 */
+        background-color: #f7f7f7;
     }
 
-    /* nav 바 헤더 바로 아래 고정 스타일 */
-    .menu-nav {
-        position: fixed !important;
-        top: 0px; /* header와 붙이기 위해 0으로 변경 */
-        left: 0;
-        right: 0;
-        z-index: 999; /* 헤더보다 낮은 z-index */
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        margin-top: 60px; /* header 높이만큼 margin으로 밀어냄 */
+    .product-detail-main .pdcontainer {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
     }
 
-    .nav-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .product-detail-main .product-shell {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        padding: 32px 32px 48px;
+        display: grid;
+        gap: 28px;
+    }
+
+    .menu-detail-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
         gap: 20px;
-        padding: 12px 20px;
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
     }
 
-    .nav-item {
-        text-decoration: none;
-        color: #333;
-        font-size: 14px;
-        font-weight: 500;
-        padding: 8px 16px;
-        border-radius: 20px;
-        transition: all 0.3s ease;
-        white-space: nowrap;
+    .detail-main-column {
+        display: grid;
+        gap: 18px;
     }
 
+    .detail-side-column {
+        align-self: start;
+        max-width: 360px;
+        display: grid;
+        gap: 18px;
+    }
 
-    .nav-item:hover {
-        color: #ff7aa2 !important; /* var(--pink-1) 대신 직접 색상 지정 */
-        background: #ffe5ec !important; /* var(--pink-4) 대신 직접 색상 지정 */
+    .detail-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15, 23, 42, 0.05);
+        padding: 24px 26px;
+    }
+
+    .summary-card {
+        min-width: 740px;
+    }
+
+    .detail-card.options-section,
+    .detail-card.nutrition-section,
+    .detail-card.allergen-section {
+        padding: 24px 26px;
+    }
+
+    .options-section {
+        /*margin-top: 20px;*/
+    }
+
+    .nutrition-section {
+        /*margin-top: 20px;*/
+    }
+
+    .allergen-section {
+        /*margin-top: 18px;*/
+    }
+
+    #dynamic-options-container {
+        display: grid;
+        gap: 14px;
+    }
+
+    .detail-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .detail-card-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .detail-card-header .serving-info {
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .detail-card-header + * {
+        margin-top: 12px;
     }
 
     /* 푸터 바닥 고정 스타일 */
@@ -61,40 +117,83 @@
 
 
     /* 반응형 조정 */
+    @media (max-width: 1024px) {
+        .product-detail-main .product-shell {
+            padding: 28px 24px 40px;
+        }
+
+        .menu-detail-container {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-main-column {
+            order: 1;
+        }
+
+        .detail-side-column {
+            order: 2;
+            max-width: none;
+        }
+
+        .order-card {
+            position: static;
+        }
+    }
+
     @media (max-width: 768px) {
-        .nav-content {
-            gap: 12px;
-            justify-content: flex-start;
-            overflow-x: auto;
-            padding: 0 20px;
+        .product-detail-main .product-shell {
+            padding: 24px 18px 32px;
         }
 
-        .nav-item {
-            font-size: 13px;
-            padding: 6px 12px;
+        .product-detail-main .pdcontainer {
+            padding: 32px 20px 60px;
         }
 
-        .pdcontainer {
-            margin-top: 140px; /* 모바일에서는 살짝 더 큰 여백 */
+        .menu-detail-container {
+            flex-direction: column;
+        }
+
+        .detail-main-column,
+        .detail-side-column {
+            width: 100%;
+        }
+
+        .detail-side-column {
+            order: 3;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            padding: 20px 18px;
+        }
+
+        .detail-card.options-section,
+        .detail-card.nutrition-section,
+        .detail-card.allergen-section {
+            padding: 20px 18px;
+        }
+
+        .options-section {
+            margin-top: 20px;
+        }
+
+        .nutrition-section {
+            margin-top: 20px;
+        }
+
+        .allergen-section {
+            margin-top: 16px;
         }
     }
 </style>
 
-<body>
+<body class="product-detail-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
+<c:set var="currentCategory" value="${not empty product ? fn:toUpperCase(product.categoryName) : 'ALL'}" />
 
-<nav class="menu-nav">
-    <div class="nav-content">
-        <a href="${pageContext.request.contextPath}/products?category=COFFEE" class="nav-item">커피</a>
-        <a href="${pageContext.request.contextPath}/products?category=LATTE" class="nav-item">라떼</a>
-        <a href="${pageContext.request.contextPath}/products?category=JUICE" class="nav-item">주스 & 드링크</a>
-        <a href="${pageContext.request.contextPath}/products?category=SMOOTHIE" class="nav-item">바나치노 & 스무디</a>
-        <a href="${pageContext.request.contextPath}/products?category=TEA" class="nav-item">티 & 에이드</a>
-        <a href="${pageContext.request.contextPath}/products?category=FOOD" class="nav-item">디저트</a>
-        <a href="${pageContext.request.contextPath}/products?category=SET" class="nav-item">세트메뉴</a>
-        <a href="${pageContext.request.contextPath}/products?category=MD_GOODS" class="nav-item">MD</a>
-    </div>
-</nav>
+<main class="product-page-main product-detail-main">
+<%@ include file="/WEB-INF/views/product/product-category-nav.jspf" %>
+
 <!-- 뒤로가기 버튼 -->
 
 <div class="pdcontainer">
@@ -113,76 +212,54 @@
     <!-- 메뉴 상세 정보 -->
     <c:if test="${not empty product}">
         <div class="menu-detail-container">
-            <!-- 왼쪽: 메뉴 정보 -->
-            <div class="menu-info-section">
-                <!-- 메뉴 헤더 (이미지 + 제목/가격/설명) -->
-                <div class="menu-header-section">
-                    <!-- 메뉴 이미지 -->
-                    <div class="menu-image-container">
-                        <c:choose>
-                            <c:when test="${not empty product.productPhoto}">
-                                <img src="${product.productPhoto}" alt="${product.productName}" class="menu-image">
-                            </c:when>
-                            <c:otherwise>
-                                <div class="menu-image no-image">이미지 없음</div>
-                            </c:otherwise>
-                        </c:choose>
+            <div class="detail-main-column">
+                <section class="detail-card summary-card">
+                    <div class="summary-header">
+                        <div class="menu-image-container">
+                            <c:choose>
+                                <c:when test="${not empty product.productPhoto}">
+                                    <img src="${product.productPhoto}" alt="${product.productName}" class="menu-image">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="menu-image no-image">이미지 없음</div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
 
-                        <!-- 메뉴 태그 -->
-                        <c:choose>
-                            <c:when test="${fn:containsIgnoreCase(product.productName, '시그니처')}">
-                                <div class="menu-tag tag-signature">시그니처</div>
-                            </c:when>
-                            <c:when test="${fn:containsIgnoreCase(product.productName, '디카페인')}">
-                                <div class="menu-tag tag-decaf">디카페인</div>
-                            </c:when>
-                            <c:when test="${fn:containsIgnoreCase(product.productName, '아메리카노')}">
-                                <div class="menu-tag tag-premium">고소함</div>
-                            </c:when>
-                        </c:choose>
-                    </div>
-
-                    <!-- 좋아요 및 리뷰 뱃지 -->
-
-
-                    <!-- 메뉴 정보 (제목, 가격, 설명) -->
-                    <div class="menu-content">
-                        <div class="menu-info-badge">
-                            <div class="likes" onclick="toggleFavorite()">
-                                <span class="heart" id="favoriteHeart">♡</span>
-                                <span class="like-count">1천</span>
+                        <div class="menu-content">
+                            <div class="menu-info-badge">
+                                <div class="likes" onclick="toggleFavorite()">
+                                    <span class="heart" id="favoriteHeart">♡</span>
+                                    <span class="like-count">1천</span>
+                                </div>
+                                <div class="review-badge">리뷰 확인</div>
                             </div>
-                            <div class="review-badge">리뷰 확인</div>
-                        </div>
-                        <!-- 메뉴 제목 및 가격 -->
-                        <div class="menu-header">
-                            <h2 class="menu-title">${product.productName}</h2>
-                            <div class="menu-price">
-                                <fmt:formatNumber value="${product.price}" pattern="#,###"/>원
+                            <div class="menu-header">
+                                <h2 class="menu-title">${product.productName}</h2>
+                                <div class="menu-price">
+                                    <fmt:formatNumber value="${product.price}" pattern="#,###"/>원
+                                </div>
                             </div>
+                            <div class="menu-description">
+                                <p><c:out value="${product.productContent}" /></p>
+                            </div>
+
+                            <c:if test="${not empty product.hashtags}">
+                                <div class="category-tags">
+                                    <c:forEach var="hashtag" items="${product.hashtags}">
+                                        <span class="tag">${hashtag.hashtagName}</span>
+                                    </c:forEach>
+                                </div>
+                            </c:if>
                         </div>
-
-                        <!-- 메뉴 설명 -->
-                        <div class="menu-description">
-                            <p>${product.productContent}</p>
-                        </div>
-
-
                     </div>
-                </div>
+                </section>
 
-                <!-- 해시태그 -->
-                <c:if test="${not empty product.hashtags}">
-                    <div class="category-tags">
-                        <c:forEach var="hashtag" items="${product.hashtags}">
-                            <span class="tag">${hashtag.hashtagName}</span>
-                        </c:forEach>
-                    </div>
-                </c:if>
-
-                <!-- 옵션 선택 섹션 -->
                 <c:if test="${not empty product.productOptions}">
-                    <div class="options-section">
+                    <section class="detail-card options-section">
+<%--                        <header class="detail-card-header">--%>
+<%--                            <h3>옵션 선택</h3>--%>
+<%--                        </header>--%>
                         <!-- JavaScript로 옵션 그룹핑 처리 -->
                         <script type="text/javascript">
                             // 서버에서 전달받은 옵션 데이터
@@ -216,13 +293,16 @@
 
                         <!-- 옵션 UI가 동적으로 생성될 컨테이너 -->
                         <div id="dynamic-options-container"></div>
-                    </div>
+                    </section>
                 </c:if>
 
                 <!-- 영양정보 섹션 -->
                 <c:if test="${not empty product.nutritionInfo and product.categoryName != 'MD_GOODS'}">
-                    <div class="nutrition-section">
-                        <h3>영양정보 <span class="serving-info">1회 제공량 기준</span></h3>
+                    <section class="detail-card nutrition-section">
+                        <header class="detail-card-header">
+                            <h3>영양정보</h3>
+                            <span class="serving-info">1회 제공량 기준</span>
+                        </header>
                         <div class="nutrition-grid">
                             <div class="nutrition-item">
                                 <span class="nutrition-label">열량(kcal)</span>
@@ -285,13 +365,15 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 </c:if>
 
                 <!-- 알레르기 유발 정보 섹션 -->
                 <c:if test="${product.categoryName != 'MD_GOODS'}">
-                    <div class="allergen-section">
-                        <h3>알레르기 유발 정보</h3>
+                    <section class="detail-card allergen-section">
+                        <header class="detail-card-header">
+                            <h3>알레르기 유발 정보</h3>
+                        </header>
                         <c:choose>
                             <c:when test="${not empty product.allergens}">
                                 <div class="allergen-grid">
@@ -308,22 +390,25 @@
                                 </div>
                             </c:otherwise>
                         </c:choose>
-                    </div>
+                    </section>
                 </c:if>
             </div>
 
             <!-- 수량 선택 및 주문 버튼 -->
-            <div class="order-section">
-                <div class="order-card">
+            <aside class="detail-side-column">
+                <section class="detail-card order-card">
+                    <header class="detail-card-header">
+                        <h3>총 가격</h3>
+                    </header>
                     <div class="quantity-section">
+<%--                        <div class="quantity-price-display">--%>
+<%--                            <span class="price-label">총 가격:</span>--%>
+                            <span class="total-price" id="totalPrice">0원</span>
+<%--                        </div>--%>
                         <div class="quantity-controls">
                             <button class="quantity-btn minus" onclick="decreaseQuantity()">−</button>
                             <span class="quantity-display" id="quantity">1</span>
                             <button class="quantity-btn plus" onclick="increaseQuantity()">+</button>
-                        </div>
-                        <div class="quantity-price-display">
-                            <span class="price-label">총 가격:</span>
-                            <span class="total-price" id="totalPrice">0원</span>
                         </div>
                     </div>
 
@@ -331,8 +416,8 @@
                         <button class="order-btn immediate" onclick="orderImmediately()">바로 주문하기</button>
                         <button class="order-btn cart" onclick="addToCartFromDetail()">담기</button>
                     </div>
-                </div>
-            </div>
+                </section>
+            </aside>
         </div>
     </c:if>
 
@@ -416,30 +501,30 @@
         container.appendChild(tempButtons);
 
         // 온도 상세 표시
-        const tempDetail = document.createElement('div');
-        tempDetail.className = 'temp-detail';
-
-        options.forEach((option, index) => {
-            const tempOption = document.createElement('div');
-            tempOption.className = 'temp-option' + (index === 1 ? ' active' : '');
-            tempOption.dataset.option = option.optionStyle;
-
-            if (option.optionStyle === 'ICE') {
-                const icon = document.createElement('span');
-                icon.className = 'temp-icon';
-                icon.textContent = '❄';
-                tempOption.appendChild(icon);
-            }
-
-            const label = document.createElement('span');
-            label.className = 'temp-label';
-            label.textContent = option.optionStyle;
-            tempOption.appendChild(label);
-
-            tempDetail.appendChild(tempOption);
-        });
-
-        container.appendChild(tempDetail);
+        // const tempDetail = document.createElement('div');
+        // tempDetail.className = 'temp-detail';
+        //
+        // options.forEach((option, index) => {
+        //     const tempOption = document.createElement('div');
+        //     tempOption.className = 'temp-option' + (index === 1 ? ' active' : '');
+        //     tempOption.dataset.option = option.optionStyle;
+        //
+        //     if (option.optionStyle === 'ICE') {
+        //         const icon = document.createElement('span');
+        //         icon.className = 'temp-icon';
+        //         icon.textContent = '❄';
+        //         tempOption.appendChild(icon);
+        //     }
+        //
+        //     const label = document.createElement('span');
+        //     label.className = 'temp-label';
+        //     label.textContent = option.optionStyle;
+        //     tempOption.appendChild(label);
+        //
+        //     tempDetail.appendChild(tempOption);
+        // });
+        //
+        // container.appendChild(tempDetail);
     }
 
     // 일반 옵션 UI 생성
@@ -1042,17 +1127,17 @@
 
 <style>
     /* 메뉴 상세 페이지 전용 스타일 */
-    .page-header {
+    .product-detail-main .page-header {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        padding-top: 70px; /* nav와 header 높이 고려한 여백 */
+        padding-top: 0;
         margin-bottom: 20px;
     }
 
-    .page-title {
-        font-size: 20px;
-        font-weight: 600;
+    .product-detail-main .page-title {
+        font-size: 24px;
+        font-weight: bold;
         color: #333;
         margin: 0;
         text-align: left;
@@ -1094,45 +1179,35 @@
     /* 2열 레이아웃 */
     .menu-detail-container {
         display: flex;
-        gap: 20px;
+        gap: 15px;
         max-width: 1000px;
         margin: 0 auto;
-        padding: 20px 10px; /* 양쪽 여백을 20px에서 10px로 줄임 */
+        /*padding: 20px 10px; !* 양쪽 여백을 20px에서 10px로 줄임 *!*/
     }
 
-    .menu-info-section {
-        flex: 2; /* 비율을 더 늘려서 더 많은 공간 차지 */
-        min-width: 0;
-    }
-
-    .order-section {
-        width: 320px; /* 400px에서 320px로 축소 */
-        flex-shrink: 0;
-    }
-
-    /* 메뉴 헤더 섹션 (이미지 + 정보) */
-    .menu-header-section {
+    /* 요약 카드 */
+    .summary-card .summary-header {
         display: flex;
         align-items: flex-start;
-        gap: 30px;
-        margin-bottom: 30px;
+        gap: 24px;
     }
 
-    .menu-image-container {
+    .summary-card .menu-image-container {
         position: relative;
         flex-shrink: 0;
+        width: 220px;
     }
 
-    .menu-image {
-        width: 200px;
-        height: 240px;
+    .summary-card .menu-image {
+        width: 100%;
+        height: 220px;
         object-fit: cover;
-        border-radius: 12px;
-        background: #f8f9fa;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 16px;
+        background: none;
+        box-shadow: none;
     }
 
-    .menu-image.no-image {
+    .summary-card .menu-image.no-image {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1140,10 +1215,10 @@
         font-size: 16px;
     }
 
-    .menu-content {
+    .summary-card .menu-content {
         flex: 1;
         min-width: 0;
-        padding-top: 10px;
+        padding-top: 6px;
     }
 
     .menu-info-badge {
@@ -1151,6 +1226,19 @@
         display: flex;
         align-items: center;
         gap: 15px;
+    }
+
+    .product-detail-main .menu-content {
+        flex: 1 1 0%;
+        min-width: 0;
+    }
+
+    .product-detail-main .menu-title,
+    .product-detail-main .menu-price,
+    .product-detail-main .menu-description p {
+        writing-mode: horizontal-tb;
+        white-space: normal;
+        word-break: keep-all;
     }
 
     /* 메뉴 태그 위치 조정 */
@@ -1207,13 +1295,14 @@
     }
 
     .review-badge {
-        background: #ffd700;
+        background: #ff6b9d;
         color: white;
         padding: 4px 8px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
         display: inline-block;
+        margin-left: auto;
     }
 
     .menu-header {
@@ -1268,7 +1357,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 30px;
+        margin: 12px 0 0;
     }
 
     .tag {
@@ -1282,12 +1371,9 @@
 
     /* 오른쪽 주문 섹션 */
     .order-card {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        overflow: hidden;
         position: sticky;
-        top: 20px;
+        top: 120px;
+        padding: 24px 24px;
     }
 
     .order-header {
@@ -1362,8 +1448,8 @@
     .quantity-section {
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        padding: 25px 20px;
+        gap: 18px;
+        padding: 22px 18px;
         border-bottom: 1px solid #f0f0f0;
         margin: 10px 0;
     }
@@ -1489,21 +1575,27 @@
         transition: background 0.3s ease;
     }
 
+    :root {
+        --pink-1: #ffb6c1; /* 연핑크 */
+        --pink-2: #ff69b4; /* 핫핑크 */
+    }
+
     .order-btn.immediate {
         background: #ff6b9d;
         color: white;
-        border-radius: 0 0 0 12px;
+        border-radius: 12px 0 0 12px;
     }
 
     .order-btn.immediate:hover {
-        background: #ff4757;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+        box-shadow: 0 8px 16px rgba(255, 122, 162, 0.35);
     }
 
     .order-btn.cart {
         background: #f8f9fa;
         color: #333;
         border: 2px solid #ddd;
-        border-radius: 0 0 12px 0;
+        border-radius: 0 12px 12px 0;
         border-left: 1px solid #ddd;
     }
 
@@ -1584,24 +1676,31 @@
     /* 반응형 디자인 */
     @media (max-width: 768px) {
         .menu-detail-container {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .detail-card {
+            padding: 24px 20px;
+        }
+
+        .summary-card .summary-header {
             flex-direction: column;
+            text-align: center;
             gap: 20px;
-            padding: 10px;
         }
 
-        .order-section {
-            width: 100%;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
+        .summary-card .menu-image-container {
+            margin: 0 auto;
+            width: 180px;
         }
 
-        .order-card {
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
-            border-bottom: none;
+        .summary-card .menu-image {
+            height: 200px;
+        }
+
+        .summary-card .menu-content {
+            padding-top: 0;
         }
 
         .menu-title {
@@ -1612,53 +1711,24 @@
             font-size: 18px;
         }
 
-        .menu-header-section {
-            flex-direction: column;
-            text-align: center;
-            gap: 20px;
+        .detail-side-column {
+            position: static;
         }
 
-        .menu-image-container {
-            align-self: center;
+        .order-card {
+            position: static;
         }
 
-        .menu-image {
-            width: 160px;
-            height: 192px;
-        }
-
-        .menu-content {
-            padding-top: 0;
-        }
-
-        .menu-info-badge {
-            justify-content: center;
-            margin-top: 10px;
+        .detail-card.options-section,
+        .detail-card.nutrition-section,
+        .detail-card.allergen-section {
+            padding: 24px 20px;
         }
     }
 
     /* 영양정보 섹션 */
-    .nutrition-section {
-        margin-top: 30px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-    }
-
     .nutrition-section h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        margin: 0 0 15px 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .serving-info {
-        font-size: 12px;
-        color: #666;
-        font-weight: normal;
+        margin: 0;
     }
 
     .nutrition-grid {
@@ -1696,14 +1766,6 @@
     }
 
     /* 옵션 섹션 */
-    .options-section {
-        margin-top: 30px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-    }
-
     .option-group {
         margin-bottom: 25px;
     }
@@ -1887,22 +1949,8 @@
         color: white;
     }
 
-    /* 알레르기 유발 정보 섹션 */
-    .allergen-section {
-        margin-top: 20px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-    }
-
     .allergen-section h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        margin: 0 0 15px 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #e0e0e0;
+        margin: 0;
     }
 
     .allergen-grid {
@@ -1936,14 +1984,14 @@
     .no-allergen-message {
         text-align: center;
         padding: 20px;
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
+        background: rgba(255,122,162,0.12);
+        /*border: 1px solid #e0e0e0;*/
         border-radius: 6px;
     }
 
     .no-allergen-text {
         font-size: 14px;
-        color: #155724;
+        color: #666;
         font-weight: 500;
     }
 
@@ -1953,14 +2001,22 @@
             grid-template-columns: 1fr;
         }
 
+        .detail-card.options-section,
+        .detail-card.nutrition-section,
+        .detail-card.allergen-section {
+            padding: 20px 18px;
+        }
+
+        .options-section {
+            margin-top: 18px;
+        }
+
         .nutrition-section {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 18px;
         }
 
         .allergen-section {
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 14px;
         }
 
         .allergen-grid {
@@ -1988,10 +2044,11 @@
         }
 
         .options-section {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 18px;
         }
     }
 </style>
+
+</main>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>
