@@ -11,12 +11,22 @@
     /* 전체 페이지 레이아웃 조정 */
     body.product-detail-page {
         padding-top: 0; /* head.jspf의 기본 패딩 제거 */
+        background-color: #f7f7f7;
     }
 
     .product-detail-main .pdcontainer {
         max-width: 1120px;
         margin: 0 auto;
         padding: 40px 24px 80px;
+    }
+
+    .product-detail-main .product-shell {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        padding: 32px 32px 48px;
+        display: grid;
+        gap: 28px;
     }
 
     .menu-detail-container {
@@ -47,6 +57,10 @@
         padding: 24px 26px;
     }
 
+    .summary-card {
+        min-width: 740px;
+    }
+
     .detail-card.options-section,
     .detail-card.nutrition-section,
     .detail-card.allergen-section {
@@ -54,15 +68,15 @@
     }
 
     .options-section {
-        margin-top: 20px;
+        /*margin-top: 20px;*/
     }
 
     .nutrition-section {
-        margin-top: 20px;
+        /*margin-top: 20px;*/
     }
 
     .allergen-section {
-        margin-top: 18px;
+        /*margin-top: 18px;*/
     }
 
     #dynamic-options-container {
@@ -75,7 +89,6 @@
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 18px;
     }
 
     .detail-card-header h3 {
@@ -105,6 +118,10 @@
 
     /* 반응형 조정 */
     @media (max-width: 1024px) {
+        .product-detail-main .product-shell {
+            padding: 28px 24px 40px;
+        }
+
         .menu-detail-container {
             grid-template-columns: 1fr;
         }
@@ -124,8 +141,26 @@
     }
 
     @media (max-width: 768px) {
+        .product-detail-main .product-shell {
+            padding: 24px 18px 32px;
+        }
+
         .product-detail-main .pdcontainer {
             padding: 32px 20px 60px;
+        }
+
+        .menu-detail-container {
+            flex-direction: column;
+        }
+
+        .detail-main-column,
+        .detail-side-column {
+            width: 100%;
+        }
+
+        .detail-side-column {
+            order: 3;
+            margin-top: 20px;
         }
 
         .detail-card {
@@ -189,18 +224,6 @@
                                     <div class="menu-image no-image">이미지 없음</div>
                                 </c:otherwise>
                             </c:choose>
-
-                            <c:choose>
-                                <c:when test="${fn:containsIgnoreCase(product.productName, '시그니처')}">
-                                    <div class="menu-tag tag-signature">시그니처</div>
-                                </c:when>
-                                <c:when test="${fn:containsIgnoreCase(product.productName, '디카페인')}">
-                                    <div class="menu-tag tag-decaf">디카페인</div>
-                                </c:when>
-                                <c:when test="${fn:containsIgnoreCase(product.productName, '아메리카노')}">
-                                    <div class="menu-tag tag-premium">고소함</div>
-                                </c:when>
-                            </c:choose>
                         </div>
 
                         <div class="menu-content">
@@ -220,23 +243,23 @@
                             <div class="menu-description">
                                 <p><c:out value="${product.productContent}" /></p>
                             </div>
+
+                            <c:if test="${not empty product.hashtags}">
+                                <div class="category-tags">
+                                    <c:forEach var="hashtag" items="${product.hashtags}">
+                                        <span class="tag">${hashtag.hashtagName}</span>
+                                    </c:forEach>
+                                </div>
+                            </c:if>
                         </div>
                     </div>
-
-                    <c:if test="${not empty product.hashtags}">
-                        <div class="category-tags">
-                            <c:forEach var="hashtag" items="${product.hashtags}">
-                                <span class="tag">${hashtag.hashtagName}</span>
-                            </c:forEach>
-                        </div>
-                    </c:if>
                 </section>
 
                 <c:if test="${not empty product.productOptions}">
                     <section class="detail-card options-section">
-                        <header class="detail-card-header">
-                            <h3>옵션 선택</h3>
-                        </header>
+<%--                        <header class="detail-card-header">--%>
+<%--                            <h3>옵션 선택</h3>--%>
+<%--                        </header>--%>
                         <!-- JavaScript로 옵션 그룹핑 처리 -->
                         <script type="text/javascript">
                             // 서버에서 전달받은 옵션 데이터
@@ -375,17 +398,17 @@
             <aside class="detail-side-column">
                 <section class="detail-card order-card">
                     <header class="detail-card-header">
-                        <h3>주문 정보</h3>
+                        <h3>총 가격</h3>
                     </header>
                     <div class="quantity-section">
+<%--                        <div class="quantity-price-display">--%>
+<%--                            <span class="price-label">총 가격:</span>--%>
+                            <span class="total-price" id="totalPrice">0원</span>
+<%--                        </div>--%>
                         <div class="quantity-controls">
                             <button class="quantity-btn minus" onclick="decreaseQuantity()">−</button>
                             <span class="quantity-display" id="quantity">1</span>
                             <button class="quantity-btn plus" onclick="increaseQuantity()">+</button>
-                        </div>
-                        <div class="quantity-price-display">
-                            <span class="price-label">총 가격:</span>
-                            <span class="total-price" id="totalPrice">0원</span>
                         </div>
                     </div>
 
@@ -478,30 +501,30 @@
         container.appendChild(tempButtons);
 
         // 온도 상세 표시
-        const tempDetail = document.createElement('div');
-        tempDetail.className = 'temp-detail';
-
-        options.forEach((option, index) => {
-            const tempOption = document.createElement('div');
-            tempOption.className = 'temp-option' + (index === 1 ? ' active' : '');
-            tempOption.dataset.option = option.optionStyle;
-
-            if (option.optionStyle === 'ICE') {
-                const icon = document.createElement('span');
-                icon.className = 'temp-icon';
-                icon.textContent = '❄';
-                tempOption.appendChild(icon);
-            }
-
-            const label = document.createElement('span');
-            label.className = 'temp-label';
-            label.textContent = option.optionStyle;
-            tempOption.appendChild(label);
-
-            tempDetail.appendChild(tempOption);
-        });
-
-        container.appendChild(tempDetail);
+        // const tempDetail = document.createElement('div');
+        // tempDetail.className = 'temp-detail';
+        //
+        // options.forEach((option, index) => {
+        //     const tempOption = document.createElement('div');
+        //     tempOption.className = 'temp-option' + (index === 1 ? ' active' : '');
+        //     tempOption.dataset.option = option.optionStyle;
+        //
+        //     if (option.optionStyle === 'ICE') {
+        //         const icon = document.createElement('span');
+        //         icon.className = 'temp-icon';
+        //         icon.textContent = '❄';
+        //         tempOption.appendChild(icon);
+        //     }
+        //
+        //     const label = document.createElement('span');
+        //     label.className = 'temp-label';
+        //     label.textContent = option.optionStyle;
+        //     tempOption.appendChild(label);
+        //
+        //     tempDetail.appendChild(tempOption);
+        // });
+        //
+        // container.appendChild(tempDetail);
     }
 
     // 일반 옵션 UI 생성
@@ -1083,8 +1106,8 @@
     }
 
     .product-detail-main .page-title {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 24px;
+        font-weight: bold;
         color: #333;
         margin: 0;
         text-align: left;
@@ -1126,10 +1149,10 @@
     /* 2열 레이아웃 */
     .menu-detail-container {
         display: flex;
-        gap: 20px;
+        gap: 15px;
         max-width: 1000px;
         margin: 0 auto;
-        padding: 20px 10px; /* 양쪽 여백을 20px에서 10px로 줄임 */
+        /*padding: 20px 10px; !* 양쪽 여백을 20px에서 10px로 줄임 *!*/
     }
 
     /* 요약 카드 */
@@ -1150,8 +1173,8 @@
         height: 220px;
         object-fit: cover;
         border-radius: 16px;
-        background: #f8f9fa;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+        background: none;
+        box-shadow: none;
     }
 
     .summary-card .menu-image.no-image {
@@ -1242,13 +1265,14 @@
     }
 
     .review-badge {
-        background: #ffd700;
+        background: #ff6b9d;
         color: white;
         padding: 4px 8px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
         display: inline-block;
+        margin-left: auto;
     }
 
     .menu-header {
@@ -1303,7 +1327,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 16px;
+        margin: 12px 0 0;
     }
 
     .tag {
@@ -1521,21 +1545,27 @@
         transition: background 0.3s ease;
     }
 
+    :root {
+        --pink-1: #ffb6c1; /* 연핑크 */
+        --pink-2: #ff69b4; /* 핫핑크 */
+    }
+
     .order-btn.immediate {
         background: #ff6b9d;
         color: white;
-        border-radius: 0 0 0 12px;
+        border-radius: 12px 0 0 12px;
     }
 
     .order-btn.immediate:hover {
-        background: #ff4757;
+        background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+        box-shadow: 0 8px 16px rgba(255, 122, 162, 0.35);
     }
 
     .order-btn.cart {
         background: #f8f9fa;
         color: #333;
         border: 2px solid #ddd;
-        border-radius: 0 0 12px 0;
+        border-radius: 0 12px 12px 0;
         border-left: 1px solid #ddd;
     }
 
@@ -1924,14 +1954,14 @@
     .no-allergen-message {
         text-align: center;
         padding: 20px;
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
+        background: rgba(255,122,162,0.12);
+        /*border: 1px solid #e0e0e0;*/
         border-radius: 6px;
     }
 
     .no-allergen-text {
         font-size: 14px;
-        color: #155724;
+        color: #666;
         font-weight: 500;
     }
 
