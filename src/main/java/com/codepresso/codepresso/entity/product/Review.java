@@ -4,8 +4,10 @@ import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,8 +31,12 @@ public class Review {
     @Column(name = "photo_url", nullable = false, length = 500)
     private String photoUrl;
 
+    @CreatedDate
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_detail_id", nullable = false)
+    @JoinColumn(name = "order_detail_id", nullable = false, unique = true)
     private OrdersDetail ordersDetail;
 
     @ManyToOne(fetch = FetchType.LAZY)

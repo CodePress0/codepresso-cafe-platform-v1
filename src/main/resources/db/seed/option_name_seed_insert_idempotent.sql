@@ -32,7 +32,6 @@ VALUES
 (27, '덜달게'),
 (28, '물온도');
 
-
 -- option_style 데이터 삽입
 INSERT INTO option_style (option_style_id, option_name_id, option_style, extra_price) VALUES
                                                                                           (1, 1, 'HOT', 0),

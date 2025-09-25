@@ -15,7 +15,7 @@ import java.util.List;
 public class OptionStyle {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "option_style_id")
     private Long id;
 
