@@ -244,18 +244,22 @@ document.addEventListener('keydown', function(e) {
 
 // 스크롤 위치에 따른 헤더 스타일 변경
 window.addEventListener('scroll', function() {
-    const header = document.querySelector('.header');
+    const nav = document.querySelector('.product-category-nav');
+    if (!nav) {
+        return;
+    }
+
     if (window.scrollY > 100) {
-        header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        nav.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
     } else {
-        header.style.boxShadow = 'none';
+        nav.style.boxShadow = 'none';
     }
 });
 
 // 카테고리에 따른 메뉴 - JSP 서버 링크를 사용하도록 주석 처리
 /*
 document.addEventListener('DOMContentLoaded', function() {
-    const navItems = document.querySelectorAll('.nav-content'); // 네비 메뉴 아이템들
+    const navItems = document.querySelectorAll('.product-category-nav-item'); // 네비 메뉴 아이템들
     const sections = document.querySelectorAll('.section');  // 스크롤할 섹션들
 
     // 1. 네비게이션 메뉴 클릭시 해당 섹션으로 스크롤
@@ -346,12 +350,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeEventListeners() {
     // 네비게이션 탭 전환 - JSP 서버 링크를 사용하도록 주석 처리
     /*
-    document.querySelectorAll('.nav-item').forEach(item => {
+    document.querySelectorAll('.product-category-nav-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
 
             // 기존 active 클래스 제거
-            document.querySelector('.nav-item.active')?.classList.remove('active');
+            document.querySelector('.product-category-nav-item.active')?.classList.remove('active');
 
             // 현재 클릭된 항목에 active 클래스 추가
             this.classList.add('active');
@@ -364,30 +368,23 @@ function initializeEventListeners() {
     */
 
     // 검색 버튼 이벤트
-    document.querySelector('.search-btn').addEventListener('click', function() {
-        const searchTerm = prompt('검색할 메뉴를 입력하세요:');
-        if (searchTerm) {
-            searchMenu(searchTerm);
-        }
-    });
+    const searchButton = document.querySelector('.search-btn');
+    if (searchButton) {
+        searchButton.addEventListener('click', function() {
+            const searchTerm = prompt('검색할 메뉴를 입력하세요:');
+            if (searchTerm) {
+                searchMenu(searchTerm);
+            }
+        });
+    }
 
     // 필터 버튼 이벤트
-    document.querySelector('.filter-btn').addEventListener('click', function() {
-        showFilterModal();
-    });
-
-    // 메뉴 아이템 호버 효과
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.style.border = '3px solid #ff6b9d';
-            this.style.backgroundColor = '#fafafa';
+    const filterButton = document.querySelector('.filter-btn');
+    if (filterButton) {
+        filterButton.addEventListener('click', function() {
+            showFilterModal();
         });
-
-        item.addEventListener('mouseleave', function() {
-            this.style.border = '3px solid transparent';
-            this.style.backgroundColor = 'transparent';
-        });
-    });
+    }
 }
 
 // 장바구니 토글 함수

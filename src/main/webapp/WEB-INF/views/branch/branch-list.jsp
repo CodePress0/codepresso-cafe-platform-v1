@@ -346,9 +346,9 @@
   // 로그인 이후 잘못된 페이지 접근으로 리다이렉트된 경우(예: / 또는 /auth/login) 안내 알림
   (function(){
     var p = new URLSearchParams(location.search);
-    if (p.get('blocked') === '1') {
-      alert('이미 로그인되어 있어 접근할 수 없는 페이지입니다. 매장을 선택해주세요.');
-    }
+    // if (p.get('blocked') === '1') {
+    //   alert('이미 로그인되어 있어 접근할 수 없는 페이지입니다. 매장을 선택해주세요.');
+    // }
   })();
 </script>
 

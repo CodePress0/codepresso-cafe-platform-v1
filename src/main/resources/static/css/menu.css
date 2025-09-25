@@ -11,53 +11,17 @@ body {
     line-height: 1.6;
 }
 
-.header {
-    background: white;
-    padding: 20px 0;
-    border-bottom: 1px solid #f0f0f0;
-    position: sticky;
+body.product-list-page .header,
+body.product-detail-page .header {
+    position: fixed;
     top: 0;
-    z-index: 100;
+    left: 0;
+    right: 0;
+    z-index: 20;
 }
 
-.header-content {
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.logo {
-    font-size: 28px;
-    font-weight: bold;
-    color: #ff6b9d;
-    text-decoration: none;
-}
-
-.order-location {
-    color: #666;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.order-location::before {
-    content: "🏪";
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.product-page-main {
+    padding-top: 140px;
 }
 
 .search-btn, .cart-btn {
@@ -69,16 +33,19 @@ body {
     position: relative;
 }
 
-.nav {
+.product-category-nav {
     position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 19;
     background: white;
     padding: 15px 0;
     border-bottom: 1px solid #f0f0f0;
 }
 
-.nav-content {
+.product-category-nav-content {
     width: 100%;
     padding: 0 20px;
     display: flex;
@@ -88,7 +55,7 @@ body {
     margin: 0 auto; /* 가로 중앙 정렬을 위한 auto 마진 */
 }
 
-.nav-item {
+.product-category-nav-item {
     text-decoration: none;
     color: #333;
     font-weight: 500;
@@ -99,11 +66,11 @@ body {
 
 
 
-.nav-item.active {
+.product-category-nav-item.active {
     color: #ff6b9d;
 }
 
-.nav-item.active::after {
+.product-category-nav-item.active::after {
     content: '';
     position: absolute;
     bottom: -15px;
@@ -113,10 +80,10 @@ body {
     background: #ff6b9d;
 }
 
-.container {
+.product-list-main .container {
     width: 100%;
     margin: 0 auto;
-    padding: 100px 30px;
+    padding: 40px 30px 80px;
 }
 
 .page-header {
@@ -182,46 +149,49 @@ body {
 
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
     margin-bottom: 60px;
 }
 
 .menu-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 15px;
-    border-radius: 15px;
-    border: 3px solid transparent;
+    transition: transform 0.18s ease, box-shadow 0.22s ease;
+    padding: 20px;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12);
+    border: 1px solid rgba(255, 122, 162, 0.12);
 }
 
 .menu-item:hover {
-    border: 3px solid #ff6b9d;
-    background-color: #fafafa;
+    transform: translateY(-6px);
+    box-shadow: 0 28px 64px rgba(15, 23, 42, 0.18);
 }
 
 .menu-image-container {
     position: relative;
-    margin-bottom: 15px;
     width: 100%;
-    max-width: 220px;
+    aspect-ratio: 4 / 5;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #ffffff;
 }
 
 .menu-image {
     width: 100%;
-    height: 300px;
+    height: 100%;
     /*background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280"><defs><linearGradient id="glass" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23A0522D;stop-opacity:1" /><stop offset="50%" style="stop-color:%23654321;stop-opacity:1" /><stop offset="100%" style="stop-color:%234A2C2A;stop-opacity:1" /></linearGradient></defs><ellipse cx="100" cy="260" rx="70" ry="15" fill="%23ddd" opacity="0.3"/><path d="M 60 50 Q 100 45 140 50 L 135 230 Q 100 240 65 230 Z" fill="url(%23glass)" stroke="%23333" stroke-width="2"/><rect x="90" y="120" width="20" height="40" rx="10" fill="white" opacity="0.8"/><text x="100" y="140" font-family="Arial, sans-serif" font-size="8" fill="%23333" text-anchor="middle" font-weight="bold">banapresso</text><path d="M 70 70 Q 100 65 130 70 L 128 85 Q 100 80 72 85 Z" fill="%23F5DEB3" opacity="0.6"/></svg>');*/
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border-radius: 10px;
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
-    padding: 10px;
+    padding: 16px;
 }
 
 /*.menu-image.pink {*/
@@ -239,8 +209,8 @@ body {
     font-weight: bold;
     color: white;
     position: absolute;
-    bottom: 0;
-    left: 0;
+    bottom: 12px;
+    left: 12px;
 }
 
 .tag-premium {
@@ -256,40 +226,49 @@ body {
 }
 
 .tag-signature {
-    background: #ff6b9d;
+    background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
 }
 
 .menu-info {
-    /*display: flex; */
-    justify-content: space-between;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
     margin-top: 10px;
+    flex: 1 1 auto;
 }
 
 .menu-name {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 800;
     color: #333;
     text-align: left;
     flex: 1;
+    line-height: 1.4;
+}
+
+.menu-price {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ff6b9d;
 }
 
 .add-to-cart {
-    background: none;
-    border: 1px solid #ddd;
-    padding: 6px;
-    border-radius: 4px;
+    align-self: flex-start;
+    background: linear-gradient(135deg, #ff7aa2, #ff9bb7);
+    border: none;
+    padding: 10px 14px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: all 0.3s;
-    font-size: 12px;
-    color: #666;
+    transition: transform 0.18s ease, box-shadow 0.22s ease;
+    font-size: 13px;
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(255, 122, 162, 0.35);
 }
 
 .add-to-cart:hover {
-    background: #ff6b9d;
-    border-color: #ff6b9d;
-    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(255, 122, 162, 0.45);
 }
 
 .cart-panel {
@@ -425,19 +404,12 @@ body {
 
 /* 기본 메뉴 아이템 스타일 */
 .menu-item {
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 15px;
-    overflow: hidden; /* 확대 시 이미지가 경계를 벗어나지 않도록 */
+    text-align: left;
 }
 
 /* 이미지 컨테이너 */
 .menu-image-container {
-    position: relative;
-    margin-bottom: 15px;
     overflow: hidden; /* 이미지 확대 시 넘치는 부분 숨김 */
-    border-radius: 10px;
 }
 
 /*!* 메뉴 이미지 기본 스타일 *!*/
@@ -456,7 +428,7 @@ body {
 
 /* 호버 시 이미지 확대 */
 .menu-item:hover .menu-image {
-    transform: scale(1.05); /* 5% 확대 */
+    transform: none;
 }
 
 /* 실제 상품 이미지가 있는 경우 */
@@ -467,11 +439,11 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transition: transform 0.3s ease;
+    transition: none;
 }
 
 .menu-item:hover .menu-image .product-photo {
-    transform: scale(1.08); /* 실제 이미지는 조금 더 크게 확대 */
+    transform: none;
 }
 
 /* 메뉴 태그는 확대되지 않도록 고정 */
@@ -529,45 +501,33 @@ body {
    ===================================================== */
 
 /* 메뉴 아이템 전체가 위로 떠오르는 효과 */
-.menu-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
+/* 상단 카드 호버 효과는 카드 섹션에서 지정한 값을 그대로 사용 */
 
 /* 메뉴 정보 부분도 부드럽게 변화 */
 .menu-info {
-    transition: all 0.3s ease;
+    transition: transform 0.22s ease;
 }
 
 .menu-item:hover .menu-info {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
 }
 
 /* 메뉴명 호버 효과 */
 .menu-name {
-    transition: all 0.3s ease;
+    transition: color 0.2s ease;
 }
 
 .menu-item:hover .menu-name {
-    color: #ff6b9d;
-    font-weight: bold;
+    color: #ff7aa2;
 }
 
 /* 장바구니 버튼 호버 효과 */
 .add-to-cart {
-    background: none;
-    border: 1px solid #ddd;
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.18s ease, box-shadow 0.22s ease;
 }
 
 .menu-item:hover .add-to-cart {
-    background: #ff6b9d;
-    border-color: #ff6b9d;
-    color: white;
-    transform: scale(1.1);
+    transform: translateY(-2px);
 }
 
 /* =====================================================
@@ -576,12 +536,8 @@ body {
 
 /* 데스크톱에서만 호버 효과 적용 */
 @media (hover: hover) and (pointer: fine) {
-    .menu-image {
-        transition: transform 0.3s ease;
-    }
-
     .menu-item:hover .menu-image {
-        transform: scale(1.05);
+        transform: none;
     }
 }
 
@@ -684,38 +640,31 @@ body {
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
     .menu-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (max-width: 1000px) {
-    .menu-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
+@media (max-width: 992px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
-    .header-content {
-        padding: 0 15px;
+    .product-page-main {
+        padding-top: 120px;
     }
 
-    .logo {
-        font-size: 24px;
-    }
-
-    .order-location {
-        display: none;
-    }
-
-    .nav-content {
+    .product-category-nav-content {
         padding: 0 15px;
         gap: 20px;
         overflow-x: auto;
         white-space: nowrap;
     }
 
-    .container {
-        padding: 20px 15px;
+    .product-list-main .container,
+    .product-detail-main .pdcontainer {
+        padding: 24px 15px 60px;
     }
 
     .page-title {
@@ -723,12 +672,16 @@ body {
     }
 
     .menu-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
     }
 
-    .menu-image {
-        height: 220px;
+    .menu-item {
+        padding: 18px;
+    }
+
+    .menu-name {
+        font-size: 18px;
     }
 
     .cart-panel {
@@ -739,19 +692,15 @@ body {
 
 @media (max-width: 480px) {
     .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .menu-image {
-        height: 180px;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .menu-name {
-        font-size: 12px;
+        font-size: 16px;
     }
 
     .menu-item {
-        padding: 10px;
+        padding: 16px;
     }
 }
