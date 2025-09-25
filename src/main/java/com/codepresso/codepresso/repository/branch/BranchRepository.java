@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
 
@@ -46,4 +48,6 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
             @Param("lng") double lng,
             @Param("radiusKm") double radiusKm,
             Pageable pageable);
+
+    Optional<Object> findByBranchName(String branchName);
 }

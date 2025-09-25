@@ -18,6 +18,9 @@
 
         <!-- 메인 컨텐츠 -->
         <div class="order-detail-content">
+        <!-- 선택된 매장 정보 전달용 (checkout과 동일 패턴) -->
+        <input type="hidden" id="selectedBranchIdInput" value="${branchId != null ? branchId : ''}" />
+        <input type="hidden" id="selectedBranchNameInput" value="${branchName != null ? branchName : ''}" />
         <!-- 좌측: 주문 정보 -->
         <div class="left-section">
             <!-- 주문 상태 -->
@@ -73,19 +76,13 @@
             <!-- 지점 정보 -->
             <div class="store-section">
                 <h2 class="section-title">픽업 매장</h2>
-                <div class="store-info">
-                    <div class="store-header">
-                        <div class="store-name">-</div>
-                        <button class="call-btn" onclick="callStore((document.querySelector('.store-phone')||{}).textContent || '')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M22 16.92V19.92C22 20.52 21.52 21 20.92 21C10.93 21 3 13.07 3 3.08C3 2.48 3.48 2 4.08 2H7.08C7.68 2 8.16 2.48 8.16 3.08V6.08C8.16 6.68 7.68 7.16 7.08 7.16H5.12C6.57 11.25 9.75 14.43 13.84 15.88V13.92C13.84 13.32 14.32 12.84 14.92 12.84H17.92C18.52 12.84 19 13.32 19 13.92V16.92C19 17.52 18.52 18 17.92 18H16.92" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            전화걸기
-                        </button>
-                    </div>
-                    <div class="store-address">-</div>
-                    <div class="store-phone" style="margin-top: 4px; color: var(--text-2); font-size: 13px;">-</div>
-                </div>
+                <span id="checkoutStoreName">
+                        <c:choose>
+                            <c:when test="${not empty branch}">${branch.branchName}</c:when>
+                            <c:when test="${not empty branchName}">${branchName}</c:when>
+                            <c:otherwise>매장 정보 없음</c:otherwise>
+                        </c:choose>
+                    </span>
             </div>
         </div>
 
@@ -563,10 +560,71 @@
         }
     }
 
-    // 페이지 로드 시 주문 상세 정보 로드
+    // 로컬 저장된 선택 매장 이름 보조 함수
+    function getSelectedBranchName() {
+        try {
+            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+            return (sel && sel.name) ? sel.name : '';
+        } catch (e) { return ''; }
+    }
+    function setStoreNameIfEmpty(name) {
+        var el = document.querySelector('.store-name');
+        var target = name && String(name).trim() ? String(name).trim() : '';
+        if (!el) return false;
+        if (!el.textContent || el.textContent === '-') {
+            if (target) { el.textContent = target; return true; }
+        }
+        return false;
+    }
+
+    function setStoreInfoFallbackFromLocal() {
+        try {
+            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+            if (!sel) return;
+            var nameSet = setStoreNameIfEmpty(sel.name);
+            var addrEl = document.querySelector('.store-address');
+            if (addrEl && (!addrEl.textContent || addrEl.textContent === '-')) {
+                if (sel.address) addrEl.textContent = sel.address;
+            }
+        } catch (e) { /* noop */ }
+    }
+
+    // 페이지 로드 시: 먼저 로컬 선택 매장 표시 후 상세 정보 로드
     document.addEventListener('DOMContentLoaded', function() {
+        hydrateStoreNameFromHiddenOrLocal();
         loadOrderDetailFromSessionOrFetch();
     });
+
+    // checkout.jsp와 동일 패턴의 매장명 하이드레이션
+    function hydrateStoreNameFromHiddenOrLocal() {
+        var idInput = document.getElementById('selectedBranchIdInput');
+        var nameInput = document.getElementById('selectedBranchNameInput');
+        var storeNameEl = document.querySelector('.store-name');
+
+        function setName(name) {
+            var display = name && String(name).trim() ? String(name).trim() : '';
+            if (storeNameEl && (!storeNameEl.textContent || storeNameEl.textContent === '-' || storeNameEl.textContent === '매장 정보 없음')) {
+                storeNameEl.textContent = display || '매장 정보 없음';
+            }
+            if (nameInput) nameInput.value = display;
+        }
+
+        var id = idInput && idInput.value ? String(idInput.value).trim() : '';
+        var nm = nameInput && nameInput.value ? String(nameInput.value).trim() : '';
+        if (nm) { setName(nm); return; }
+        if (id) {
+            setName('매장 정보를 불러오는 중...');
+            fetch('/branch/info/' + encodeURIComponent(id))
+                .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+                .then(function(d){ setName(d && (d.name || d.branchName) ? (d.name || d.branchName) : ('ID ' + id)); })
+                .catch(function(){ setName('매장 정보를 불러오지 못했습니다'); });
+            return;
+        }
+        try {
+            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+            setName(sel && sel.name ? sel.name : '');
+        } catch (e) { setName(''); }
+    }
 
     // 세션 스토리지에서 주문 상세 정보 로드 후, 항상 서버에서도 최신 데이터로 갱신
     function loadOrderDetailFromSessionOrFetch() {
@@ -704,7 +762,13 @@
             if (storeNameEl) storeNameEl.textContent = b.branchName || '';
             if (storeAddressEl) storeAddressEl.textContent = b.address || '';
             if (storePhoneEl) storePhoneEl.textContent = b.branchNumber || '';
+        } else {
+            // API에 지점 정보가 없으면 로컬 선택값으로 보정
+            setStoreInfoFallbackFromLocal();
         }
+
+        // 여전히 비어있다면 마지막으로 로컬 선택값으로 보정
+        setStoreInfoFallbackFromLocal();
 
         // 결제/요약 정보
         const paymentMethodVal = document.querySelector('.payment-method .method-value');
@@ -804,28 +868,6 @@
         });
     }
     
-    // 지점 정보 업데이트
-    function updateStoreInfo(orderData) {
-        const storeNameEl = document.querySelector('.store-name');
-        const orderTypeEl = document.querySelector('.order-type-value');
-        const pickupMethodEl = document.querySelector('.pickup-method-value');
-        const pickupTimeEl = document.querySelector('.pickup-time-value');
-        const requestNoteEl = document.querySelector('.request-note-value');
-        const storePhoneEl = document.querySelector('.store-phone');
-        const storeAddrEl = document.querySelector('.store-address');
-        
-        if (storeNameEl && orderData.storeName) storeNameEl.textContent = orderData.storeName;
-        if (orderTypeEl && orderData.orderType) orderTypeEl.textContent = orderData.orderType;
-        if (pickupMethodEl && orderData.pickupMethod) pickupMethodEl.textContent = orderData.pickupMethod;
-        if (pickupTimeEl && orderData.pickupTime) {
-            const pickupTime = new Date(orderData.pickupTime);
-            pickupTimeEl.textContent = pickupTime.toLocaleString();
-        }
-        if (requestNoteEl) requestNoteEl.textContent = orderData.requestNote || '요청사항 없음';
-        if (storePhoneEl && orderData.storePhone) storePhoneEl.textContent = orderData.storePhone;
-        if (storeAddrEl && orderData.storeAddress) storeAddrEl.textContent = orderData.storeAddress;
-    }
-    
     // 결제 정보 업데이트
     function updatePaymentInfo(orderData) {
         const paymentMethodEl = document.querySelector('.payment-method');
@@ -847,4 +889,41 @@
     }
 </script>
 
+<script>
+    (function(){
+        var nameTarget = document.getElementById('checkoutBranchName');
+        var storeTitleTarget = document.getElementById('checkoutStoreName');
+        var idInput = document.getElementById('selectedBranchIdInput');
+        var nameInput = document.getElementById('selectedBranchNameInput');
+
+        function setName(name){
+            var display = name && String(name).trim() ? String(name).trim() : '-';
+            if (nameTarget) nameTarget.textContent = display;
+            if (storeTitleTarget) storeTitleTarget.textContent = display === '-' ? '매장 정보 없음' : display;
+            if (nameInput) nameInput.value = name ? String(name).trim() : '';
+        }
+
+        function hydrate(){
+            var id = idInput && idInput.value ? String(idInput.value).trim() : '';
+            var nm = nameInput && nameInput.value ? String(nameInput.value).trim() : '';
+            if (nm) { setName(nm); return; }
+            if (id) {
+                setName('매장 정보를 불러오는 중...');
+                fetch('/branch/info/' + encodeURIComponent(id))
+                    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+                    .then(function(d){ setName(d && (d.name || d.branchName) ? (d.name || d.branchName) : ('ID ' + id)); })
+                    .catch(function(){ setName('매장 정보를 불러오지 못했습니다'); });
+                return;
+            }
+            try {
+                var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
+                setName(sel && sel.name ? sel.name : '');
+            } catch(e) {
+                setName('');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', hydrate);
+    })();
+</script>
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

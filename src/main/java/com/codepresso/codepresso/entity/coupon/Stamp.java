@@ -35,8 +35,5 @@ public class Stamp {
 
     @Column(name = "quantity")
     private Integer quantity;
-
-    @Column(name = "stamp_status", length = 50)
-    private String stampStatus;   // 쿠폰 발급 여부 확인 컬럼
 }
 
