@@ -949,21 +949,29 @@
         const discountAmount = useCouponCheckbox && useCouponCheckbox.checked ? 2000 : 0;
         const finalAmount = originalAmount - discountAmount;
 
-        // 주문 아이템 구성: 서버 제공 payload 우선
+        // 주문 아이템 구성: 서버 전달 데이터 우선 사용
         let orderItems = [];
+        
+        // 1. 직접 주문 데이터가 있는 경우 (server payload)
         const payloadNode = document.getElementById('orderItemsPayloadJson');
         if (payloadNode && payloadNode.textContent.trim().length > 0) {
             try { orderItems = JSON.parse(payloadNode.textContent); } catch(e) { orderItems = []; }
-        } else {
-            <c:if test="${not empty cartData and not empty cartData.items}">
-                <c:forEach var="item" items="${cartData.items}">
-                    orderItems.push({
-                        productId: ${item.productId},
-                        quantity: ${item.quantity},
-                        price: Math.round(${item.price} / ${item.quantity})
-                    });
-                </c:forEach>
-            </c:if>
+        }
+        // 2. 장바구니 데이터가 있는 경우 (server cartData)
+        else if (${not empty cartData and not empty cartData.items}) {
+            <c:forEach var="item" items="${cartData.items}">
+                orderItems.push({
+                    productId: ${item.productId},
+                    quantity: ${item.quantity},
+                    price: Math.round(${item.price} / ${item.quantity}),
+                    <c:if test="${not empty item.options}">
+                    optionIds: [<c:forEach var="option" items="${item.options}" varStatus="status">${option.optionId}<c:if test="${!status.last}">,</c:if></c:forEach>]
+                    </c:if>
+                    <c:if test="${empty item.options}">
+                    optionIds: []
+                    </c:if>
+                });
+            </c:forEach>
         }
 
         const paymentData = {
@@ -985,7 +993,7 @@
         payButton.textContent = '결제 처리 중...';
         payButton.disabled = true;
 
-        fetch('/payments/checkout', {
+        fetch('/api/payments/checkout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

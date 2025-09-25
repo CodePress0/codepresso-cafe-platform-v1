@@ -2,8 +2,12 @@ package com.codepresso.codepresso.service.payment;
 
 import com.codepresso.codepresso.dto.cart.CartItemResponse;
 import com.codepresso.codepresso.dto.cart.CartResponse;
+import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
+import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
+import com.codepresso.codepresso.dto.product.ProductDetailResponse;
+import com.codepresso.codepresso.dto.product.ProductOptionDTO;
 import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.entity.cart.Cart;
 import com.codepresso.codepresso.entity.member.Member;
@@ -19,6 +23,7 @@ import com.codepresso.codepresso.repository.order.OrdersRepository;
 import com.codepresso.codepresso.repository.product.ProductOptionRepository;
 import com.codepresso.codepresso.repository.product.ProductRepository;
 import com.codepresso.codepresso.service.cart.CartService;
+import com.codepresso.codepresso.service.product.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +48,79 @@ public class PaymentService {
     private final ProductOptionRepository productOptionRepository;
     private final CartRepository cartRepository;
     private final CartService cartService;
+    private final ProductService productService;
+
+    /**
+     * 장바구니 결제페이지 데이터 준비
+     * */
+    public CartCheckoutResponse prepareCartCheckout(Long memberId){
+        CartResponse cartData = cartService.getCartByMemberId(memberId);
+
+        int totalAmount = cartData.getItems().stream()
+                .mapToInt(CartItemResponse::getPrice)
+                .sum();
+
+        int totalQuantity = cartData.getItems().stream()
+                .mapToInt(CartItemResponse::getQuantity)
+                .sum();
+
+        return CartCheckoutResponse.builder()
+                .cartData(cartData)
+                .totalAmount(totalAmount)
+                .totalQuantity(totalQuantity)
+                .isFromCart(true)
+                .build();
+    }
+
+    /**
+     * 직접 결제페이지 데이터 준비
+     * */
+    public DirectCheckoutResponse prepareDirectCheckout(Long productId, Integer quantity,List<Long> optionIds){
+        // 1. 수량 검증
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+        }
+
+        // 2. 상품 상세 정보 조회 (ProductService에서 상품 존재 검증 포함)
+        ProductDetailResponse productDetail = productService.findByProductId(productId);
+
+        // 3. 선택된 옵션들과 총 가격 계산
+        List<ProductOptionDTO> selectedOptions = new ArrayList<>();
+        int totalAmount = calculateTotalAmount(productDetail, optionIds, quantity, selectedOptions);
+
+        return DirectCheckoutResponse.builder()
+                .productDetail(productDetail)
+                .quantity(quantity)
+                .selectedOptions(selectedOptions)
+                .totalAmount(totalAmount)
+                .isFromCart(false)
+                .build();
+    }
+    /**
+     * 총 가격 계산 및 선택된 옵션 수집
+     */
+    private int calculateTotalAmount(ProductDetailResponse productDetail, List<Long> optionIds,
+                                     Integer quantity, List<ProductOptionDTO> selectedOptions) {
+
+        int basePrice = (productDetail.getPrice() != null) ? productDetail.getPrice() : 0;
+        int optionPrice = 0;
+
+        // 옵션이 선택된 경우
+        if (optionIds != null && !optionIds.isEmpty()) {
+            // 선택된 옵션들 찾기 및 가격 계산
+            for (Long optionId : optionIds) {
+                ProductOptionDTO foundOption = productDetail.getProductOptions().stream()
+                        .filter(option -> option.getOptionId().equals(optionId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + optionId));
+
+                selectedOptions.add(foundOption);
+                optionPrice += (foundOption.getExtraPrice() != null) ? foundOption.getExtraPrice() : 0;
+            }
+        }
+        return (basePrice + optionPrice) * quantity;
+    }
+
 
     /**
      * 주문 및 결제 처리 ( 결제없이 주문만 생성 )
@@ -69,7 +147,7 @@ public class PaymentService {
 
         // 5. 장바구니에서 온 주문인 경우 장바구니 비우기
         if (Boolean.TRUE.equals(request.getIsFromCart())) {
-            System.out.println("🛒 장바구니 결제 감지 - 장바구니 비우기 실행 시작 (memberId: " + member.getId() + ")");
+            System.out.println("장바구니 결제 감지 - 장바구니 비우기 실행 시작 (memberId: " + member.getId() + ")");
             try {
                 CartResponse cartData = cartService.getCartByMemberId(member.getId());
                 cartService.clearCart(member.getId(), cartData.getCartId());
@@ -80,7 +158,7 @@ public class PaymentService {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("📦 단일 상품 결제 - 장바구니 비우기 건너뛰기 (isFromCart: " + request.getIsFromCart() + ")");
+            System.out.println("단일 상품 결제 - 장바구니 비우기 건너뛰기 (isFromCart: " + request.getIsFromCart() + ")");
         }
 
         // 6. 응답 데이터 생성
@@ -190,45 +268,6 @@ public class PaymentService {
                 .totalAmount(totalAmount)
                 .orderItems(orderItems)
                 .build();
-    }
-
-    // === 합계 계산 유틸 메서드 추가 ===
-    public int calculateTotalAmountFromCart(CartResponse cart) {
-        if (cart == null || cart.getItems() == null) return 0;
-        return cart.getItems().stream()
-                .mapToInt(CartItemResponse::getPrice) // CartItemResponse.price는 이미 총액
-                .sum();
-    }
-
-    public int calculateTotalQuantityFromCart(CartResponse cart) {
-        if (cart == null || cart.getItems() == null) return 0;
-        return cart.getItems().stream()
-                .mapToInt(CartItemResponse::getQuantity)
-                .sum();
-    }
-
-    public int calculateTotalAmount(List<CheckoutRequest.OrderItem> items) {
-        if (items == null) return 0;
-        return items.stream()
-                .mapToInt(i -> i.getPrice() * i.getQuantity())
-                .sum();
-    }
-
-    public int calculateTotalQuantity(List<CheckoutRequest.OrderItem> items) {
-        if (items == null) return 0;
-        return items.stream()
-                .mapToInt(CheckoutRequest.OrderItem::getQuantity)
-                .sum();
-    }
-
-
-    // 장바구니 검증 메서드
-    public CartResponse getValidCart(Long memberId) {
-        CartResponse cartData = cartService.getCartByMemberId(memberId);
-        if (cartData == null || cartData.getItems() == null || cartData.getItems().isEmpty()) {
-            throw new IllegalArgumentException("장바구니가 비어있습니다");
-        }
-        return cartData;
     }
 
 }
