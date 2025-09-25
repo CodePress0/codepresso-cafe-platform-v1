@@ -204,8 +204,8 @@ public class CartService {
                     List<CartOptionResponse> optionResponses = item.getOptions().stream()
                             .map(cartOption -> CartOptionResponse.builder()
                                     .optionId(cartOption.getProductOption().getId())
-                                    .optionName(cartOption.getProductOption().getOptionStyle().getOptionName().getOptionName())
                                     .extraPrice(safeExtraPrice(cartOption.getProductOption()))
+                                    .optionStyle(cartOption.getProductOption().getOptionStyle().getOptionStyle())
                                     .build())
                             .toList();
 
