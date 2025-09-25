@@ -35,6 +35,7 @@ dependencies {
     // =========================
     implementation 'org.springframework.boot:spring-boot-starter-web'       // Spring MVC + 내장 톰캣 + JSON 직렬화
     implementation 'org.springframework.boot:spring-boot-starter-validation'// Bean Validation(@NotNull 등)
+    implementation 'org.springframework.boot:spring-boot-starter-mail'      // JavaMailSender 이메일 발송
 
     // =========================
     // DB / Persistence

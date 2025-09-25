@@ -5,175 +5,174 @@
 <body>
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
     <style>
-        /* 게시판 페이지 전용 스타일 - 헤더에 영향 주지 않도록 메인 콘텐츠만 타겟팅 */
-        .board-main-container {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+        .board-page {
+            background: linear-gradient(160deg, var(--pink-4), #fff 55%);
+            padding: 72px 0 96px;
         }
 
-        .board-main-container * {
-            box-sizing: border-box;
-        }
-
-        .board-main-container .container {
-            max-width: 100%;
-            width: 100%;
+        .board-container {
+            max-width: 880px;
             margin: 0 auto;
-            padding: 20px 200px;
+            padding: 0 24px;
         }
 
-        .board-main-container .main-content {
-            background: white;
-            border-radius: 12px;
-            padding: 80px 120px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 2000px;
-            width: 100%;
-            margin: 0 auto;
+        .board-card {
+            background: #fff;
+            border-radius: 28px;
+            box-shadow: 0 32px 60px rgba(15,23,42,0.15);
+            padding: 48px 56px;
+            display: grid;
+            gap: 28px;
         }
 
         .post-header {
-            border-bottom: 2px solid #e9ecef;
+            border-bottom: 1px solid rgba(15,23,42,0.08);
             padding-bottom: 20px;
-            margin-bottom: 30px;
+            display: grid;
+            gap: 12px;
         }
 
         .post-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--text-1);
             line-height: 1.4;
         }
 
         .post-meta {
             display: flex;
-            gap: 20px;
-            color: #6c757d;
+            flex-wrap: wrap;
+            gap: 16px;
             font-size: 14px;
+            color: var(--text-2);
         }
 
         .post-content {
-            margin-bottom: 40px;
             line-height: 1.8;
+            color: var(--text-1);
             font-size: 16px;
-            color: #333;
             white-space: pre-wrap;
-            min-height: 200px;
+            min-height: 220px;
         }
 
         .answer-section {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            margin-top: 30px;
-            border-left: 4px solid #28a745;
+            background: rgba(255,122,162,0.08);
+            border-radius: 22px;
+            padding: 28px;
+            display: grid;
+            gap: 16px;
         }
 
         .answer-status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
             font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-weight: 700;
         }
 
         .answer-status.pending {
-            background-color: #fff3cd;
-            color: #856404;
+            background: rgba(255,122,162,0.18);
+            color: var(--pink-1);
         }
 
         .answer-status.completed {
-            background-color: #d4edda;
-            color: #155724;
+            background: rgba(34,197,94,0.15);
+            color: #15803d;
         }
 
         .answer-content {
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px 24px;
+            border: 1px solid rgba(15,23,42,0.08);
             line-height: 1.6;
             white-space: pre-wrap;
         }
 
         .answer-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 10px;
-            display: block;
+            font-weight: 700;
+            color: var(--text-1);
         }
 
         .action-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 30px;
+            gap: 12px;
+            justify-content: flex-end;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-weight: 700;
             font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
+            border: none;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: all 0.2s ease;
+            transition: transform .15s ease, box-shadow .2s ease;
         }
+
+        .btn:active { transform: translateY(1px); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-1);
+            border: 1px solid rgba(15,23,42,0.16);
+        }
+
+        .btn-outline:hover { background: rgba(15,23,42,0.06); }
 
         .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(255,122,162,0.3);
         }
 
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+            background: rgba(239, 68, 68, 0.12);
+            color: #b91c1c;
         }
 
         .btn-secondary:hover {
-            background-color: #545b62;
+            background: rgba(239, 68, 68, 0.18);
         }
 
-        .btn-outline {
-            background-color: transparent;
-            color: #6c757d;
-            border: 1px solid #6c757d;
-        }
-
-        .btn-outline:hover {
-            background-color: #6c757d;
-            color: white;
-        }
-
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
+        .loading,
         .error {
             text-align: center;
             padding: 60px 20px;
-            color: #dc3545;
+            color: var(--text-2);
+        }
+
+        .error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 820px) {
+            .board-card {
+                padding: 32px 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="board-main-container">
-        <div class="container">
-            <!-- 메인 콘텐츠 영역 -->
-            <div class="main-content">
-            <div id="postDetail">
+    <main class="board-page">
+        <div class="board-container">
+            <section class="board-card" id="postDetail">
                 <!-- 로딩 상태 -->
                 <div id="loading" class="loading">
                     <h3>게시글을 불러오는 중...</h3>
@@ -211,10 +210,9 @@
                         <button id="deleteBtn" class="btn btn-secondary" onclick="deletePost()" style="display: none;">삭제</button>
                     </div>
                 </div>
-            </div>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script>
         // 전역 변수 선언
@@ -251,7 +249,8 @@
                 })
                 .then(data => {
                     console.log('User data received:', data);
-                    currentUserId = data.id;
+                    currentUserId = data.memberId; // data.id가 아니라 data.memberId 사용
+                    console.log('currentUserId set to:', currentUserId, 'type:', typeof currentUserId);
                 })
                 .catch(error => {
                     console.error('Error loading user:', error);
@@ -345,8 +344,36 @@
             }
 
             // 작성자만 수정/삭제 버튼 표시
-            if (currentUserId && currentUserId === data.memberId) {
-                document.getElementById('editBtn').style.display = 'inline-block';
+            console.log('=== 버튼 표시 로직 ===');
+            console.log('currentUserId:', currentUserId, 'type:', typeof currentUserId);
+            console.log('data.memberId:', data.memberId, 'type:', typeof data.memberId);
+            console.log('비교 결과:', currentUserId == data.memberId);
+            
+            if (currentUserId && currentUserId == data.memberId) {
+                var editBtn = document.getElementById('editBtn');
+                
+                // 답변완료 상태가 아닐 때만 수정 버튼 표시
+                if (data.statusTag !== 'ANSWERED') {
+                    editBtn.style.display = 'inline-block';
+                    editBtn.textContent = '수정';
+                    editBtn.style.background = '';
+                    editBtn.style.color = '';
+                    editBtn.style.cursor = 'pointer';
+                    editBtn.onclick = editPost; // 정상적인 수정 함수 연결
+                } else {
+                    // 답변완료 상태일 때는 수정 불가 안내
+                    editBtn.style.display = 'inline-block';
+                    editBtn.textContent = '수정불가 (답변완료)';
+                    editBtn.style.background = 'rgba(156, 163, 175, 0.2)';
+                    editBtn.style.color = '#6b7280';
+                    editBtn.style.cursor = 'not-allowed';
+                    editBtn.onclick = function() {
+                        alert('답변이 완료된 게시글은 수정할 수 없습니다.');
+                        return false;
+                    };
+                }
+                
+                // 삭제는 항상 가능 (작성자 본인만)
                 document.getElementById('deleteBtn').style.display = 'inline-block';
             }
         }

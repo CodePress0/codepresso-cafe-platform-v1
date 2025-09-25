@@ -32,9 +32,11 @@ public class CheckoutRequest {
 
     private String requestNote;
 
+    private Boolean isFromCart;     // 장바구니에서 온 주문인지 구분
+
     @NotEmpty
     @Valid
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems;     // 장바구니든 단일상품이든 여기에 담김
 
     @Data
     public static class OrderItem {
@@ -50,6 +52,26 @@ public class CheckoutRequest {
         private Integer price;
 
         private List<Long> optionIds; //선택된 옵션들
+    }
+
+    /**
+     * 전체 주문 금액 계산
+     */
+    public int getTotalAmount() {
+        if (orderItems == null) return 0;
+        return orderItems.stream()
+                .mapToInt(item -> item.getPrice() * item.getQuantity())
+                .sum();
+    }
+
+    /**
+     * 전체 주문 수량 계산
+     */
+    public int getTotalQuantity() {
+        if (orderItems == null) return 0;
+        return orderItems.stream()
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
     }
 
 }

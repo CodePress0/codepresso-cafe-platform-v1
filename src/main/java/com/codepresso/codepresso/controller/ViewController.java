@@ -80,6 +80,11 @@ public class ViewController {
         return "auth/password-find";
     }
 
+    @GetMapping("/auth/id-find") // 아이디 찾기 화면
+    public String idFindPage() {
+        return "auth/id-find";
+    }
+
     // 매장 목록은 BranchController에서 처리
 
     @GetMapping("/member/mypage") // GET /member/mypage → 마이페이지 (보안설정에서 보호)
@@ -121,6 +126,7 @@ public class ViewController {
         model.addAttribute("cart", cart);
         return "cart/cart";
     }
+
 
     /**
      * 게시판 목록 페이지

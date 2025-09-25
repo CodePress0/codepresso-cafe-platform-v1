@@ -6,6 +6,7 @@ import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
+import com.codepresso.codepresso.entity.payment.Payment;
 import com.codepresso.codepresso.entity.payment.PaymentDetail;
 import com.codepresso.codepresso.repository.branch.BranchRepository;
 import com.codepresso.codepresso.repository.member.MemberRepository;
@@ -75,7 +76,7 @@ public class OrderService {
 
          return OrderListResponse.OrderSummary.builder()
                  .orderId(orders.getId())
-                 .orderNumber(generateOrderNumber(orders.getId(), orders.getOrderDate()))
+                 .orderNumber(generateOrderNumber(orders))
                  .orderDate(orders.getOrderDate())
                  .productionStatus(orders.getProductionStatus())
                  .branchName(orders.getBranch().getBranchName())
@@ -107,7 +108,7 @@ public class OrderService {
 
          return OrderDetailResponse.builder()
                  .orderId(orders.getId())
-                 .orderNumber(generateOrderNumber(orders.getId(), orders.getOrderDate()))
+                 .orderNumber(generateOrderNumber(orders))
                  .orderDate(orders.getOrderDate())
                  .productionStatus(orders.getProductionStatus())
                  .pickupTime(orders.getPickupTime())
@@ -131,7 +132,7 @@ public class OrderService {
          return OrderDetailResponse.OrderItem.builder()
                  .orderDetailId(detail.getId())
                  .productName(detail.getProduct().getProductName())
-                 .quantity(1) // OrdersDetail에 quantity 필드 추가 시 수정
+                 .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
                  .price(detail.getProduct().getPrice())
                  .totalPrice(detail.getPrice())
                  .optionsName(optionNames)
@@ -179,13 +180,19 @@ public class OrderService {
          }
      }
 
-     private String generateOrderNumber(Long orderId, LocalDateTime orderDate) {
-            String dateStr = orderDate.format(DateTimeFormatter.ofPattern("MMdd"));
-         // 주문번호 생성 로직 (예: 날짜 기반 + 순번)
-         // 실제로는 더 복잡한 로직이 필요할 수 있음
-         int dayOfYear = orderDate.getDayOfYear();
-         int orderSequence = orderId.intValue() % 100;
-         return String.format("%04d-%d", dayOfYear, orderSequence);
+     private String generateOrderNumber(Orders orders) {
+         LocalDateTime orderDate = orders.getOrderDate();
+         String phone = orders.getMember() != null ? orders.getMember().getPhone() : null;
+         String last4 = "0000";
+         if (phone != null) {
+             String digits = phone.replaceAll("\\D", "");
+             if (digits.length() >= 4) last4 = digits.substring(digits.length() - 4);
+         }
+         LocalDateTime startOfDay = orderDate.toLocalDate().atStartOfDay();
+         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+         long seq = ordersRepository.countByOrderDateBetweenAndOrderDateLessThanEqual(startOfDay, endOfDay, orderDate);
+         if (seq < 1) seq = 1; // 안전장치
+         return String.format("%s-%d", last4, seq);
      }
 
     /**

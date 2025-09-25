@@ -40,7 +40,7 @@
                             <form class="cart-clear-form" action="<c:url value='/users/cart/clear'/>" method="post">
                                 <input type="hidden" name="cartId" value="${cart.cartId}" />
                                 <input type="hidden" name="redirect" value="/cart" />
-                                <button type="submit" class="btn-text">전체 비우기</button>
+                                <button type="submit" class="btn btn-outline btn-clear">전체 비우기</button>
                             </form>
                         </div>
                         <ul class="cart-item-list">
@@ -190,16 +190,22 @@
         box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.6);
     }
 
-    .cart-item-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+    .cart-item-list { list-style: none; margin: 0; padding: 0; display: block; }
     .cart-item {
         display: grid;
         grid-template-columns: 96px 1fr;
         gap: 20px;
-        padding: 22px 26px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 20px 36px rgba(15,23,42,0.08);
+        padding: 16px 4px 16px 0;
+        background: transparent;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
         position: relative;
+    }
+    .cart-item + .cart-item {
+        border-top: 1px dashed rgba(255, 122, 162, 0.35);
+        margin-top: 12px;
+        padding-top: 28px;
     }
     .cart-item-group {
         background: rgba(255, 255, 255, 0.85);
@@ -208,7 +214,7 @@
         box-shadow: 0 24px 48px rgba(15, 23, 42, 0.1);
         backdrop-filter: blur(6px);
     }
-    .cart-item-group .cart-item-list { gap: 20px; }
+    .cart-item-group .cart-item-list { display: block; }
     .cart-item-thumb {
         background: linear-gradient(135deg, var(--pink-3), var(--pink-4));
         position: relative;
@@ -429,11 +435,27 @@
     .btn-block { width: 100%; }
     .btn-outline {
         background: #fff;
-        border: 1px solid rgba(0,0,0,0.12);
-        color: var(--text-1);
-        transition: box-shadow .2s ease, transform .08s ease;
+        border: 1px solid rgba(255,122,162,0.6);
+        color: var(--pink-1);
+        transition: box-shadow .2s ease, transform .08s ease, background .2s ease;
     }
-    .btn-outline:hover { box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12); }
+    .btn-outline:hover {
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+        border-color: var(--pink-1);
+        background: rgba(255,122,162,0.08);
+        color: var(--pink-1);
+    }
+    .btn-clear {
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--pink-1);
+    }
+    .btn-clear:hover {
+        color: var(--pink-1);
+        border-color: var(--pink-1);
+    }
     .btn-disabled { opacity: 0.6; pointer-events: none; }
 
     .add-card h3 { margin: 0; font-size: 18px; }
@@ -869,6 +891,17 @@
     });
 
     hydrateSelectionFromServer();
+
+    // 주문하기 버튼: 선택된 매장 ID를 쿼리스트링으로 넘겨 결제 페이지로 이동
+    if (orderButton) {
+        orderButton.addEventListener('click', () => {
+            if (orderButton.disabled) return;
+            const id = selectedBranchIdInput ? String(selectedBranchIdInput.value || '').trim() : '';
+            const url = new URL('/payments', window.location.origin);
+            if (id) url.searchParams.set('branchId', id);
+            window.location.href = url.toString();
+        });
+    }
 
     document.querySelectorAll('.qty-control').forEach(control => {
         const input = control.querySelector('input');

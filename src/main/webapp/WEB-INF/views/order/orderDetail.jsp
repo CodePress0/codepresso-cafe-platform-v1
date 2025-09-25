@@ -23,7 +23,7 @@
             <!-- 주문 상태 -->
             <div class="order-status-section">
                 <div class="status-header">
-                    <div class="order-number">주문번호(9035-2)</div>
+                    <div class="order-number">주문번호(로딩 중)</div>
                     <span class="status-badge status-making">제조중</span>
                 </div>
 
@@ -42,23 +42,23 @@
                 <div class="order-meta">
                     <div class="meta-row">
                         <span class="meta-label">주문일시</span>
-                        <span class="meta-value">2025-09-06 14:30</span>
+                        <span class="meta-value order-date-value">-</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">픽업예정</span>
-                        <span class="meta-value">2025-09-06 14:45 (15분 후)</span>
+                        <span class="meta-value pickup-time-value">-</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">주문형태</span>
-                        <span class="meta-value">테이크아웃</span>
+                        <span class="meta-value order-type-value">-</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">포장방법</span>
-                        <span class="meta-value">전체포장(케리어)</span>
+                        <span class="meta-value pickup-method-value">-</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">요청사항</span>
-                        <span class="meta-value">얼음 적게 해주세요</span>
+                        <span class="meta-value request-note-value">-</span>
                     </div>
                 </div>
             </div>
@@ -67,37 +67,7 @@
             <div class="order-items-section">
                 <h2 class="section-title">주문상품</h2>
 
-                <div class="order-items">
-                    <div class="order-item">
-                        <div class="item-number">1</div>
-                        <img src="https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755483411048.jpg"
-                             alt="시그니처아메리카노" class="item-image">
-                        <div class="item-details">
-                            <div class="item-name">시그니처아메리카노</div>
-                            <div class="item-options">ICE, 샷 추가</div>
-                            <div class="item-quantity">수량: 2개</div>
-                        </div>
-                        <div class="item-pricing">
-                            <div class="unit-price">단가: 2,900원</div>
-                            <div class="total-price">5,800원</div>
-                        </div>
-                    </div>
-
-                    <div class="order-item">
-                        <div class="item-number">2</div>
-                        <img src="https://www.banapresso.com/from_open_storage?ws=fprocess&file=banapresso/menu/new_img_ice_20250818_1755487121681.jpg"
-                             alt="망고주스" class="item-image">
-                        <div class="item-details">
-                            <div class="item-name">망고주스</div>
-                            <div class="item-options">ICE</div>
-                            <div class="item-quantity">수량: 1개</div>
-                        </div>
-                        <div class="item-pricing">
-                            <div class="unit-price">단가: 4,000원</div>
-                            <div class="total-price">4,000원</div>
-                        </div>
-                    </div>
-                </div>
+                <div class="order-items"></div>
             </div>
 
             <!-- 지점 정보 -->
@@ -105,16 +75,16 @@
                 <h2 class="section-title">픽업 매장</h2>
                 <div class="store-info">
                     <div class="store-header">
-                        <div class="store-name">강남대로점</div>
-                        <button class="call-btn" onclick="callStore('070-4512-0297')">
+                        <div class="store-name">-</div>
+                        <button class="call-btn" onclick="callStore((document.querySelector('.store-phone')||{}).textContent || '')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                                 <path d="M22 16.92V19.92C22 20.52 21.52 21 20.92 21C10.93 21 3 13.07 3 3.08C3 2.48 3.48 2 4.08 2H7.08C7.68 2 8.16 2.48 8.16 3.08V6.08C8.16 6.68 7.68 7.16 7.08 7.16H5.12C6.57 11.25 9.75 14.43 13.84 15.88V13.92C13.84 13.32 14.32 12.84 14.92 12.84H17.92C18.52 12.84 19 13.32 19 13.92V16.92C19 17.52 18.52 18 17.92 18H16.92" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            070-4512-0297
+                            전화걸기
                         </button>
                     </div>
-                    <div class="store-address">서울시 강남구 강남대로 123길 45</div>
-                    <div class="store-hours">영업시간: 07:00 - 22:00</div>
+                    <div class="store-address">-</div>
+                    <div class="store-phone" style="margin-top: 4px; color: var(--text-2); font-size: 13px;">-</div>
                 </div>
             </div>
         </div>
@@ -127,27 +97,27 @@
                 <div class="payment-details">
                     <div class="payment-method">
                         <span class="method-label">결제수단</span>
-                        <span class="method-value">신용카드</span>
+                        <span class="method-value">-</span>
                     </div>
                     <div class="payment-date">
                         <span class="date-label">결제일시</span>
-                        <span class="date-value">2025-09-06 14:30</span>
+                        <span class="date-value">-</span>
                     </div>
                 </div>
 
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>주문금액</span>
-                        <span>9,800원</span>
+                        <span class="order-amount">0원</span>
                     </div>
                     <div class="summary-row">
                         <span>총 수량</span>
-                        <span>3개</span>
+                        <span class="total-qty">0개</span>
                     </div>
                     <div class="summary-divider"></div>
                     <div class="summary-row total">
                         <span>총 결제금액</span>
-                        <span class="total-amount">9,800원</span>
+                        <span class="total-amount">0원</span>
                     </div>
                 </div>
             </div>
@@ -155,7 +125,6 @@
             <!-- 주문 액션 -->
             <div class="order-actions">
                 <button class="btn-secondary" onclick="goToOrderList()">주문목록</button>
-                <button class="btn-primary" onclick="reorder()">재주문</button>
             </div>
         </div>
     </div>
@@ -576,14 +545,14 @@
 <script>
     // 지점 전화걸기
     function callStore(phoneNumber) {
-        if (confirm(`${phoneNumber}로 전화를 거시겠습니까?`)) {
-            window.location.href = `tel:${phoneNumber}`;
+        if (confirm((phoneNumber || '') + '로 전화를 거시겠습니까?')) {
+            window.location.href = 'tel:' + (phoneNumber || '');
         }
     }
 
     // 주문목록으로 이동
     function goToOrderList() {
-        window.location.href = '/users/orders';
+        window.location.href = '/orders';
     }
 
     // 재주문
@@ -596,26 +565,49 @@
 
     // 페이지 로드 시 주문 상세 정보 로드
     document.addEventListener('DOMContentLoaded', function() {
-        loadOrderDetailFromSession();
+        loadOrderDetailFromSessionOrFetch();
     });
 
-    // 세션 스토리지에서 주문 상세 정보 로드
-    function loadOrderDetailFromSession() {
-        const orderDataStr = sessionStorage.getItem('orderData');
-        if (orderDataStr) {
-            const orderData = JSON.parse(orderDataStr);
-            updateOrderDetail(orderData);
-        } else {
-            alert('주문 정보가 없습니다.');
-            window.location.href = '/';
+    // 세션 스토리지에서 주문 상세 정보 로드 후, 항상 서버에서도 최신 데이터로 갱신
+    function loadOrderDetailFromSessionOrFetch() {
+        const path = window.location.pathname;
+        const m = path.match(/\/orders\/(\d+)/);
+        if (!m) {
+            alert('주문 정보를 찾을 수 없습니다.');
+            window.location.href = '/orders';
+            return;
         }
+        const orderId = m[1];
+
+        // 1) 세션 저장분이 있으면 먼저 빠르게 표시(매장 주소/전화는 없을 수 있음)
+        const orderDataStr = sessionStorage.getItem('orderDetailData') || sessionStorage.getItem('orderData');
+        if (orderDataStr) {
+            try {
+                const orderData = JSON.parse(orderDataStr);
+                updateOrderDetail(orderData);
+            } catch (e) { /* noop */ }
+        }
+
+        // 2) 항상 서버에서 상세 조회하여 정확한 매장/결제 정보로 갱신
+        fetch(`/users/orders/${orderId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('주문 정보를 불러오지 못했습니다');
+                return res.json();
+            })
+            .then(data => updateOrderDetailFromApi(data))
+            .catch(err => {
+                console.error(err);
+                if (!orderDataStr) {
+                    alert('주문 정보를 불러오지 못했습니다.');
+                }
+            });
     }
 
-    // 주문 상세 정보 업데이트
+    // 주문 상세 정보 업데이트 (checkout에서 sessionStorage로 전달된 데이터 구조)
     function updateOrderDetail(orderData) {
         // 주문번호 및 상태 업데이트 (checkout에서 온 데이터에는 orderNumber가 없으므로 orderId 사용)
-        const orderNumber = orderData.orderNumber || `${orderData.orderId}`;
-        document.querySelector('.order-number').textContent = `주문번호(${orderNumber})`;
+        const orderNumber = orderData.orderNumber || String(orderData.orderId || '');
+        document.querySelector('.order-number').textContent = '주문번호(' + orderNumber + ')';
 
         const statusBadge = document.querySelector('.status-badge');
         // checkout에서 온 데이터에는 productionStatus가 없으므로 기본값 설정
@@ -639,6 +631,113 @@
         
         // 결제 정보 업데이트
         updatePaymentInfo(orderData);
+    }
+
+    // 주문 상세 정보 업데이트 (API 응답 구조 사용)
+    function updateOrderDetailFromApi(data) {
+        const orderNumber = data.orderNumber || String(data.orderId || '');
+        document.querySelector('.order-number').textContent = '주문번호(' + orderNumber + ')';
+
+        const status = '픽업완료';
+        const statusBadge = document.querySelector('.status-badge');
+        statusBadge.textContent = status;
+        statusBadge.className = 'status-badge ' + getStatusClass(status);
+
+        const progressFill = document.querySelector('.progress-fill');
+        progressFill.style.width = getProgressWidth(status) + '%';
+        updateProgressSteps(status);
+
+        // 주문 메타 정보
+        const fmt = d => d ? new Date(d).toLocaleString() : '-';
+        const orderDateEl = document.querySelector('.order-date-value');
+        const pickupTimeEl = document.querySelector('.pickup-time-value');
+        const orderTypeEl = document.querySelector('.order-type-value');
+        const pickupMethodEl = document.querySelector('.pickup-method-value');
+        const requestNoteEl = document.querySelector('.request-note-value');
+        if (orderDateEl) orderDateEl.textContent = fmt(data.orderDate);
+        if (pickupTimeEl) pickupTimeEl.textContent = fmt(data.pickupTime);
+        if (orderTypeEl) orderTypeEl.textContent = data.isTakeout ? '테이크아웃' : '매장';
+        if (pickupMethodEl) pickupMethodEl.textContent = data.pickupMethod || '-';
+        if (requestNoteEl) requestNoteEl.textContent = data.requestNote || '요청사항 없음';
+
+        // 주문 상품 목록
+        const listContainer = document.querySelector('.order-items');
+        if (listContainer) {
+            listContainer.innerHTML = '';
+            if (Array.isArray(data.orderItems)) {
+                data.orderItems.forEach((item, idx) => {
+                    const unit = Number(item.price || 0);
+                    const qty = Number(item.quantity || 1);
+                    const total = item.totalPrice != null ? Number(item.totalPrice) : (unit * qty);
+                    const options = (item.optionsName && item.optionsName.length > 0) ? item.optionsName.join(', ') : '';
+                    const html = '<div class="order-item">'
+                        + '<div class="item-number">' + (idx + 1) + '</div>'
+                        + '<div class="item-details">'
+                        +   '<div class="item-name">' + (item.productName || '') + '</div>'
+                        +   '<div class="item-options">' + options + '</div>'
+                        +   '<div class="item-quantity">수량: ' + qty + '개</div>'
+                        +   '<div class="item-actions"><button class="btn btn-outline btn-sm" data-review-id="' + (item.orderDetailId || '') + '">리뷰 달기</button></div>'
+                        + '</div>'
+                        + '<div class="item-pricing">'
+                        +   '<div class="unit-price">단가: ' + unit.toLocaleString() + '원</div>'
+                        +   '<div class="total-price">' + total.toLocaleString() + '원</div>'
+                        + '</div>'
+                        + '</div>';
+                    listContainer.insertAdjacentHTML('beforeend', html);
+                });
+                listContainer.addEventListener('click', function(e){
+                    const btn = e.target.closest('[data-review-id]');
+                    if (!btn) return;
+                    const odId = btn.getAttribute('data-review-id');
+                    if (!odId) return;
+                    window.location.href = '/reviews/write?orderDetailId=' + encodeURIComponent(odId);
+                });
+            }
+        }
+
+        // 지점 정보
+        if (data.branch) {
+            const b = data.branch;
+            const storeNameEl = document.querySelector('.store-name');
+            const storeAddressEl = document.querySelector('.store-address');
+            const storePhoneEl = document.querySelector('.store-phone');
+            if (storeNameEl) storeNameEl.textContent = b.branchName || '';
+            if (storeAddressEl) storeAddressEl.textContent = b.address || '';
+            if (storePhoneEl) storePhoneEl.textContent = b.branchNumber || '';
+        }
+
+        // 결제/요약 정보
+        const paymentMethodVal = document.querySelector('.payment-method .method-value');
+        const paymentDateVal = document.querySelector('.payment-date .date-value');
+        const orderAmountVal = document.querySelector('.payment-summary .order-amount');
+        const totalQtyVal = document.querySelector('.payment-summary .total-qty');
+        const totalAmountEl = document.querySelector('.total-amount');
+
+        // 주문금액/총수량 계산
+        let orderAmountCalc = 0;
+        let qtyCalc = 0;
+        if (Array.isArray(data.orderItems)) {
+            data.orderItems.forEach(it => {
+                const unit = Number(it.price || 0);
+                const qty = Number(it.quantity || 1);
+                const line = it.totalPrice != null ? Number(it.totalPrice) : unit * qty;
+                orderAmountCalc += line;
+                qtyCalc += qty;
+            });
+        }
+        if (orderAmountVal) orderAmountVal.textContent = orderAmountCalc.toLocaleString() + '원';
+        if (totalQtyVal) totalQtyVal.textContent = qtyCalc + '개';
+
+        if (data.payment) {
+            const p = data.payment;
+            if (paymentMethodVal) paymentMethodVal.textContent = p.paymentMethod || '';
+            if (paymentDateVal) paymentDateVal.textContent = (p.paymentDate ? new Date(p.paymentDate).toLocaleString() : (data.orderDate ? new Date(data.orderDate).toLocaleString() : '-'));
+            if (totalAmountEl) totalAmountEl.textContent = (p.totalAmount || orderAmountCalc).toLocaleString() + '원';
+        } else {
+            if (totalAmountEl) totalAmountEl.textContent = (data.totalAmount != null ? data.totalAmount : orderAmountCalc).toLocaleString() + '원';
+            if (paymentMethodVal) paymentMethodVal.textContent = '-';
+            if (paymentDateVal) paymentDateVal.textContent = (data.orderDate ? new Date(data.orderDate).toLocaleString() : '-');
+        }
     }
 
     // 상태에 따른 CSS 클래스 반환
@@ -679,44 +778,52 @@
         });
     }
     
-    // 주문 상품 정보 업데이트
+    // 주문 상품 정보 업데이트 (체크아웃에서 세션으로 온 구조)
     function updateOrderItems(orderItems) {
-        const container = document.querySelector('.order-items-list');
+        const container = document.querySelector('.order-items');
         if (!container) return;
-        
         container.innerHTML = '';
-        orderItems.forEach(item => {
-            const itemHtml = `
-                <div class="order-item">
-                    <img src="${item.image}" alt="${item.name}" class="item-image">
-                    <div class="item-details">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-price">${item.price.toLocaleString()}원</div>
-                        <div class="item-quantity">수량: ${item.quantity}개</div>
-                    </div>
-                    <div class="item-total">${item.total.toLocaleString()}원</div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', itemHtml);
+        orderItems.forEach((item, idx) => {
+            const name = item.name || '';
+            const qty = Number(item.quantity || 0);
+            const unit = Number(item.price || 0);
+            const total = Number(item.total || unit * qty);
+            const html = '<div class="order-item">'
+                + '<div class="item-number">' + (idx + 1) + '</div>'
+                + '<div class="item-details">'
+                +   '<div class="item-name">' + name + '</div>'
+                +   '<div class="item-quantity">수량: ' + qty + '개</div>'
+                +   '<div class="item-actions"><button class="btn btn-outline btn-sm" disabled>리뷰 달기</button></div>'
+                + '</div>'
+                + '<div class="item-pricing">'
+                +   '<div class="unit-price">단가: ' + unit.toLocaleString() + '원</div>'
+                +   '<div class="total-price">' + total.toLocaleString() + '원</div>'
+                + '</div>'
+                + '</div>';
+            container.insertAdjacentHTML('beforeend', html);
         });
     }
     
     // 지점 정보 업데이트
     function updateStoreInfo(orderData) {
         const storeNameEl = document.querySelector('.store-name');
-        const orderTypeEl = document.querySelector('.order-type');
-        const pickupMethodEl = document.querySelector('.pickup-method');
-        const pickupTimeEl = document.querySelector('.pickup-time');
-        const requestNoteEl = document.querySelector('.request-note');
+        const orderTypeEl = document.querySelector('.order-type-value');
+        const pickupMethodEl = document.querySelector('.pickup-method-value');
+        const pickupTimeEl = document.querySelector('.pickup-time-value');
+        const requestNoteEl = document.querySelector('.request-note-value');
+        const storePhoneEl = document.querySelector('.store-phone');
+        const storeAddrEl = document.querySelector('.store-address');
         
-        if (storeNameEl) storeNameEl.textContent = orderData.storeName;
-        if (orderTypeEl) orderTypeEl.textContent = orderData.orderType;
-        if (pickupMethodEl) pickupMethodEl.textContent = orderData.pickupMethod;
+        if (storeNameEl && orderData.storeName) storeNameEl.textContent = orderData.storeName;
+        if (orderTypeEl && orderData.orderType) orderTypeEl.textContent = orderData.orderType;
+        if (pickupMethodEl && orderData.pickupMethod) pickupMethodEl.textContent = orderData.pickupMethod;
         if (pickupTimeEl && orderData.pickupTime) {
             const pickupTime = new Date(orderData.pickupTime);
             pickupTimeEl.textContent = pickupTime.toLocaleString();
         }
         if (requestNoteEl) requestNoteEl.textContent = orderData.requestNote || '요청사항 없음';
+        if (storePhoneEl && orderData.storePhone) storePhoneEl.textContent = orderData.storePhone;
+        if (storeAddrEl && orderData.storeAddress) storeAddrEl.textContent = orderData.storeAddress;
     }
     
     // 결제 정보 업데이트
