@@ -12,5 +12,4 @@ public class ReviewViewController {
 
     private final ReviewService reviewService;
 
-
 }

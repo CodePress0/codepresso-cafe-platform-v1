@@ -3,8 +3,6 @@ package com.codepresso.codepresso.controller.product;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.product.ReviewListResponse;
-import com.codepresso.codepresso.security.LoginUser;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
