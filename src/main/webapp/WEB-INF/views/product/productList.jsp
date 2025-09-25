@@ -2,58 +2,21 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>바나프레소</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
-    <!-- 메뉴 상세 팝업 CSS 추가 -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/productDetailCss.css">
-</head>
-<body>
-<header class="header">
-    <div class="header-content">
-        <div class="logo-section">
-            <a href="${pageContext.request.contextPath}/" class="logo">banapresso</a>
-            <div class="order-location">
-                주문하기 ▼
-                <span style="margin-left: 20px;"> 매장을 선택하세요. 선택 ▶</span>
-            </div>
-        </div>
-        <div class="header-actions">
-            <button class="search-btn" onclick="showSearchModal()">🔍</button>
-            <button class="cart-btn" onclick="toggleCart()">
-                🛒
-                <span class="cart-count" id="cartCount">0</span>
-            </button>
-        </div>
-    </div>
-</header>
+<%@ include file="/WEB-INF/views/common/head.jspf" %>
+<style>
+    @import url('${pageContext.request.contextPath}/css/menu.css');
+    @import url('${pageContext.request.contextPath}/css/productDetailCss.css');
+</style>
+<body class="product-list-page">
+<%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<nav class="nav">
-    <div class="nav-content">
-        <a href="${pageContext.request.contextPath}/products?category=COFFEE" class="nav-item ${currentCategory == 'COFFEE' ? 'active' : ''}">커피</a>
-        <a href="${pageContext.request.contextPath}/products?category=LATTE" class="nav-item ${currentCategory == 'LATTE' ? 'active' : ''}">라떼</a>
-        <a href="${pageContext.request.contextPath}/products?category=JUICE" class="nav-item ${currentCategory == 'JUICE' ? 'active' : ''}">주스 & 드링크</a>
-        <a href="${pageContext.request.contextPath}/products?category=SMOOTHIE" class="nav-item ${currentCategory == 'SMOOTHIE' ? 'active' : ''}">바나치노 & 스무디</a>
-        <a href="${pageContext.request.contextPath}/products?category=TEA" class="nav-item ${currentCategory == 'TEA' ? 'active' : ''}">티 & 에이드</a>
-        <a href="${pageContext.request.contextPath}/products?category=FOOD" class="nav-item ${currentCategory == 'FOOD' ? 'active' : ''}">디저트</a>
-        <a href="${pageContext.request.contextPath}/products?category=SET" class="nav-item ${currentCategory == 'SET' ? 'active' : ''}">세트메뉴</a>
-        <a href="${pageContext.request.contextPath}/products?category=MD_GOODS" class="nav-item ${currentCategory == 'MD_GOODS' ? 'active' : ''}">MD</a>
-    </div>
-</nav>
+<main class="product-page-main product-list-main">
+<%@ include file="/WEB-INF/views/product/product-category-nav.jspf" %>
 
 <div class="container">
-    <div class="page-header">
-        <h1 class="page-title">메뉴 보기</h1>
-        <div class="filter-section">
-            <button class="filter-btn">
-                🏷️ 필터 <span class="cart-count">${fn:length(products)}</span>
-            </button>
-        </div>
-    </div>
+<%--    <div class="page-header">--%>
+<%--        <h1 class="page-title">메뉴 보기</h1>--%>
+<%--    </div>--%>
 
     <div class="section-header">
         <h2 class="section-title">
@@ -132,7 +95,7 @@
                             <div class="${imageClass}">
                                 <!-- 실제 상품 이미지 표시 -->
                                 <c:if test="${not empty product.productPhoto}">
-                                    <div style="width: 100%; height: 100%; border-radius: 10px;
+                                    <div style="width: 100%; height: 100%; border-radius: 0;
                                             background-image: url('${product.productPhoto}');
                                             background-size: contain;
                                             background-position: center;
@@ -168,8 +131,8 @@
                                 <fmt:formatNumber value="${product.price}" pattern="#,###"/>원
                             </div>
                             <!-- 장바구니 버튼은 이벤트 전파 중단 -->
-                            <button class="add-to-cart"
-                                    onclick="event.stopPropagation(); addToCart('${fn:escapeXml(product.productName)}', ${product.price})">🛒</button>
+<%--                            <button class="add-to-cart"--%>
+<%--                                    onclick="event.stopPropagation(); addToCart('${fn:escapeXml(product.productName)}', ${product.price})">🛒</button>--%>
                         </div>
                     </div>
                 </c:forEach>
@@ -317,5 +280,6 @@
     </div>
 </c:if>
 
-</body>
-</html>
+</main>
+
+<%@ include file="/WEB-INF/views/common/footer.jspf" %>

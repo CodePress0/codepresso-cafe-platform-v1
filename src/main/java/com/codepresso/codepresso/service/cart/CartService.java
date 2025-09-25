@@ -202,6 +202,10 @@ public class CartService {
                 .map(item -> {
                     // CartItemOption -> DTO 변환
                     List<CartOptionResponse> optionResponses = item.getOptions().stream()
+                            .filter(co -> co.getProductOption() != null
+                                    && co.getProductOption().getOptionStyle() != null
+                                    && co.getProductOption().getOptionStyle().getOptionStyle() != null
+                                    && !co.getProductOption().getOptionStyle().getOptionStyle().trim().equals("기본"))
                             .map(cartOption -> CartOptionResponse.builder()
                                     .optionId(cartOption.getProductOption().getId())
                                     .extraPrice(safeExtraPrice(cartOption.getProductOption()))
