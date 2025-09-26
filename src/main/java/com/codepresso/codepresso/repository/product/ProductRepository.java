@@ -12,12 +12,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAll();
     List<Product> findByCategoryCategoryCode(String categoryCode);
 
-    // 영양 정보와 카테고리 정보 가져오기
-    @Query("SELECT p " +
-            "FROM Product p " +
-            "LEFT JOIN FETCH p.nutritionInfo " +
-            "LEFT JOIN FETCH p.category " +
-            "WHERE p.id = :id")
-    Product findWithNutrition(@Param("id") Long id);
+
+//    // 영양 정보와 카테고리 정보 가져오기
+//    @Query("SELECT p " +
+//            "FROM Product p " +
+//            "LEFT JOIN FETCH p.nutritionInfo " +
+//            "LEFT JOIN FETCH p.category" +
+//            " " +
+//            "WHERE p.id = :id")
+//    Product findById(@Param("id") Long id);
 
 }

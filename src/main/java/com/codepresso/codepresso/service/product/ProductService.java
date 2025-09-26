@@ -51,7 +51,6 @@ public class ProductService {
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-        // Product 엔티티에서 직접 관련 데이터를 가져옴
         List<ProductOption> options = product.getOptions();
 
         return ProductDetailResponse.of(product, options);
