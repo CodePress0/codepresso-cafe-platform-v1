@@ -56,6 +56,7 @@
                     .info-item:last-child { border-bottom: none; padding-bottom: 0; }
                     .info-item b { font-weight: 700; color: var(--text-1); }
                     .edit-mode { display: none; }
+                    .display-mode { display: block; }
                     .edit-mode input {
                         width: 100%;
                         padding: 10px 14px;
@@ -91,21 +92,21 @@
                     </li>
                     <li class="info-item">
                         <b>이름</b> 
-                        <span id="name-display">불러오는 중...</span>
+                        <span id="name-display" class="display-mode">불러오는 중...</span>
                         <div class="edit-mode" id="name-edit">
                             <input type="text" id="name-input" placeholder="이름을 입력하세요">
                         </div>
                     </li>
                     <li class="info-item">
                         <b>전화번호</b> 
-                        <span id="phone-display">불러오는 중...</span>
+                        <span id="phone-display" class="display-mode">불러오는 중...</span>
                         <div class="edit-mode" id="phone-edit">
                             <input type="text" id="phone-input" placeholder="전화번호를 입력하세요">
                         </div>
                     </li>
                     <li class="info-item">
                         <b>이메일</b> 
-                        <span id="email-display">불러오는 중...</span>
+                        <span id="email-display" class="display-mode">불러오는 중...</span>
                         <div class="edit-mode" id="email-edit">
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <input type="email" id="email-input" placeholder="이메일을 입력하세요" style="flex: 1; min-width: 300px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
@@ -129,7 +130,7 @@
                     </li>
                     <li class="info-item">
                         <b>닉네임</b> 
-                        <span id="nickname-display">불러오는 중...</span>
+                        <span id="nickname-display" class="display-mode">불러오는 중...</span>
                         <div class="edit-mode" id="nickname-edit">
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요" style="flex: 1; min-width: 300px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
@@ -143,6 +144,7 @@
                 <div class="cta">
                     <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
                     <a class="btn btn-ghost" href="/favorites">즐겨찾기</a>
+                    <a class="btn btn-ghost" href="/orders">주문목록</a>
                     <button class="btn btn-ghost" id="edit-btn" onclick="toggleEditMode()">정보 수정</button>
                 </div>
 
@@ -188,6 +190,11 @@
                             document.getElementById('edit-btn').style.display = 'none';
                             document.getElementById('edit-controls').style.display = 'block';
                             
+                            // 기존 정보 표시 부분 숨기기
+                            document.querySelectorAll('.display-mode').forEach(el => {
+                                el.style.display = 'none';
+                            });
+                            
                             // 모든 편집 필드 표시
                             document.querySelectorAll('.edit-mode').forEach(el => {
                                 if (el.id !== 'edit-controls') {
@@ -222,6 +229,11 @@
                             // 보기 모드로 전환
                             document.getElementById('edit-btn').style.display = 'block';
                             document.getElementById('edit-controls').style.display = 'none';
+                            
+                            // 기존 정보 표시 부분 다시 보이기
+                            document.querySelectorAll('.display-mode').forEach(el => {
+                                el.style.display = 'block';
+                            });
                             
                             // 모든 편집 필드 숨김
                             document.querySelectorAll('.edit-mode').forEach(el => {
