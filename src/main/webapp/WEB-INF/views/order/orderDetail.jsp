@@ -473,7 +473,7 @@
     }
 
     .btn-secondary {
-        background-color: #f8f9fa;
+        background-color: #F8F9FAFF;
         color: #666;
         border: 1px solid #e9ecef;
     }
@@ -491,6 +491,16 @@
     .btn-primary:hover {
         filter: brightness(1.02);
         transform: translateY(-1px);
+    }
+
+    .btn-sm {
+        background-color: #ff8db1;
+        color: #ffffff;
+        padding: 6px 15px;
+        border-radius: 8px;
+        font-size: 15px;
+        margin-top: 8px;
+        margin-left: 5px;
     }
 
     /* 태블릿 반응형 */
@@ -537,27 +547,35 @@
             gap: 8px;
         }
     }
+
+    /* 옵션 배지 스타일 (cart.jsp와 동일) */
+    .order-option-list { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 8px; 
+        list-style: none; 
+        margin: 4px 0 0 0; 
+        padding: 0; 
+    }
+    .order-option-list li { 
+        background: rgba(255,122,162,0.12); 
+        padding: 6px 12px; 
+        border-radius: 999px; 
+        font-size: 13px; 
+        color: var(--text-1);
+    }
+    .order-option-list em { 
+        margin-left: 6px; 
+        color: var(--pink-1); 
+        font-style: normal; 
+        font-weight: 600; 
+    }
 </style>
 
 <script>
-    // 지점 전화걸기
-    function callStore(phoneNumber) {
-        if (confirm((phoneNumber || '') + '로 전화를 거시겠습니까?')) {
-            window.location.href = 'tel:' + (phoneNumber || '');
-        }
-    }
-
     // 주문목록으로 이동
     function goToOrderList() {
         window.location.href = '/orders';
-    }
-
-    // 재주문
-    function reorder() {
-        if (confirm('동일한 상품으로 재주문하시겠습니까?')) {
-            // 장바구니에 동일 상품 추가 후 결제 페이지로 이동
-            window.location.href = '/checkout';
-        }
     }
 
     // 로컬 저장된 선택 매장 이름 보조 함수
@@ -626,7 +644,7 @@
         } catch (e) { setName(''); }
     }
 
-    // 세션 스토리지에서 주문 상세 정보 로드 후, 항상 서버에서도 최신 데이터로 갱신
+    // 주문 상세 정보는 서버에서만 조회하여 렌더 (세션스토리지 의존 제거)
     function loadOrderDetailFromSessionOrFetch() {
         const path = window.location.pathname;
         const m = path.match(/\/orders\/(\d+)/);
@@ -637,16 +655,7 @@
         }
         const orderId = m[1];
 
-        // 1) 세션 저장분이 있으면 먼저 빠르게 표시(매장 주소/전화는 없을 수 있음)
-        const orderDataStr = sessionStorage.getItem('orderDetailData') || sessionStorage.getItem('orderData');
-        if (orderDataStr) {
-            try {
-                const orderData = JSON.parse(orderDataStr);
-                updateOrderDetail(orderData);
-            } catch (e) { /* noop */ }
-        }
-
-        // 2) 항상 서버에서 상세 조회하여 정확한 매장/결제 정보로 갱신
+        // 서버에서 상세 조회하여 정확한 매장/결제 정보로 렌더
         fetch(`/users/orders/${orderId}`)
             .then(res => {
                 if (!res.ok) throw new Error('주문 정보를 불러오지 못했습니다');
@@ -655,40 +664,8 @@
             .then(data => updateOrderDetailFromApi(data))
             .catch(err => {
                 console.error(err);
-                if (!orderDataStr) {
-                    alert('주문 정보를 불러오지 못했습니다.');
-                }
+                alert('주문 정보를 불러오지 못했습니다.');
             });
-    }
-
-    // 주문 상세 정보 업데이트 (checkout에서 sessionStorage로 전달된 데이터 구조)
-    function updateOrderDetail(orderData) {
-        // 주문번호 및 상태 업데이트 (checkout에서 온 데이터에는 orderNumber가 없으므로 orderId 사용)
-        const orderNumber = orderData.orderNumber || String(orderData.orderId || '');
-        document.querySelector('.order-number').textContent = '주문번호(' + orderNumber + ')';
-
-        const statusBadge = document.querySelector('.status-badge');
-        // checkout에서 온 데이터에는 productionStatus가 없으므로 기본값 설정
-        const status = orderData.productionStatus || '주문접수';
-        statusBadge.textContent = status;
-        statusBadge.className = 'status-badge ' + getStatusClass(status);
-
-        // 진행률 업데이트
-        const progressFill = document.querySelector('.progress-fill');
-        const progressWidth = getProgressWidth(status);
-        progressFill.style.width = progressWidth + '%';
-
-        // 진행 단계 업데이트
-        updateProgressSteps(status);
-        
-        // 주문 상품 정보 업데이트
-        updateOrderItems(orderData.orderItems);
-        
-        // 지점 정보 업데이트
-        updateStoreInfo(orderData);
-        
-        // 결제 정보 업데이트
-        updatePaymentInfo(orderData);
     }
 
     // 주문 상세 정보 업데이트 (API 응답 구조 사용)
@@ -715,7 +692,7 @@
         if (orderDateEl) orderDateEl.textContent = fmt(data.orderDate);
         if (pickupTimeEl) pickupTimeEl.textContent = fmt(data.pickupTime);
         if (orderTypeEl) orderTypeEl.textContent = data.isTakeout ? '테이크아웃' : '매장';
-        if (pickupMethodEl) pickupMethodEl.textContent = data.pickupMethod || '-';
+        if (pickupMethodEl) pickupMethodEl.textContent = data.isTakeout ? '포장' : '매장';
         if (requestNoteEl) requestNoteEl.textContent = data.requestNote || '요청사항 없음';
 
         // 주문 상품 목록
@@ -727,18 +704,25 @@
                     const unit = Number(item.price || 0);
                     const qty = Number(item.quantity || 1);
                     const total = item.totalPrice != null ? Number(item.totalPrice) : (unit * qty);
-                    const options = (item.optionsName && item.optionsName.length > 0) ? item.optionsName.join(', ') : '';
+                    const optionsHtml = (item.options && item.options.length > 0) ? 
+                        '<ul class="order-option-list">' + 
+                        item.options.map(opt => {
+                            const priceText = (opt.extraPrice && opt.extraPrice > 0) ? 
+                                '<em>+' + opt.extraPrice.toLocaleString() + '원</em>' : '';
+                            return '<li><span>' + opt.optionStyle + '</span>' + priceText + '</li>';
+                        }).join('') + 
+                        '</ul>' : '';
                     const html = '<div class="order-item">'
                         + '<div class="item-number">' + (idx + 1) + '</div>'
                         + '<div class="item-details">'
                         +   '<div class="item-name">' + (item.productName || '') + '</div>'
-                        +   '<div class="item-options">' + options + '</div>'
+                        +   '<div class="item-options">' + optionsHtml + '</div>'
                         +   '<div class="item-quantity">수량: ' + qty + '개</div>'
-                        +   '<div class="item-actions"><button class="btn btn-outline btn-sm" data-review-id="' + (item.orderDetailId || '') + '">리뷰 달기</button></div>'
                         + '</div>'
                         + '<div class="item-pricing">'
                         +   '<div class="unit-price">단가: ' + unit.toLocaleString() + '원</div>'
                         +   '<div class="total-price">' + total.toLocaleString() + '원</div>'
+                        +   '<div class="item-actions"><button class="btn btn-outline btn-sm" data-review-id="' + (item.orderDetailId || '') + '">리뷰 작성</button></div>'
                         + '</div>'
                         + '</div>';
                     listContainer.insertAdjacentHTML('beforeend', html);

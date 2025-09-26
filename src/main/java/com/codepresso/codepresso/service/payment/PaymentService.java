@@ -9,7 +9,6 @@ import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductOptionDTO;
 import com.codepresso.codepresso.entity.branch.Branch;
-import com.codepresso.codepresso.entity.cart.Cart;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
@@ -17,7 +16,6 @@ import com.codepresso.codepresso.entity.order.OrdersItemOptions;
 import com.codepresso.codepresso.entity.product.Product;
 import com.codepresso.codepresso.entity.product.ProductOption;
 import com.codepresso.codepresso.repository.branch.BranchRepository;
-import com.codepresso.codepresso.repository.cart.CartRepository;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import com.codepresso.codepresso.repository.product.ProductOptionRepository;
@@ -32,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 
 /**
@@ -48,7 +45,6 @@ public class PaymentService {
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
     private final ProductOptionRepository productOptionRepository;
-    private final CartRepository cartRepository;
     private final CartService cartService;
     private final ProductService productService;
 
@@ -112,7 +108,9 @@ public class PaymentService {
         List<String> optionNames = new ArrayList<>();
         if (direct.getSelectedOptions() != null) {
             for (ProductOptionDTO dto : direct.getSelectedOptions()) {
-                optionNames.add(dto.getOptionStyleName());
+                String optionName = dto.getOptionName();
+                String optionStyle = dto.getOptionStyleName();
+                optionNames.add(optionName + " : " + optionStyle);
             }
         }
 
