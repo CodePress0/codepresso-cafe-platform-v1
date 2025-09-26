@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.URL;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,8 +26,7 @@ public class ReviewCreateRequest {
     @Size(max = 500, message = "내용은 최대 500자까지만 가능합니다.")
     private String content;
 
-    @URL
-    private String photoUrl;
+    private MultipartFile photos;
 
     private LocalDateTime created_At;
 }

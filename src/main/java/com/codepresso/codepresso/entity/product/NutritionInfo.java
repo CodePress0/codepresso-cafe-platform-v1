@@ -1,10 +1,10 @@
 package com.codepresso.codepresso.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,6 +19,7 @@ public class NutritionInfo {
     @OneToOne
     @MapsId // PK = FK
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 
     private double calories;
