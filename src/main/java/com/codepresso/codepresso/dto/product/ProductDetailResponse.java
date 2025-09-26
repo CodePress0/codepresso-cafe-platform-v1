@@ -19,6 +19,7 @@ public class ProductDetailResponse {
     private NutritionInfo nutritionInfo;
     private List<Allergen> allergens;
     private List<ProductOptionDTO> productOptions;
+    private static final String DEFAULT_CATEGORY = "COFFEE";
 
     public static ProductDetailResponse of(Product product, List<ProductOption> options) {
 
@@ -33,7 +34,7 @@ public class ProductDetailResponse {
                 .productPhoto(product.getProductPhoto())
                 .price(product.getPrice())
                 .productContent(product.getProductContent())
-                .categoryName(product.getCategory() != null ? product.getCategory().getCategoryCode() : "COFFEE")
+                .categoryName(product.getCategory() != null ? product.getCategory().getCategoryCode() : DEFAULT_CATEGORY)
                 .hashtags(product.getProductHashtags())
                 .nutritionInfo(product.getNutritionInfo())
                 .allergens(product.getAllergens())
