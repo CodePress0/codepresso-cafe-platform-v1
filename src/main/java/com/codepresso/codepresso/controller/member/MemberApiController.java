@@ -2,8 +2,6 @@ package com.codepresso.codepresso.controller.member;
 
 import com.codepresso.codepresso.dto.member.ProfileUpdateRequest;
 import com.codepresso.codepresso.dto.member.UserDetailResponse;
-import com.codepresso.codepresso.dto.review.ReviewListResponse;
-import com.codepresso.codepresso.dto.review.ReviewResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.MemberProfileService;
 import com.codepresso.codepresso.service.product.ReviewService;

@@ -3,6 +3,7 @@ package com.codepresso.codepresso.service.order;
 import com.codepresso.codepresso.dto.review.OrdersDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderListResponse;
+import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
@@ -10,6 +11,7 @@ import com.codepresso.codepresso.entity.payment.PaymentDetail;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import java.util.Optional;
 @Service
 public class OrderService {
 
+    private final MemberRepository memberRepository;
     private final OrdersRepository ordersRepository;
     private final OrdersDetailRepository ordersDetailRepository;
 
@@ -29,6 +32,10 @@ public class OrderService {
      * 주문 목록 조회
      * */
     public OrderListResponse getOrderList(Long memberId, String period){
+        // 존재하는 회원인지 확인
+         Member member = memberRepository.findById(memberId)
+                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+
         // 기간 계산
         LocalDateTime startDate = calculateStartDate(period);
 
@@ -126,21 +133,12 @@ public class OrderService {
      }
 
      private OrderDetailResponse.OrderItem convertToOrderItem(OrdersDetail detail) {
-         // 옵션들 수집 (기본 옵션 제외)
-          List<OrderDetailResponse.OrderOption> options = new ArrayList<>();
+         // 옵션 이름들 수집
+          List<String> optionNames = new ArrayList<>();
           if (detail.getOptions() != null) {
           for (OrdersItemOptions option : detail.getOptions()) {
-              String optionStyle = option.getOption().getOptionStyle().getOptionStyle();
-              Integer extraPrice = option.getOption().getOptionStyle().getExtraPrice();
-              
-              // "기본" 옵션 제외
-              if (!"기본".equals(optionStyle)) {
-                  options.add(OrderDetailResponse.OrderOption.builder()
-                          .optionStyle(optionStyle)
-                          .extraPrice(extraPrice)
-                          .build());
+              optionNames.add(option.getOption().getOptionStyle().getOptionName().getOptionName());
               }
-          }
           }
 
          return OrderDetailResponse.OrderItem.builder()
@@ -149,7 +147,7 @@ public class OrderService {
                  .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
                  .price(detail.getProduct().getPrice())
                  .totalPrice(detail.getPrice())
-                 .options(options)
+                 .optionsName(optionNames)
                  .build();
      }
 
@@ -221,7 +219,7 @@ public class OrderService {
             case "3개월":
                 return now.minusMonths(3);
             case "전체":
-                return LocalDateTime.of(2020, 1, 1, 0, 0);
+                return LocalDateTime.of(2020, 1, 1, 0, 0); // 충분히 과거 날짜
             default:
                 return now.minusMonths(1); // 기본값: 1개월
         }

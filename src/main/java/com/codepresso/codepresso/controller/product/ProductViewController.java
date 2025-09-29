@@ -2,13 +2,8 @@ package com.codepresso.codepresso.controller.product;
 
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
-import com.codepresso.codepresso.dto.review.ReviewListResponse;
-import com.codepresso.codepresso.entity.product.Review;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

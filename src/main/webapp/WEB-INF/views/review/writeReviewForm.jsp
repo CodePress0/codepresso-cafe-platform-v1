@@ -33,13 +33,6 @@
                 </div>
                 <p style="color: var(--text-2); margin: 0 0 32px; font-size: 16px;">${empty reviewId ? '상품에 대한 솔직한 리뷰를 작성해 주세요.' : '리뷰 내용을 수정해 주세요.'}</p>
 
-                <!-- 수정 모드 디버깅 정보 -->
-                <c:if test="${not empty reviewId}">
-                    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; font-size: 12px; border-radius: 4px;">
-                        디버깅: reviewId=${reviewId}, review=${review}, rating=${review.rating}, content=${review.content}, photoUrl=${review.photoUrl}
-                    </div>
-                </c:if>
-
                 <form method="post" action="${empty reviewId ? '/users/reviews/create' : '/users/reviews/update'}" enctype="multipart/form-data">
                     <c:if test="${not empty _csrf}">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
@@ -56,20 +49,33 @@
                         <input type="hidden" name="orderDetailId" value="${orderDetail.orderDetailId}" />
                     </c:if>
 
-                    <!-- 상품 정보 (작성 모드일 때만 표시) -->
-                    <c:if test="${empty reviewId}">
-                        <div style="background: linear-gradient(120deg, var(--pink-4), #fff); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(255,122,162,0.1);">
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <div style="width: 60px; height: 60px; background: var(--white); border-radius: 8px; display: grid; place-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
-                                    <img src="${orderDetail.productPhoto}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text-1);">${orderDetail.productName}</h4>
-                                    <p style="margin: 0; color: var(--text-2); font-size: 14px;">${orderDetail.branchName}에서 주문한 상품</p>
-                                </div>
+                    <!-- 상품 정보 (작성/수정 모드 모두 표시) -->
+                    <div style="background: linear-gradient(120deg, var(--pink-4), #fff); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(255,122,162,0.1);">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 60px; height: 60px; background: var(--white); border-radius: 8px; display: grid; place-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                                <c:choose>
+                                    <c:when test="${empty reviewId}">
+                                        <img src="${orderDetail.productPhoto}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${review.productPhoto}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div>
+                                <c:choose>
+                                    <c:when test="${empty reviewId}">
+                                        <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text-1);">${orderDetail.productName}</h4>
+                                        <p style="margin: 0; color: var(--text-2); font-size: 14px;">${orderDetail.branchName}에서 주문한 상품</p>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text-1);">${review.productName}</h4>
+                                        <p style="margin: 0; color: var(--text-2); font-size: 14px;">${review.branchName}에서 주문한 상품</p>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
-                    </c:if>
+                    </div>
 
                     <!-- 별점 -->
                     <div style="margin-bottom: 24px;">

@@ -1,7 +1,5 @@
 package com.codepresso.codepresso.controller.product;
 
-import com.codepresso.codepresso.dto.product.ProductDetailResponse;
-import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.review.ReviewListResponse;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;

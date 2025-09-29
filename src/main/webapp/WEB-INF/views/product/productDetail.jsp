@@ -71,7 +71,7 @@
                                 <c:if test="${not empty product.hashtags}">
                                     <div class="category-tags">
                                         <c:forEach var="hashtag" items="${product.hashtags}">
-                                            <span class="tag">${hashtag.hashtagName}</span>
+                                            <span class="tag">${hashtag}</span>
                                         </c:forEach>
                                     </div>
                                 </c:if>
@@ -203,7 +203,7 @@
                                     <div class="allergen-grid">
                                         <c:forEach var="allergen" items="${product.allergens}">
                                             <div class="allergen-item">
-                                                <span class="allergen-name">${allergen.allergenName}</span>
+                                                <span class="allergen-name">${allergen}</span>
                                             </div>
                                         </c:forEach>
                                     </div>
