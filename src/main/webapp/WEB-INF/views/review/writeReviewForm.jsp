@@ -28,64 +28,75 @@
             <!-- 왼쪽: 리뷰 작성 폼 -->
             <div style="background: var(--white); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
-                    <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: var(--text-1);">리뷰 작성</h2>
-                    <span style="background: linear-gradient(135deg, var(--pink-1), var(--pink-2)); color: var(--white); padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">NEW</span>
+                    <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: var(--text-1);">${empty reviewId ? '리뷰 작성' : '리뷰 수정'}</h2>
+                    <span style="background: linear-gradient(135deg, var(--pink-1), var(--pink-2)); color: var(--white); padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">${empty reviewId ? 'NEW' : 'EDIT'}</span>
                 </div>
-                <p style="color: var(--text-2); margin: 0 0 32px; font-size: 16px;">상품에 대한 솔직한 리뷰를 작성해 주세요.</p>
+                <p style="color: var(--text-2); margin: 0 0 32px; font-size: 16px;">${empty reviewId ? '상품에 대한 솔직한 리뷰를 작성해 주세요.' : '리뷰 내용을 수정해 주세요.'}</p>
 
-                <form method="post" action="/api/users/reviews/" enctype="multipart/form-data">
+                <!-- 수정 모드 디버깅 정보 -->
+                <c:if test="${not empty reviewId}">
+                    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; font-size: 12px; border-radius: 4px;">
+                        디버깅: reviewId=${reviewId}, review=${review}, rating=${review.rating}, content=${review.content}, photoUrl=${review.photoUrl}
+                    </div>
+                </c:if>
+
+                <form method="post" action="${empty reviewId ? '/users/reviews/create' : '/users/reviews/update'}" enctype="multipart/form-data">
                     <c:if test="${not empty _csrf}">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                     </c:if>
 
-                    <!-- orderDetailId hidden input -->
-                    <input type="hidden" name="orderDetailId" value="${orderDetail.orderDetailId}" />
+                    <!-- 수정 모드일 때 reviewId 추가 -->
+                    <c:if test="${not empty reviewId}">
+                        <input type="hidden" name="reviewId" value="${reviewId}" />
+                        <input type="hidden" name="photoUrl" value="${review.photoUrl}" />
+                    </c:if>
 
-                    <!-- 상품 정보 -->
-                    <div style="background: linear-gradient(120deg, var(--pink-4), #fff); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(255,122,162,0.1);">
-                        <div style="display: flex; align-items: center; gap: 16px;">
-                            <div style="width: 60px; height: 60px; background: var(--white); border-radius: 8px; display: grid; place-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
-                                <img src="${orderDetail.productPhoto}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
-                            </div>
-                            <div>
-                                <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text-1);">${orderDetail.productName}</h4>
-                                <p style="margin: 0; color: var(--text-2); font-size: 14px;">${orderDetail.branchName}에서 주문한 상품</p>
+                    <!-- orderDetailId hidden input (작성 모드일 때만) -->
+                    <c:if test="${empty reviewId}">
+                        <input type="hidden" name="orderDetailId" value="${orderDetail.orderDetailId}" />
+                    </c:if>
+
+                    <!-- 상품 정보 (작성 모드일 때만 표시) -->
+                    <c:if test="${empty reviewId}">
+                        <div style="background: linear-gradient(120deg, var(--pink-4), #fff); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(255,122,162,0.1);">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 60px; height: 60px; background: var(--white); border-radius: 8px; display: grid; place-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                                    <img src="${orderDetail.productPhoto}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--text-1);">${orderDetail.productName}</h4>
+                                    <p style="margin: 0; color: var(--text-2); font-size: 14px;">${orderDetail.branchName}에서 주문한 상품</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </c:if>
 
                     <!-- 별점 -->
                     <div style="margin-bottom: 24px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-1);">별점</label>
                         <div style="display: flex; gap: 4px; align-items: center;">
                             <div class="star-rating" style="display: flex; gap: 2px;">
-                                <input type="radio" name="rating" value="1" id="star1" style="display: none;">
+                                <input type="radio" name="rating" value="1" id="star1" style="display: none;" <c:if test="${review.rating.intValue() == 1}">checked</c:if>>
                                 <label for="star1" style="cursor: pointer; font-size: 24px; color: #ddd;">★</label>
-                                <input type="radio" name="rating" value="2" id="star2" style="display: none;">
+                                <input type="radio" name="rating" value="2" id="star2" style="display: none;" <c:if test="${review.rating.intValue() == 2}">checked</c:if>>
                                 <label for="star2" style="cursor: pointer; font-size: 24px; color: #ddd;">★</label>
-                                <input type="radio" name="rating" value="3" id="star3" style="display: none;">
+                                <input type="radio" name="rating" value="3" id="star3" style="display: none;" <c:if test="${review.rating.intValue() == 3}">checked</c:if>>
                                 <label for="star3" style="cursor: pointer; font-size: 24px; color: #ddd;">★</label>
-                                <input type="radio" name="rating" value="4" id="star4" style="display: none;">
+                                <input type="radio" name="rating" value="4" id="star4" style="display: none;" <c:if test="${review.rating.intValue() == 4}">checked</c:if>>
                                 <label for="star4" style="cursor: pointer; font-size: 24px; color: #ddd;">★</label>
-                                <input type="radio" name="rating" value="5" id="star5" style="display: none;">
+                                <input type="radio" name="rating" value="5" id="star5" style="display: none;" <c:if test="${review.rating.intValue() == 5}">checked</c:if>>
                                 <label for="star5" style="cursor: pointer; font-size: 24px; color: #ddd;">★</label>
                             </div>
                             <span id="rating-text" style="margin-left: 8px; color: var(--text-2); font-size: 14px;">별점을 선택해주세요</span>
                         </div>
                     </div>
 
-                    <!-- 리뷰 제목 -->
-                    <div style="margin-bottom: 24px;">
-                        <label for="title" style="display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-1);">제목</label>
-                        <input type="text" id="title" name="title" placeholder="리뷰 제목을 입력해주세요" required
-                               style="width: 100%; padding: 12px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; background: var(--white);">
-                    </div>
 
                     <!-- 리뷰 내용 -->
                     <div style="margin-bottom: 24px;">
                         <label for="content" style="display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-1);">리뷰 내용</label>
                         <textarea id="content" name="content" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요" required
-                                  style="width: 100%; height: 120px; padding: 12px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; background: var(--white);"></textarea>
+                                  style="width: 100%; height: 120px; padding: 12px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; background: var(--white);">${review.content}</textarea>
                     </div>
 
                     <!-- 사진 첨부 -->
@@ -99,13 +110,20 @@
                                 <p style="margin: 4px 0 0; color: var(--text-2); font-size: 12px;">한 장의 사진을 업로드하세요</p>
                             </label>
                         </div>
-                        <div id="photo-preview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                        <div id="photo-preview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <!-- 기존 사진이 있을 때 미리보기 -->
+                            <c:if test="${not empty review.photoUrl}">
+                                <div style="width: 120px; height: 120px; border-radius: 8px; overflow: hidden; background-image: url(${review.photoUrl}); background-size: cover; background-position: center; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <button type="button" onclick="removeExistingPhoto()" style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border: none; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>
+                                </div>
+                            </c:if>
+                        </div>
                     </div>
 
                     <!-- 버튼 -->
                     <div style="display: flex; gap: 12px; justify-content: flex-end;">
                         <button type="button" onclick="history.back()" class="btn btn-ghost">취소</button>
-                        <button type="submit" class="btn btn-primary">리뷰 등록</button>
+                        <button type="submit" class="btn btn-primary">${empty reviewId ? '리뷰 등록' : '리뷰 수정'}</button>
                     </div>
                 </form>
             </div>
@@ -124,31 +142,31 @@
                 </div>
 
                 <!-- 리뷰 혜택 -->
-                <div style="background: linear-gradient(135deg, var(--pink-3), var(--pink-4)); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);">
-                    <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 700; color: var(--text-1);">리뷰 작성 혜택</h3>
+<%--                <div style="background: linear-gradient(135deg, var(--pink-3), var(--pink-4)); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);">--%>
+<%--                    <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 700; color: var(--text-1);">리뷰 작성 혜택</h3>--%>
 
-                    <div style="background: var(--white); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 600; color: var(--text-1);">일반 리뷰</span>
-                            <span style="background: var(--pink-1); color: var(--white); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">100P</span>
-                        </div>
-                        <p style="margin: 0; color: var(--text-2); font-size: 13px;">텍스트 리뷰 작성 시</p>
-                    </div>
+<%--                    <div style="background: var(--white); border-radius: 8px; padding: 16px; margin-bottom: 12px;">--%>
+<%--                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">--%>
+<%--                            <span style="font-weight: 600; color: var(--text-1);">일반 리뷰</span>--%>
+<%--                            <span style="background: var(--pink-1); color: var(--white); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">100P</span>--%>
+<%--                        </div>--%>
+<%--                        <p style="margin: 0; color: var(--text-2); font-size: 13px;">텍스트 리뷰 작성 시</p>--%>
+<%--                    </div>--%>
 
-                    <div style="background: var(--white); border-radius: 8px; padding: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 600; color: var(--text-1);">포토 리뷰</span>
-                            <span style="background: var(--pink-1); color: var(--white); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">500P</span>
-                        </div>
-                        <p style="margin: 0; color: var(--text-2); font-size: 13px;">사진 + 텍스트 리뷰 작성 시</p>
-                    </div>
+<%--                    <div style="background: var(--white); border-radius: 8px; padding: 16px;">--%>
+<%--                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">--%>
+<%--                            <span style="font-weight: 600; color: var(--text-1);">포토 리뷰</span>--%>
+<%--                            <span style="background: var(--pink-1); color: var(--white); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">500P</span>--%>
+<%--                        </div>--%>
+<%--                        <p style="margin: 0; color: var(--text-2); font-size: 13px;">사진 + 텍스트 리뷰 작성 시</p>--%>
+<%--                    </div>--%>
 
-                    <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 6px; text-align: center;">
-                        <p style="margin: 0; color: var(--text-2); font-size: 12px;">
-                            💡 포인트는 리뷰 승인 후 적립됩니다
-                        </p>
-                    </div>
-                </div>
+<%--                    <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 6px; text-align: center;">--%>
+<%--                        <p style="margin: 0; color: var(--text-2); font-size: 12px;">--%>
+<%--                            💡 포인트는 리뷰 승인 후 적립됩니다--%>
+<%--                        </p>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
             </div>
         </div>
     </div>
@@ -160,6 +178,20 @@
         const stars = document.querySelectorAll('.star-rating label');
         const ratingText = document.getElementById('rating-text');
         const ratings = ['별점을 선택해주세요', '별로예요', '그저그래요', '보통이에요', '좋아요', '최고예요'];
+
+        // 초기 별점 설정 (수정 모드일 때)
+        const checkedStar = document.querySelector('input[name="rating"]:checked');
+        if (checkedStar) {
+            const checkedIndex = parseInt(checkedStar.value) - 1;
+            stars.forEach((s, i) => {
+                if (i <= checkedIndex) {
+                    s.style.color = 'var(--pink-1)';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+            ratingText.textContent = ratings[checkedIndex + 1];
+        }
 
         stars.forEach((star, index) => {
             star.addEventListener('click', function() {
@@ -243,6 +275,21 @@
             reader.readAsDataURL(file);
         }
     });
+
+    // 기존 사진 제거 기능
+    function removeExistingPhoto() {
+        const existingPhoto = document.querySelector('#photo-preview > div');
+        if (existingPhoto) {
+            existingPhoto.remove();
+        }
+        // hidden input을 추가하여 사진 삭제 표시
+        const form = document.querySelector('form');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'removePhoto';
+        hiddenInput.value = 'true';
+        form.appendChild(hiddenInput);
+    }
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

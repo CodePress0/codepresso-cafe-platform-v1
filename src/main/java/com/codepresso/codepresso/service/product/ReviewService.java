@@ -1,11 +1,11 @@
 package com.codepresso.codepresso.service.product;
 
-import com.codepresso.codepresso.dto.product.ReviewCreateRequest;
-import com.codepresso.codepresso.dto.product.ReviewResponse;
-import com.codepresso.codepresso.dto.product.ReviewUpdateRequest;
+import com.codepresso.codepresso.dto.review.*;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.product.Review;
+import com.codepresso.codepresso.exception.ReviewNotFoundException;
+import com.codepresso.codepresso.exception.UnauthorizedAccessException;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.product.ReviewRepository;
@@ -13,8 +13,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -82,15 +84,25 @@ public class ReviewService {
         reviewRepo.deleteById(reviewId);
     }
 
+    public List<MyReviewProjection> getReviewsByMember(Long memberId) {
+        return reviewRepo.findByMemberId(memberId);
+    }
+
+    public ReviewResponse getReview(Long memberId, Long reviewId) {
+        Review review = validateReviewOwnership(memberId, reviewId);
+        return ReviewResponse.fromEntity(review);
+    }
+
     private Review validateReviewOwnership(Long memberId, Long reviewId) {
         Review review = reviewRepo.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다"));
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다"));
 
         // 권한 확인
         if (!review.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 리뷰만 수정할 수 있습니다");
+            throw new UnauthorizedAccessException("본인의 리뷰만 수정/삭제할 수 있습니다");
         }
 
         return review;
     }
+
 }

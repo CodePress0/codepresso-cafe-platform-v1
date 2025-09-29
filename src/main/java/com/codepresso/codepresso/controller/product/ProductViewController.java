@@ -2,8 +2,13 @@ package com.codepresso.codepresso.controller.product;
 
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
+import com.codepresso.codepresso.dto.review.ReviewListResponse;
+import com.codepresso.codepresso.entity.product.Review;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,5 +52,19 @@ public class ProductViewController {
             model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "product/productDetail";
+    }
+
+    /**
+     * 상품별 리뷰 조회
+     */
+    @GetMapping("/{productId}/reviews")
+    public String productReviews(@PathVariable Long productId, Model model) {
+        try {
+            ProductDetailResponse product = productService.findByProductId(productId);
+            model.addAttribute("product", product);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        return "product/productReviews";
     }
 }

@@ -143,6 +143,7 @@
                 <div class="cta">
                     <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
                     <a class="btn btn-ghost" href="/favorites">즐겨찾기</a>
+                    <a class="btn btn-ghost" href="/users/myReviews">내 리뷰 조회</a>
                     <button class="btn btn-ghost" id="edit-btn" onclick="toggleEditMode()">정보 수정</button>
                 </div>
 
