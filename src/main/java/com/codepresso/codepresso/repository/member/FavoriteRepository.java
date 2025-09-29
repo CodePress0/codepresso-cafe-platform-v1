@@ -58,4 +58,11 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
      */
     @Query("SELECT f, p FROM Favorite f JOIN f.product p WHERE f.memberId = :memberId ORDER BY f.orderby ASC")
     List<Object[]> findFavoritesWithProductByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 상품별 즐겨찾기 개수 조회
+     * @param productId 조회할 상품
+     * @return long 즐겨찾기 개수
+     */
+    long countByProductId(Long productId);
 }
