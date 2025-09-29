@@ -6,6 +6,7 @@ import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
 import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
+import com.codepresso.codepresso.dto.payment.TossPaymentSuccessRequest;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductOptionDTO;
 import com.codepresso.codepresso.entity.branch.Branch;
@@ -282,6 +283,86 @@ public class PaymentService {
         }
 
         return orderItemOptions;
+    }
+
+    /**
+     * 토스페이먼츠 결제 성공 시 주문 생성
+     */
+    @Transactional
+    public CheckoutResponse processTossPaymentSuccess(TossPaymentSuccessRequest request) {
+        // 1. 회원 및 지점 정보 조회
+        Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        Branch branch = branchRepository.findById(request.getBranchId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지점입니다."));
+
+        // 2. 주문 생성
+        Orders orders = createTossOrder(request, member, branch);
+
+        // 3. 주문 상세 생성
+        List<OrdersDetail> ordersDetails = createTossOrderDetails(request.getOrderItems(), orders);
+        orders.setOrdersDetails(ordersDetails);
+
+        // 4. 주문 저장
+        Orders savedOrder = ordersRepository.save(orders);
+
+        // 5. 응답 데이터 생성
+        return buildCheckoutResponse(savedOrder);
+    }
+
+    private Orders createTossOrder(TossPaymentSuccessRequest request, Member member, Branch branch) {
+        // String을 LocalDateTime으로 변환
+        LocalDateTime pickupTime = null;
+        if (request.getPickupTime() != null && !request.getPickupTime().isEmpty()) {
+            try {
+                pickupTime = LocalDateTime.parse(request.getPickupTime());
+            } catch (Exception e) {
+                // 파싱 실패 시 현재 시간 + 5분으로 설정
+                pickupTime = LocalDateTime.now().plusMinutes(5);
+            }
+        } else {
+            // pickupTime이 없으면 현재 시간 + 5분으로 설정
+            pickupTime = LocalDateTime.now().plusMinutes(5);
+        }
+
+        return Orders.builder()
+                .member(member)
+                .branch(branch)
+                .productionStatus("픽업완료")
+                .isTakeout(request.getIsTakeout())
+                .pickupTime(pickupTime)
+                .orderDate(LocalDateTime.now())
+                .requestNote(request.getRequestNote())
+                .isPickup(true)
+                .build();
+    }
+
+    private List<OrdersDetail> createTossOrderDetails(List<TossPaymentSuccessRequest.OrderItem> orderItems, Orders orders) {
+        List<OrdersDetail> orderDetails = new ArrayList<>();
+
+        for (TossPaymentSuccessRequest.OrderItem item : orderItems) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + item.getProductId()));
+
+            // 주문 상세 생성
+            OrdersDetail orderDetail = OrdersDetail.builder()
+                    .orders(orders)
+                    .product(product)
+                    .price(item.getPrice() * item.getQuantity())
+                    .quantity(item.getQuantity())
+                    .build();
+
+            // 옵션 추가
+            if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
+                List<OrdersItemOptions> options = createOrderItemOptions(item.getOptionIds(), orderDetail);
+                orderDetail.setOptions(options);
+            }
+
+            orderDetails.add(orderDetail);
+        }
+
+        return orderDetails;
     }
 
     private CheckoutResponse buildCheckoutResponse(Orders orders) {
