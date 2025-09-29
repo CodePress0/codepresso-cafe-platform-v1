@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -41,7 +43,7 @@ public class Product {
 
     // 1:N - AllergenProduct (중간 테이블)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Allergen> allergens = new ArrayList<>();
+    private Set<Allergen> allergens = new HashSet<>();
 
     // 1:N - Category
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,6 +56,6 @@ public class Product {
 
     // 1:N - Hashtag
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Hashtag> productHashtags = new ArrayList<>();
+    private Set<Hashtag> hashtags = new HashSet<>();
 
 }

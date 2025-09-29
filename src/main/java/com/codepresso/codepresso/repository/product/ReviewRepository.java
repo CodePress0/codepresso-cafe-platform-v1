@@ -1,12 +1,16 @@
 package com.codepresso.codepresso.repository.product;
 
+import com.codepresso.codepresso.dto.review.MyReviewProjection;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.product.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -15,14 +19,19 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r LEFT JOIN FETCH r.ordersDetail od WHERE od.product.id = :productId")
     List<Review> findByProductReviews(@Param("productId") Long productId);
 
-    // 중복 리뷰 방지를 위한 존재 여부 확인
     boolean existsByOrdersDetail(OrdersDetail ordersDetail);
 
-//    @Modifying
-//    @Query("UPDATE Review r " +
-//            "SET r.rating = :rating, r.content = :content, r.photoUrl = :photoUrl" +
-//            " WHERE r.id = :reviewId")
-//    int updateReview(@Param("rating") BigDecimal rating, @Param("content") String content,
-//                                @Param("photoUrl") String photoUrl, @Param("reviewId") Long reviewId);
+    @Query("SELECT AVG(r.rating) FROM Review r LEFT JOIN r.ordersDetail od WHERE od.product.id = :productId")
+    Double getAverageRatingByProduct(Long productId);
+
+    @Query("select r.id as id, r.photoUrl as photoUrl, r.content as content, r.rating as rating, r.createdAt as createdAt, " +
+            "p.id as productId, p.productName as productName, p.productPhoto as productPhoto " +
+            "from Review r " +
+            "join r.ordersDetail od " +
+            "join od.product p " +
+            "where r.member.id = :memberId " +
+            "order by r.createdAt desc")
+    List<MyReviewProjection> findByMemberId(@Param("memberId") Long memberId);
+
 
 }

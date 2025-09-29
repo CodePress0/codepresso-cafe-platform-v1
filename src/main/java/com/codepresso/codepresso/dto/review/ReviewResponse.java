@@ -1,4 +1,4 @@
-package com.codepresso.codepresso.dto.product;
+package com.codepresso.codepresso.dto.review;
 
 import com.codepresso.codepresso.entity.product.Review;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
     private Long reviewId;
     private Long orderDetailId;
-    private Long branchName;
+    private String branchName;
     private Long memberId;
     private BigDecimal rating;
     private String content;
@@ -23,6 +23,7 @@ public class ReviewResponse {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .orderDetailId(review.getOrdersDetail().getId())
+                .branchName(review.getOrdersDetail().getOrders().getBranch().getBranchName())
                 .memberId(review.getMember().getId())
                 .rating(review.getRating())
                 .content(review.getContent())

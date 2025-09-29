@@ -18,6 +18,9 @@ spring:
     view:
       prefix: /WEB-INF/views/  # JSP 파일이 위치한 디렉토리 경로
       suffix: .jsp             # JSP 파일 확장자
+    hiddenmethod:
+      filter:
+        enabled: true           # HTTP 메서드 오버라이드 활성화 (PUT, DELETE 등)
 
   # 데이터베이스 연결 설정 (MySQL - docker-compose: mysql:8.4, 포트 33306)
   datasource:

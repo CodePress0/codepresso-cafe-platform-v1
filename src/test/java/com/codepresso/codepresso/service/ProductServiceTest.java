@@ -17,22 +17,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProductServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(ProductServiceTest.class);
-    @Autowired
-    private com.codepresso.codepresso.service.ProductService productService;
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Test
-    public void 상품목록() {
-        // given
+//    @Autowired
+//    private com.codepresso.codepresso.service.ProductService productService;
+//    @Autowired
+//    private ProductRepository productRepository;
+//
+//    @Test
+//    public void 상품목록() {
+//        // given
 //        Product product = Product.builder()
 //                .setProductId(1).build();
 //        ProductResponseDTO product = new ProductResponseDTO();
 //        product.setCategoryCode("COFFEE");
-
-        // when
-
-        // then
-    }
+//
+//        // when
+//
+//        // then
+//    }
 
 }
