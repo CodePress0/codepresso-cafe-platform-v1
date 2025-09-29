@@ -48,7 +48,14 @@ public class OrderDetailResponse {
         private Integer quantity;
         private Integer price;
         private Integer totalPrice;
-        private List<String> optionsName;
+        private List<OrderOption> options;
+    }
+
+    @Data
+    @Builder
+    public static class OrderOption {
+        private String optionStyle;
+        private Integer extraPrice;
     }
 
     @Data

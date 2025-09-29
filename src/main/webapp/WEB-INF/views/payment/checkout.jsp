@@ -69,10 +69,14 @@
                                     </div>
                                     <div class="item-quantity">총 ${d.quantity}개</div>
                                     <c:if test="${not empty d.optionNames}">
-                                        <div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">
-                                            <c:forEach var="on" items="${d.optionNames}" varStatus="os">
-                                                ${on}<c:if test="${!os.last}">, </c:if>
-                                            </c:forEach>
+                                        <div class="item-options" style="margin-top: 4px;">
+                                            <ul class="order-option-list">
+                                                <c:forEach var="on" items="${d.optionNames}">
+                                                    <c:if test="${on != '기본'}">
+                                                        <li><span>${on}</span></li>
+                                                    </c:if>
+                                                </c:forEach>
+                                            </ul>
                                         </div>
                                     </c:if>
                                 </div>
@@ -97,10 +101,19 @@
                                     <div class="item-quantity">총 ${item.quantity}개</div>
                                     <!-- 옵션 표시 -->
                                     <c:if test="${not empty item.options}">
-                                        <div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">
-                                            <c:forEach var="option" items="${item.options}" varStatus="optStatus">
-                                                ${option.optionStyle}<c:if test="${!optStatus.last}">, </c:if>
-                                            </c:forEach>
+                                        <div class="item-options" style="margin-top: 4px;">
+                                            <ul class="order-option-list">
+                                                <c:forEach var="option" items="${item.options}">
+                                                    <c:if test="${option.optionStyle != '기본'}">
+                                                        <li>
+                                                            <span>${option.optionStyle}</span>
+                                                            <c:if test="${option.extraPrice ne null && option.extraPrice ne 0}">
+                                                                <em>+<fmt:formatNumber value="${option.extraPrice}" type="number" />원</em>
+                                                            </c:if>
+                                                        </li>
+                                                    </c:if>
+                                                </c:forEach>
+                                            </ul>
                                         </div>
                                     </c:if>
                                 </div>
@@ -783,6 +796,29 @@
             flex-direction: column;
         }
     }
+
+    /* 옵션 배지 스타일 (cart.jsp와 동일) */
+    .order-option-list { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 8px; 
+        list-style: none; 
+        margin: 4px 0 0 0; 
+        padding: 0; 
+    }
+    .order-option-list li { 
+        background: rgba(255,122,162,0.12); 
+        padding: 6px 12px; 
+        border-radius: 999px; 
+        font-size: 13px; 
+        color: var(--text-1);
+    }
+    .order-option-list em { 
+        margin-left: 6px; 
+        color: var(--pink-1); 
+        font-style: normal; 
+        font-weight: 600; 
+    }
  </style>
 
  <c:if test="${not empty orderItemsPayloadJson}">
@@ -881,7 +917,10 @@
         if (direct) {
             const itemsEl = document.getElementById('orderItems');
             if (itemsEl) {
-                const optionsText = (direct.optionNames && direct.optionNames.length) ? direct.optionNames.join(', ') : '';
+                const optionsHtml = (direct.optionNames && direct.optionNames.length) ? 
+                    '<div class="item-options" style="margin-top: 4px;"><ul class="order-option-list">' + 
+                    direct.optionNames.filter(opt => opt !== '기본').map(opt => '<li><span>' + opt + '</span></li>').join('') + 
+                    '</ul></div>' : '';
                 const html = '\n'
                     + '<div class="order-item">'
                     +   '<img src="' + (direct.productPhoto || '') + '" alt="' + (direct.productName || '') + '" class="item-image">'
@@ -889,7 +928,7 @@
                     +     '<div class="item-name">' + (direct.productName || '') + '</div>'
                     +     '<div class="item-price">' + currencyText(direct.unitPrice) + '</div>'
                     +     '<div class="item-quantity">총 ' + direct.quantity + '개</div>'
-                    +     (optionsText ? ('<div class="item-options" style="font-size: 12px; color: #666; margin-top: 4px;">' + optionsText + '</div>') : '')
+                    +     optionsHtml
                     +   '</div>'
                     +   '<div class="item-total">' + currencyText(direct.unitPrice * direct.quantity) + '</div>'
                     + '</div>';
@@ -912,70 +951,7 @@
         }
     });
 
-    // 세션스토리지 기반 '바로 주문하기' 하이드레이션 (컨트롤러 비의존)
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const raw = sessionStorage.getItem('directOrderRequest');
-            if (!raw) return;
-            const req = JSON.parse(raw);
-            if (!req || !req.productId || !req.quantity) return;
-
-            const res = await fetch('/api/products/' + encodeURIComponent(req.productId));
-            if (!res.ok) throw new Error('상품 정보를 불러올 수 없습니다.');
-            const product = await res.json();
-
-            const base = Number(product.price || 0);
-            const optIds = Array.isArray(req.optionIds) ? req.optionIds : [];
-            const options = Array.isArray(product.productOptions) ? product.productOptions : [];
-            const selected = options.filter(o => optIds.includes(o.optionId));
-            const extra = selected.reduce((s, o) => s + Number(o.extraPrice || 0), 0);
-            const unit = base + extra;
-            const qty = Number(req.quantity || 1);
-            const line = unit * qty;
-
-            const itemsEl = document.getElementById('orderItems');
-            if (itemsEl) {
-                const optNames = selected.map(o => o.optionStyleName || o.optionStyle).filter(Boolean);
-                itemsEl.innerHTML = '';
-                itemsEl.insertAdjacentHTML('beforeend',
-                    '<div class="order-item">' +
-                    '  <img src="' + (product.productPhoto || '') + '" alt="' + (product.productName || '') + '" class="item-image">' +
-                    '  <div class="item-details">' +
-                    '    <div class="item-name">' + (product.productName || '') + '</div>' +
-                    '    <div class="item-price">' + currencyText(unit) + '</div>' +
-                    '    <div class="item-quantity">총 ' + qty + '개</div>' +
-                    (optNames.length ? ('<div class="item-options" style="font-size:12px;color:#666;margin-top:4px;">' + optNames.join(', ') + '</div>') : '') +
-                    '  </div>' +
-                    '  <div class="item-total">' + currencyText(line) + '</div>' +
-                    '</div>'
-                );
-            }
-            const ic = document.getElementById('itemCount'); if (ic) ic.textContent = '1';
-            const orderAmountEl = document.getElementById('orderAmount'); if (orderAmountEl) orderAmountEl.textContent = currencyText(line);
-            const totalQtyEl = document.getElementById('totalQty'); if (totalQtyEl) totalQtyEl.textContent = String(qty) + '개';
-            const totalAmountEl = document.getElementById('totalAmount'); if (totalAmountEl) totalAmountEl.textContent = currencyText(line);
-            const paymentBtn = document.getElementById('paymentBtn'); if (paymentBtn) paymentBtn.textContent = currencyText(line) + ' 결제하기';
-
-            // 빈카트 메시지 제거
-            document.querySelectorAll('.empty-cart').forEach(n => n.remove());
-
-            // 결제용 payload 주입 (processPayment가 읽도록)
-            let payloadNode = document.getElementById('orderItemsPayloadJson');
-            if (!payloadNode) {
-                payloadNode = document.createElement('script');
-                payloadNode.type = 'application/json';
-                payloadNode.id = 'orderItemsPayloadJson';
-                document.body.appendChild(payloadNode);
-            }
-            payloadNode.textContent = JSON.stringify([{ productId: product.productId, quantity: qty, price: unit, optionIds: optIds }]);
-
-            // 런타임 플래그
-            window.__directOrderMode = true;
-
-            // 세션스토리지 정리
-            sessionStorage.removeItem('directOrderRequest');
-        } catch (e) { console.error('direct order hydrate error:', e); }
-    });
+    // 세션스토리지 기반 '바로 주문하기' 하이드레이션 제거 (SSR payload 사용)
 
     // 로컬 타임존 기준 ISO 문자열(yyyy-MM-ddTHH:mm:ss) 생성 util (Z/오프셋 제거)
     function toLocalISOStringNoZ(date) {
@@ -1043,7 +1019,18 @@
 
         const paymentData = {
             memberId: currentMemberId,
-            branchId: ${not empty branch ? branch.id : 1},
+            branchId: (function() {
+                try {
+                    const selected = window.branchSelection && window.branchSelection.load 
+                        ? window.branchSelection.load() 
+                        : null;
+                    return selected && selected.id 
+                        ? parseInt(selected.id) 
+                        : ${not empty branch ? branch.id : 1};
+                } catch(e) {
+                    return ${not empty branch ? branch.id : 1};
+                }
+            })(),
             isTakeout: selectedOrderType.value === 'takeout',
             // LocalDateTime으로 정확히 매핑되도록 로컬 시간 문자열 전송
             pickupTime: pickupTimeLocal,
@@ -1128,82 +1115,7 @@
                         } catch (e) { /* 네트워크/권한 문제는 무시하고 계속 진행 */ }
                     })();
 
-                    // 현재 페이지의 정보 수집
-                    const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
-                    const selectedPackage = document.querySelector('input[name="package"]:checked');
-                    const selectedPayment = document.querySelector('input[name="payment"]:checked');
-                    const requestNote = document.getElementById('requestNote').value;
-                    // 선택된 분 수를 기반으로 픽업 예정 시각(로컬 ISO, Z 제거) 계산
-                    const pickupTimeIso = (() => {
-                        try {
-                            const rt = document.querySelector('input[name="pickupTime"]:checked');
-                            const mins = parseInt(rt ? rt.value : '5', 10);
-                            const now2 = new Date();
-                            const pt = new Date(now2.getTime() + (mins * 60 * 1000));
-                            return toLocalISOStringNoZ(pt);
-                        } catch (e) { return null; }
-                    })();
-                    
-                    // 주문 아이템 정보 수집 (server direct payload 우선)
-                    const orderItems = [];
-                    (function(){
-                        const payloadNode = document.getElementById('orderItemsPayloadJson');
-                        if (payloadNode && payloadNode.textContent.trim().length > 0) {
-                            try {
-                                const arr = JSON.parse(payloadNode.textContent);
-                                if (Array.isArray(arr) && arr.length > 0) {
-                                    const it = arr[0];
-                                    orderItems.push({
-                                        name: document.querySelector('.item-name')?.textContent || '',
-                                        image: document.querySelector('.item-image')?.getAttribute('src') || '',
-                                        price: Number(it.price || 0),
-                                        quantity: Number(it.quantity || 1),
-                                        total: Number(it.price || 0) * Number(it.quantity || 1)
-                                    });
-                                    return;
-                                }
-                            } catch (e) {}
-                        }
-                        <c:if test="${not empty cartData and not empty cartData.items}">
-                            <c:forEach var="item" items="${cartData.items}">
-                                orderItems.push({
-                                    name: '${item.productName}',
-                                    image: '${item.productPhoto}',
-                                    price: Math.round(${item.price} / ${item.quantity}),
-                                    quantity: ${item.quantity},
-                                    total: ${item.price}
-                                });
-                            </c:forEach>
-                        </c:if>
-                    })();
-                    
-                    // 주문 데이터를 세션스토리지에 저장
-                    const orderData = {
-                        orderId: data.orderId,
-                        orderItems: orderItems,
-                        orderType: selectedOrderType ? (selectedOrderType.value === 'takeout' ? '테이크아웃' : '매장') : '테이크아웃',
-                        pickupMethod: selectedPackage ? (selectedPackage.value === 'carrier' ? '전체포장(케리어)' : '포장안함') : '포장안함',
-                        pickupTime: pickupTimeIso || '',
-                        requestNote: requestNote || '',
-                        paymentMethod: '신용카드',
-                        useCoupon: useCouponCheckbox ? useCouponCheckbox.checked : false,
-                        totalAmount: finalAmount,
-                        orderAmount: originalAmount,
-                        discountAmount: discountAmount,
-                        storeName: (function(){
-                            try {
-                                var el = document.getElementById('selectedBranchNameInput');
-                                var byHidden = (el && el.value) ? String(el.value).trim() : '';
-                                if (byHidden) return byHidden;
-                                var loaded = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
-                                return (loaded && loaded.name) ? loaded.name : '매장 정보 없음';
-                            } catch (e) {
-                                return '매장 정보 없음';
-                            }
-                        })()
-                    };
-                    
-                    sessionStorage.setItem('orderData', JSON.stringify(orderData));
+                    // 추가 세션스토리지 저장 없이 상세 페이지로 이동
                     window.location.href = '/orders/' + data.orderId;
                 } else {
                     throw new Error('결제 응답 오류');

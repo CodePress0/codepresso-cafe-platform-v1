@@ -153,7 +153,7 @@ function createOrderCard(order) {
         +   '<div style="flex: 1;">'
         +     '<div style="font-size: 12px; color: var(--text-2); margin-bottom: 4px;">주문번호: ' + (order.orderNumber || '') + '</div>'
         +     '<div style="font-weight: 800; font-size: 18px; margin-bottom: 4px;">' + (order.representativeName || '') + '</div>'
-        +     '<div id="checkoutStoreName" style="font-size: 14px; color: var(--text-2);">' + (order.branchName || getSelectedBranchName() || '') + ' · ' + takeoutText + '</div>'
+        +     '<div id="checkoutStoreName" style="font-size: 14px; color: var(--text-2);">' + (order.branchName || (function() { try { var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null; return sel ? sel.branchName || sel.name || '' : ''; } catch(e) { return ''; } })() || '') + ' · ' + takeoutText + '</div>'
         +   '</div>'
         +   '<div style="text-align: right;">'
         +     '<div style="background: ' + statusColor + '; color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 4px;">' + (order.productionStatus || '') + '</div>'
@@ -210,27 +210,9 @@ function formatDateTime(dateTimeString) {
     return month + '/' + day + ' ' + hours + ':' + minutes;
 }
 
-// 주문 상세보기
-async function viewOrderDetail(orderId) {
-    try {
-        // 주문 상세 정보 가져오기
-        const response = await fetch('/users/orders/' + orderId);
-        if (!response.ok) {
-            throw new Error('주문 상세 정보를 불러올 수 없습니다.');
-        }
-        
-        const orderDetail = await response.json();
-        
-        // 세션 스토리지에 주문 상세 정보 저장
-        sessionStorage.setItem('orderDetailData', JSON.stringify(orderDetail));
-        
-        // 주문 상세 페이지로 이동
-        window.location.href = '/orders/' + orderId;
-        
-    } catch (error) {
-        console.error('주문 상세 조회 오류:', error);
-        alert('주문 상세 정보를 불러오는 중 오류가 발생했습니다.');
-    }
+// 주문 상세보기: 세션 브릿지 없이 바로 이동
+function viewOrderDetail(orderId) {
+    window.location.href = '/orders/' + orderId;
 }
 
 // 리뷰 작성
