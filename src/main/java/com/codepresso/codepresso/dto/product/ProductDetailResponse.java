@@ -4,7 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -15,15 +17,17 @@ public class ProductDetailResponse {
     private Integer price;
     private String productContent;
     private String categoryName;
-    private List<Hashtag> hashtags;
+    private long favCount;
+    private Set<Hashtag> hashtags;
     private NutritionInfo nutritionInfo;
-    private List<Allergen> allergens;
+    private Set<Allergen> allergens;
     private List<ProductOptionDTO> productOptions;
     private static final String DEFAULT_CATEGORY = "COFFEE";
 
-    public static ProductDetailResponse of(Product product, List<ProductOption> options) {
+    public static ProductDetailResponse of(Product product, long favCount, List<ProductOption> options) {
 
         List<ProductOptionDTO> productOptionDTOs = new ArrayList<>();
+
         for(ProductOption option : options) {
             productOptionDTOs.add(new ProductOptionDTO(option));
         }
@@ -35,7 +39,8 @@ public class ProductDetailResponse {
                 .price(product.getPrice())
                 .productContent(product.getProductContent())
                 .categoryName(product.getCategory() != null ? product.getCategory().getCategoryCode() : DEFAULT_CATEGORY)
-                .hashtags(product.getProductHashtags())
+                .favCount(favCount)
+                .hashtags(product.getHashtags())
                 .nutritionInfo(product.getNutritionInfo())
                 .allergens(product.getAllergens())
                 .productOptions(productOptionDTOs)

@@ -2,12 +2,17 @@ package com.codepresso.codepresso.controller.member;
 
 import com.codepresso.codepresso.dto.member.ProfileUpdateRequest;
 import com.codepresso.codepresso.dto.member.UserDetailResponse;
+import com.codepresso.codepresso.dto.review.ReviewListResponse;
+import com.codepresso.codepresso.dto.review.ReviewResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.MemberProfileService;
+import com.codepresso.codepresso.service.product.ReviewService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -16,14 +21,12 @@ import java.util.NoSuchElementException;
  * - 로그인 사용자 정보는 @AuthenticationPrincipal 사용
  */
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class MemberApiController {
 
     private final MemberProfileService memberProfileService;
-
-    public MemberApiController(MemberProfileService memberProfileService) {
-        this.memberProfileService = memberProfileService;
-    }
+    private final ReviewService reviewService;
 
     /**
      * 내정보조회 RESTful API
@@ -51,4 +54,5 @@ public class MemberApiController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
 }
