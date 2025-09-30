@@ -95,7 +95,7 @@
                                         optionName: '${fn:escapeXml(option.optionName)}',
                                         optionStyle: '${fn:escapeXml(option.optionStyleName)}',
                                         extraPrice: ${option.extraPrice}
-                                    }<c:if test="${!status.last}">, </c:if>
+                                    }<c:if test="${!status.last}">,</c:if>
                                     </c:forEach>
                                 ];
 
@@ -110,8 +110,12 @@
 
                                 // DOM 로드 후 옵션 UI 생성
                                 document.addEventListener('DOMContentLoaded', function () {
-                                    createOptionUI(groupedOptions);
-                                    initializeDefaultOptions();
+                                    if (typeof createOptionUI === 'function') {
+                                        createOptionUI(groupedOptions);
+                                        initializeDefaultOptions();
+                                    } else {
+                                        console.error('createOptionUI 함수가 정의되지 않았습니다.');
+                                    }
                                 });
                             </script>
 
@@ -667,51 +671,6 @@
             </c:otherwise>
             </c:choose>
         }
-    }
-
-    // 바로 주문하기: 숨은 폼 POST로 checkout.jsp 이동 (/payments/direct)
-    function orderImmediately() {
-        const form = document.getElementById('directForm');
-        if (!form) return;
-        // 수량 적용
-        const qtyInput = form.querySelector('input[name="quantity"]');
-        if (qtyInput) qtyInput.value = currentQuantity;
-        // 옵션 숨은 필드 재구성
-        const selectedOptionIds = getSelectedOptionIds();
-        form.querySelectorAll('input[name="optionIds"]').forEach(n => n.remove());
-        selectedOptionIds.forEach(id => {
-            const i = document.createElement('input');
-            i.type = 'hidden';
-            i.name = 'optionIds';
-            i.value = String(id);
-            form.appendChild(i);
-        });
-        
-        // 선택된 매장 ID 추가
-        let branchId = 1; // 기본값
-        try {
-            const selected = window.branchSelection && window.branchSelection.load 
-                ? window.branchSelection.load() 
-                : null;
-            if (selected && selected.id) {
-                branchId = parseInt(selected.id);
-            }
-        } catch(e) {
-            console.log('매장 선택 정보를 가져올 수 없습니다:', e);
-        }
-        
-        // 기존 branchId 필드 제거 후 새로 추가
-        form.querySelectorAll('input[name="branchId"]').forEach(n => n.remove());
-        const branchIdInput = document.createElement('input');
-        branchIdInput.type = 'hidden';
-        branchIdInput.name = 'branchId';
-        branchIdInput.value = String(branchId);
-        form.appendChild(branchIdInput);
-        
-        console.log('선택된 매장 ID:', branchId);
-        form.submit();
-    }
-</script>
 
         // CSRF 토큰 가져오기
         function getCSRFToken() {
@@ -986,8 +945,32 @@
                 i.value = String(id);
                 form.appendChild(i);
             });
+            
+            // 선택된 매장 ID 추가
+            let branchId = 1; // 기본값
+            try {
+                const selected = window.branchSelection && window.branchSelection.load 
+                    ? window.branchSelection.load() 
+                    : null;
+                if (selected && selected.id) {
+                    branchId = parseInt(selected.id);
+                }
+            } catch(e) {
+                console.log('매장 선택 정보를 가져올 수 없습니다:', e);
+            }
+            
+            // 기존 branchId 필드 제거 후 새로 추가
+            form.querySelectorAll('input[name="branchId"]').forEach(n => n.remove());
+            const branchIdInput = document.createElement('input');
+            branchIdInput.type = 'hidden';
+            branchIdInput.name = 'branchId';
+            branchIdInput.value = String(branchId);
+            form.appendChild(branchIdInput);
+            
+            console.log('선택된 매장 ID:', branchId);
             form.submit();
         }
+
     </script>
 
     <!-- 바로 주문하기 폼 (숨김) -->
