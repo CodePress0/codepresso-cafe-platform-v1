@@ -28,9 +28,6 @@ public class CheckoutRequest {
 
     private LocalDateTime pickupTime;
 
-    @NotBlank
-    private String pickupMethod;
-
     private String requestNote;
 
     private Boolean isFromCart;     // 장바구니에서 온 주문인지 구분
