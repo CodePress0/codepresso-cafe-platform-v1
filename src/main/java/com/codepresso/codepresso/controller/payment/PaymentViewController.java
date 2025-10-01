@@ -5,6 +5,7 @@ import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.branch.BranchService;
+import com.codepresso.codepresso.service.coupon.CouponService;
 import com.codepresso.codepresso.service.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +26,7 @@ public class PaymentViewController {
 
     private final PaymentService paymentService;
     private final BranchService branchService;
+    private final CouponService couponService;
 
     /**
      * 장바구니에서 결제페이지로
@@ -45,6 +47,7 @@ public class PaymentViewController {
             model.addAttribute("totalAmount", checkoutData.getTotalAmount());
             model.addAttribute("totalQuantity", checkoutData.getTotalQuantity());
             model.addAttribute("isFromCart", true);
+            model.addAttribute("validCouponCount", couponService.getMemberValidCouponCount(loginUser.getMemberId()));
 
             if (branchId != null) {
                 model.addAttribute("branchId", branchId);
@@ -64,6 +67,7 @@ public class PaymentViewController {
      */
     @PostMapping("/direct")
     public String directCheckoutPost(
+            @AuthenticationPrincipal LoginUser loginUser,
             @RequestParam Long productId,
             @RequestParam Integer quantity,
             @RequestParam(required = false) List<Long> optionIds,
@@ -73,7 +77,7 @@ public class PaymentViewController {
         try {
             // 직접 주문 데이터 준비
             DirectCheckoutResponse directData = paymentService.prepareDirectCheckout(productId, quantity, optionIds);
-            
+
             // JSP에서 사용할 수 있도록 데이터 변환
             Map<String, Object> directItem = new HashMap<>();
             directItem.put("productName", directData.getProductDetail().getProductName());
@@ -81,7 +85,7 @@ public class PaymentViewController {
             directItem.put("unitPrice", directData.getTotalAmount() / quantity);
             directItem.put("quantity", quantity);
             directItem.put("lineTotal", directData.getTotalAmount());
-            
+
             List<String> optionNames = new ArrayList<>();
             if (directData.getSelectedOptions() != null) {
                 for (var option : directData.getSelectedOptions()) {
@@ -89,23 +93,28 @@ public class PaymentViewController {
                 }
             }
             directItem.put("optionNames", optionNames);
-            
+
             List<Map<String, Object>> directItems = new ArrayList<>();
             directItems.add(directItem);
-            
+
             model.addAttribute("directItems", directItems);
             model.addAttribute("directItemsCount", 1);
             model.addAttribute("totalAmount", directData.getTotalAmount());
             model.addAttribute("totalQuantity", quantity);
             model.addAttribute("isFromCart", false);
             model.addAttribute("branchId", branchId != null ? branchId : 1L);
-            
+
+            // 쿠폰 개수 추가 (로그인된 경우에만)
+            if (loginUser != null) {
+                model.addAttribute("validCouponCount", couponService.getMemberValidCouponCount(loginUser.getMemberId()));
+            }
+
             // 매장 정보 조회 및 추가
             Long finalBranchId = branchId != null ? branchId : 1L;
             Branch branch = branchService.getBranch(finalBranchId);
             model.addAttribute("branch", branch);
             model.addAttribute("branchName", branch.getBranchName());
-            
+
             // orderItemsPayloadJson 생성
             String orderItemsPayloadJson = "[{" +
                     "\"productId\":" + productId +
@@ -114,7 +123,7 @@ public class PaymentViewController {
                     ",\"optionIds\":[" + optionIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "]" +
                     "}]";
             model.addAttribute("orderItemsPayloadJson", orderItemsPayloadJson);
-            
+
             return "payment/checkout";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "결제 정보를 준비하는 중 오류가 발생했습니다: " + e.getMessage());
