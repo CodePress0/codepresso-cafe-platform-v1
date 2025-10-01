@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
+<script src="https://js.tosspayments.com/v1/payment"></script>
 <style>
     @import url('${pageContext.request.contextPath}/css/checkout.css');  ;
 </style>
@@ -319,7 +320,7 @@
                 <!-- 결제 버튼 -->
                 <div class="payment-actions">
                     <button class="btn-cancel" onclick="history.back()">취소</button>
-                    <button class="btn-payment" id="paymentBtn" onclick="processPayment()">
+                    <button class="btn-payment" id="paymentBtn" onclick="processTossPayment()">
                         <c:if test="${not empty totalAmount}">
                             <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="₩"/> 결제하기
                         </c:if>
@@ -412,189 +413,138 @@
         fetchCurrentUser();
     });
 
-    // 세션스토리지 기반 '바로 주문하기' 하이드레이션 제거 (SSR payload 사용)
-
     // 로컬 타임존 기준 ISO 문자열(yyyy-MM-ddTHH:mm:ss) 생성 util (Z/오프셋 제거)
     function toLocalISOStringNoZ(date) {
         const t = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
         return t.toISOString().slice(0, 19);
     }
 
-    // 결제 처리
-    async function processPayment() {
-        // 사용자 정보가 없으면 한번 더 시도
+    // 토스 페이먼츠 결제처리
+    async function processTossPayment(){
+        // 사용자 정보 확인
         if (!currentMemberId) {
             await fetchCurrentUser();
         }
         if (!currentMemberId) {
             alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
-            try { window.location.href = '/login'; } catch (e) {}
-            return;
-        }
-        const selectedPayment = document.querySelector('input[name="payment"]:checked');
-        const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
-        const selectedPackage = document.querySelector('input[name="package"]:checked');
-        const selectedPickupTime = document.querySelector('input[name="pickupTime"]:checked');
-        const useCouponCheckbox = document.getElementById('useCoupon');
-        const requestNote = document.getElementById('requestNote').value;
-
-        if (!selectedPayment) {
-            alert('결제수단을 선택해주세요.');
+            window.location.href='/login';
             return;
         }
 
-        // 현재 시간에 선택된 분 추가 (서버 LocalDateTime과 정확히 일치하도록 로컬 ISO 문자열로 전송)
-        const now = new Date();
-        const pickupTime = new Date(now.getTime() + (parseInt(selectedPickupTime.value) * 60 * 1000));
-        const pickupTimeLocal = toLocalISOStringNoZ(pickupTime);
+        // 매장 선택 확인 (기존 코드와 동일한 방식 사용)
+        const branchId = (function() {
+            try {
+                const selected = window.branchSelection && window.branchSelection.load
+                    ? window.branchSelection.load()
+                    : null;
+                return selected && selected.id ? parseInt(selected.id) : null;
+            } catch(e) { return null; }
+        })();
 
-        // 금액 계산은 서버 제공 totalAmount 사용 (버튼 복원용으로만 유지)
-        let originalAmount = ${totalAmount != null ? totalAmount : 0};
-
-        // 주문 아이템 구성: 서버 전달 데이터 우선 사용
-        let orderItems = [];
-        // 1) 직접 주문 데이터가 있는 경우 (server directItems)
-        if (${not empty directItems}) {
-            <c:forEach var="d" items="${directItems}">
-                orderItems.push({
-                    productId: ${d.productId},
-                    quantity: ${d.quantity},
-                    price: ${d.unitPrice},
-                    <c:if test="${not empty d.optionIds}">
-                    optionIds: [<c:forEach var="oid" items="${d.optionIds}" varStatus="s">${oid}<c:if test="${!s.last}">,</c:if></c:forEach>]
-                    </c:if>
-                    <c:if test="${empty d.optionIds}">
-                    optionIds: []
-                    </c:if>
-                });
-            </c:forEach>
-        }
-        // 2) 장바구니 데이터가 있는 경우 (server cartData)
-        else if (${not empty cartData and not empty cartData.items}) {
-            <c:forEach var="item" items="${cartData.items}">
-                orderItems.push({
-                    productId: ${item.productId},
-                    quantity: ${item.quantity},
-                    price: Math.round(${item.price} / ${item.quantity}),
-                    <c:if test="${not empty item.options}">
-                    optionIds: [<c:forEach var="option" items="${item.options}" varStatus="status">${option.optionId}<c:if test="${!status.last}">,</c:if></c:forEach>]
-                    </c:if>
-                    <c:if test="${empty item.options}">
-                    optionIds: []
-                    </c:if>
-                });
-            </c:forEach>
-        }
-
-        const paymentData = {
-            memberId: currentMemberId,
-            branchId: (function() {
-                try {
-                    const selected = window.branchSelection && window.branchSelection.load 
-                        ? window.branchSelection.load() 
-                        : null;
-                    return selected && selected.id ? parseInt(selected.id) : null;
-                } catch(e) { return null; }
-            })(),
-            isTakeout: selectedOrderType.value === 'takeout',
-            // LocalDateTime으로 정확히 매핑되도록 로컬 시간 문자열 전송
-            pickupTime: pickupTimeLocal,
-            requestNote: requestNote,
-            // 서버 모델에서 전달된 값 사용
-            isFromCart: ${isFromCart == true ? 'true' : 'false'},
-            orderItems: orderItems,
-            usedCouponId: selectedCoupon ? selectedCoupon.couponId : null,
-            couponDiscountAmount: selectedCoupon ? selectedCoupon.discountAmount : null
-        };
-
-        // isFromCart는 서버 모델 값 고정 사용
-
-        // 매장 선택 필수 확인
-        if (!paymentData.branchId) {
+        if (!branchId) {
             alert('매장을 먼저 선택해주세요.');
             return;
         }
 
-        const payButton = document.querySelector('.btn-payment');
-        payButton.textContent = '결제 처리 중...';
-        payButton.disabled = true;
+        // finalAmount 계산 (쿠폰 적용 포함)
+        const useCouponCheckbox = document.getElementById('useCoupon');
+        let finalAmount = ${totalAmount != null ? totalAmount : 0};
 
-        fetch('/api/payments/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(paymentData)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.orderId) {
-                    alert('결제가 완료되었습니다!');
+        if (useCouponCheckbox && useCouponCheckbox.checked) {
+            finalAmount = finalAmount - 2000;
+        }
 
-                    // 백엔드에서 장바구니를 비워도, 브라우저 캐시/동시성으로 화면에 남아 보일 수 있음
-                    // 장바구니 기반 주문인 경우에만 추가로 비우기 시도 (런타임 판단)
-                    (async () => {
-                        try {
-                            const isFromCartRuntime = ${isFromCart == true ? 'true' : 'false'};
-                            if (!isFromCartRuntime) return; // direct 주문이면 스킵
-                        } catch (_) { return; }
-                        try {
-                            // CSRF 메타에서 토큰/헤더 읽기
-                            const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
-                            const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
-                            const csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : null;
-                            const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
+        // 주문 데이터 구성 (기존 processPayment 함수와 동일한 방식)
+        const selectedOrderType = document.querySelector('input[name="orderType"]:checked');
+        const selectedPickupTime = document.querySelector('input[name="pickupTime"]:checked');
+        const requestNote = document.getElementById('requestNote').value;
 
-                            // 우선 서버가 내려준 cartId로 비우기 시도
-                            let cleared = false;
-                            if (typeof __serverCartId === 'number') {
-                                try {
-                                    await fetch('/users/cart/clear', {
-                                        method: 'POST',
-                                        credentials: 'include',
-                                        headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' },
-                                            (csrfHeaderName && csrfToken) ? { [csrfHeaderName]: csrfToken } : {}),
-                                        body: new URLSearchParams({ cartId: String(__serverCartId) }).toString()
-                                    });
-                                    cleared = true;
-                                } catch (_) {}
-                            }
+        // 픽업 시간 계산
+        const now = new Date();
+        const pickupTime = new Date(now.getTime() + (parseInt(selectedPickupTime.value) * 60 * 1000));
+        const pickupTimeLocal = toLocalISOStringNoZ(pickupTime);
 
-                            // 실패 시 장바구니 조회 후 cartId로 비우기 (백업 경로)
-                            if (!cleared) {
-                                const res = await fetch('/users/cart', { credentials: 'include' });
-                                if (res.ok) {
-                                    const cartJson = await res.json();
-                                    if (cartJson && cartJson.cartId) {
-                                        await fetch('/users/cart/clear', {
-                                            method: 'POST',
-                                            credentials: 'include',
-                                            headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded' },
-                                                (csrfHeaderName && csrfToken) ? { [csrfHeaderName]: csrfToken } : {}),
-                                            body: new URLSearchParams({ cartId: String(cartJson.cartId) }).toString()
-                                        }).catch(() => {});
-                                    }
-                                }
-                            }
-                        } catch (e) { /* 네트워크/권한 문제는 무시하고 계속 진행 */ }
-                    })();
-
-                    // 추가 세션스토리지 저장 없이 상세 페이지로 이동
-                    window.location.href = '/orders/' + data.orderId;
-                } else {
-                    throw new Error('결제 응답 오류');
-                }
-            })
-            .catch(error => {
-                console.error('결제 오류:', error);
-                alert('결제 중 오류가 발생했습니다. 다시 시도해주세요.');
-                
-                // 쿠폰 사용 여부에 따라 버튼 텍스트 복원
-                const isUsingCoupon = useCouponCheckbox && useCouponCheckbox.checked;
-                const amount = isUsingCoupon ? (originalAmount - 2000) : originalAmount;
-                payButton.textContent = amount.toLocaleString() + '원 결제하기';
-                payButton.disabled = false;
+        // 주문 아이템 구성 (기존 로직 그대로 사용)
+        let orderItems = [];
+        if (${not empty directItems}) {
+            <c:forEach var="d" items="${directItems}">
+            orderItems.push({
+                productId: ${d.productId},
+                quantity: ${d.quantity},
+                price: ${d.unitPrice},
+                optionIds: [<c:forEach var="oid" items="${d.optionIds}" varStatus="s">${oid}<c:if test="${!s.last}">,</c:if></c:forEach>]
             });
+            </c:forEach>
+        } else if (${not empty cartData and not empty cartData.items}) {
+            <c:forEach var="item" items="${cartData.items}">
+            orderItems.push({
+                productId: ${item.productId},
+                quantity: ${item.quantity},
+                price: Math.round(${item.price} / ${item.quantity}),
+                optionIds: [<c:forEach var="option" items="${item.options}" varStatus="status">${option.optionId}<c:if test="${!status.last}">,</c:if></c:forEach>]
+            });
+            </c:forEach>
+        }
+
+        const orderData = {
+            memberId: currentMemberId,
+            branchId: branchId,  // ← 수정된 부분
+            isTakeout: selectedOrderType.value === 'takeout',
+            pickupTime: pickupTimeLocal,
+            requestNote: requestNote,
+            isFromCart: ${isFromCart == true ? 'true' : 'false'},
+            orderItems: orderItems,
+            // 쿠폰 정보도 추가
+            usedCouponId: selectedCoupon ? selectedCoupon.couponId : null,
+            couponDiscountAmount: selectedCoupon ? selectedCoupon.discountAmount : null
+        };
+
+
+        // 1. 주문 생성
+        const orderResponse = await fetch('/api/payments/checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(orderData)
+        });
+
+        const orderResult = await orderResponse.json();
+
+        console.log('TossPayments:', typeof TossPayments);
+        console.log('clientKey', '${clientKey}')
+
+        // SDK 로드 확인
+        if (typeof TossPayments === 'undefined') {
+            alert('토스페이먼츠 SDK가 로드되지 않았습니다.');
+            return;
+        }
+
+        try {
+            // 2. 토스 결제창으로 이동 (v1 방식)
+            const tossPayments = TossPayments('${clientKey}');
+            console.log('TossPayments v1 initialized:', tossPayments);
+
+            // Toss 규격에 맞춰 orderId 보정 (영/숫자/_- 만, 6~64자)
+            const rawOrderId = orderResult.orderId;
+            let tossOrderId = String(rawOrderId).replace(/[^A-Za-z0-9_-]/g, '');
+            if (tossOrderId.length < 6) tossOrderId = tossOrderId.padStart(6, '0');
+            if (tossOrderId.length > 64) tossOrderId = tossOrderId.slice(0, 64);
+
+            // v1 방식으로 결제 요청
+            tossPayments.requestPayment('카드', {
+                amount: finalAmount,
+                orderId: tossOrderId,
+                orderName: 'CodePresso 주문',
+                successUrl: 'http://localhost:8080/payments/success',
+                failUrl: 'http://localhost:8080/payments/fail',
+                customerEmail: 'customer@example.com',
+                customerName: '고객명'
+            });
+            
+        } catch (error) {
+            console.error('토스 결제 오류:', error);
+            alert('결제 처리 중 오류가 발생했습니다: ' + error.message);
+        }
+
     }
 
     // 사용가능한 쿠폰 목록 조회

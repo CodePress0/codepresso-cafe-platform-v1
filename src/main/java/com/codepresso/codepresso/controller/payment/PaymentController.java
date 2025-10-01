@@ -2,17 +2,16 @@ package com.codepresso.codepresso.controller.payment;
 
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
+import com.codepresso.codepresso.dto.payment.TossPaymentRequest;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.payment.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 결제 관련 컨트롤러
@@ -29,9 +28,11 @@ public class PaymentController {
      * 장바구니 결제페이지 데이터 조회 API
      */
     @GetMapping("/cart")
-    public ResponseEntity<CheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<CheckoutResponse> getCartCheckoutData(
+            @RequestBody @Valid CheckoutRequest.OrderItem orderItem,
+            @AuthenticationPrincipal LoginUser loginUser) {
         CheckoutResponse response = paymentService.prepareCheckout(
-            loginUser.getMemberId(), null, null, null);
+            loginUser.getMemberId(), orderItem.getProductId(), orderItem.getQuantity(), orderItem.getOptionIds());
         return ResponseEntity.ok(response);
     }
 
@@ -40,10 +41,11 @@ public class PaymentController {
      */
     @GetMapping("/direct")
     public ResponseEntity<CheckoutResponse> getDirectCheckoutData(
-            @RequestBody @Valid CheckoutRequest.OrderItem orderItem) {
+            @RequestBody @Valid CheckoutRequest.OrderItem orderItem,
+            @AuthenticationPrincipal  LoginUser loginUser) {
         try {
             CheckoutResponse response = paymentService.prepareCheckout(
-                    null,
+                    loginUser.getMemberId(),
                     orderItem.getProductId(),
                     orderItem.getQuantity(),
                     orderItem.getOptionIds());

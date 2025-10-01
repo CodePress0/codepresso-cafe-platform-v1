@@ -67,3 +67,12 @@ server:
       enabled: true
       force: true
   port: 8080
+
+# 토스 페이먼츠 설정
+toss:
+  payments:
+    client-key: test_ck_Z61JOxRQVEEOn7KM2POwVW0X9bAq
+    secret-key: test_sk_oEjb0gm23PWRyYvE0kbo8pGwBJn5
+    base-url: https://api.tosspayments.com
+    success-url: http://localhost:8080/payments/success
+    fail-url: http://localhost:8080/payments/fail

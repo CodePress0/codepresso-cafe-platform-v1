@@ -1,9 +1,12 @@
 package com.codepresso.codepresso.service.payment;
 
+import com.codepresso.codepresso.config.TossPaymentsConfig;
 import com.codepresso.codepresso.dto.cart.CartItemResponse;
 import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
+import com.codepresso.codepresso.dto.payment.TossPaymentConfirmResponse;
+import com.codepresso.codepresso.dto.payment.TossPaymentRequest;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductOptionDTO;
 import com.codepresso.codepresso.entity.branch.Branch;
@@ -24,12 +27,12 @@ import com.codepresso.codepresso.service.coupon.StampService;
 import com.codepresso.codepresso.service.product.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +54,7 @@ public class PaymentService {
     private final OrderCreationService orderCreationService;
     private final StampService stampService;
     private final CouponService couponService;
+    private final TossPaymentsConfig tossPaymentsConfig;
 
     /**
      * 통합 결제 준비 메서드 (Cart + Direct 통합)
@@ -175,5 +179,48 @@ public class PaymentService {
 
         // 6. 응답 데이터 생성
         return paymentConverter.buildCheckoutResponse(savedOrder);
+    }
+
+
+    public TossPaymentConfirmResponse confirmTossPayment(String paymentKey, String orderId, String amount) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            // 요청 데이터 (간단하게)
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("paymentKey", paymentKey);
+            requestBody.put("orderId", orderId);
+            requestBody.put("amount", Integer.parseInt(amount));
+
+            // 헤더 설정 (토스 Basic Auth)
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            String secretKey = tossPaymentsConfig.getSecretKey() + ":";
+            String auth = Base64.getEncoder().encodeToString(secretKey.getBytes());
+            headers.set("Authorization", "Basic " + auth);
+
+            // API 호출
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            String url = tossPaymentsConfig.getBaseUrl() + "/v1/payments/confirm";
+
+            ResponseEntity<TossPaymentConfirmResponse> response =
+                    restTemplate.postForEntity(url, request, TossPaymentConfirmResponse.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                TossPaymentConfirmResponse result = response.getBody();
+
+                // 간단 검증만
+                if (!"DONE".equals(result.getStatus())) {
+                    throw new RuntimeException("결제 승인 실패: " + result.getStatus());
+                }
+
+                return result;
+            } else {
+                throw new RuntimeException("토스 API 호출 실패");
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("토스 결제 승인 실패: " + e.getMessage());
+        }
     }
 }

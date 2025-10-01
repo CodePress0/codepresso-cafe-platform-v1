@@ -25,15 +25,10 @@ public class CheckoutRequest {
 
     @NotNull
     private Boolean isTakeout;
-
     private LocalDateTime pickupTime;
-
     private String requestNote;
-
     private Boolean isFromCart;     // 장바구니에서 온 주문인지 구분
-
     private Long usedCouponId;      // 사용할 couponId
-
     private Integer couponDiscountAmount;   // 쿠폰 할인 금액
 
     @NotEmpty
