@@ -62,7 +62,9 @@ public class OrderDetailResponse {
     @Builder
     public static class PaymentInfo {
         private String paymentMethod;
-        private Integer totalAmount;
+        private Integer totalAmount;        // 주문금액 (할인 전)
+        private Integer discount;           // 할인 금액
+        private Integer finalAmount;        // 총 결제 금액 (totalAmount - discountAmount)
         private LocalDateTime paymentDate;
     }
 }

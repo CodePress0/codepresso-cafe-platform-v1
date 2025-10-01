@@ -2,6 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
+<style>
+    @import url('${pageContext.request.contextPath}/css/orderDetail.css');
+</style>
 <body>
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 <main class="hero order-detail-page">
@@ -26,17 +29,19 @@
             <!-- 주문 상태 -->
             <div class="order-status-section">
                 <div class="status-header">
-                    <div class="order-number">주문번호(로딩 중)</div>
-                    <span class="status-badge status-making">제조중</span>
+                    <div class="order-number">주문번호(${orderDetail.orderNumber})</div>
+                    <span class="status-badge status-${orderDetail.productionStatus == '주문접수' ? 'received' : orderDetail.productionStatus == '제조중' ? 'making' :orderDetail.productionStatus == '제조완료' ? 'complete' : 'pickup'}" ">
+                        ${orderDetail.productionStatus}
+                    </span>
                 </div>
 
                 <div class="status-progress">
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 50%;"></div>
+                        <div class="progress-fill" style="width: ${orderDetail.productionStatus == '주문접수' ? '25' : orderDetail.productionStatus == '제조중' ? '50' : orderDetail.productionStatus == '제조완료' ? '75' : '100'}%;"></div>
                     </div>
                     <div class="progress-steps">
-                        <div class="step completed">주문접수</div>
-                        <div class="step active">제조중</div>
+                        <div class="step">주문접수</div>
+                        <div class="step">제조중</div>
                         <div class="step">제조완료</div>
                         <div class="step">픽업완료</div>
                     </div>
@@ -45,23 +50,19 @@
                 <div class="order-meta">
                     <div class="meta-row">
                         <span class="meta-label">주문일시</span>
-                        <span class="meta-value order-date-value">-</span>
+                        <span class="meta-value">${orderDetail.orderDate.toString().substring(0,16).replace('T', ' ')}</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">픽업예정</span>
-                        <span class="meta-value pickup-time-value">-</span>
+                        <span class="meta-value">${orderDetail.pickupTime.toString().substring(0,16).replace('T', ' ')}</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">주문형태</span>
-                        <span class="meta-value order-type-value">-</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-label">포장방법</span>
-                        <span class="meta-value pickup-method-value">-</span>
+                        <span class="meta-value">${orderDetail.isTakeout ? '테이크아웃' : '매장'}</span>
                     </div>
                     <div class="meta-row">
                         <span class="meta-label">요청사항</span>
-                        <span class="meta-value request-note-value">-</span>
+                        <span class="meta-value">${not empty orderDetail.requestNote ? orderDetail.requestNote : '요청사항 없음'}</span>
                     </div>
                 </div>
             </div>
@@ -70,19 +71,74 @@
             <div class="order-items-section">
                 <h2 class="section-title">주문상품</h2>
 
-                <div class="order-items"></div>
+                <div class="order-items">
+                    <c:forEach var="item" items="${orderDetail.orderItems}" varStatus="status">
+                        <div class="order-item">
+                            <div class="item-number">${status.count}</div>
+                            <div class="item-details">
+                                <div class="item-name">${item.productName}</div>
+
+                                <!-- 옵션 표시 -->
+                                <c:if test="${not empty item.options}">
+                                    <div class="item-options">
+                                        <ul class="order-option-list">
+                                            <c:forEach var="option" items="${item.options}">
+                                                <li>
+                                                    <span>${option.optionStyle}</span>
+                                                    <c:if test="${option.extraPrice > 0}">
+                                                        <em>+<fmt:formatNumber value="${option.extraPrice}" type="number"/>원</em>
+                                                    </c:if>
+                                                </li>
+                                            </c:forEach>
+                                        </ul>
+                                    </div>
+                                </c:if>
+
+                                <div class="item-quantity">수량: ${item.quantity}개 </div>
+                            </div>
+                            <div class="item-pricing">
+                                <div class="unit-price">단가: <fmt:formatNumber value="${item.price}" type="currency" currencySymbol=""/></div>
+                                <div class="total-price"><fmt:formatNumber value="${item.totalPrice}" type="currency" currencySymbol=""/></div>
+                                <div class="item-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="writeReview(${item.orderDetailId})">리뷰 작성</button>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
             </div>
 
             <!-- 지점 정보 -->
             <div class="store-section">
                 <h2 class="section-title">픽업 매장</h2>
-                <span id="checkoutStoreName">
-                        <c:choose>
-                            <c:when test="${not empty branch}">${branch.branchName}</c:when>
-                            <c:when test="${not empty branchName}">${branchName}</c:when>
-                            <c:otherwise>매장 정보 없음</c:otherwise>
-                        </c:choose>
-                    </span>
+                <div class="store-info">
+                    <c:choose>
+                        <c:when test="${not empty orderDetail.branch}">
+                            <!-- 백엔드 데이터 사용 -->
+                            <div class="store-name">${orderDetail.branch.branchName}</div>
+                            <div class="store-address">${orderDetail.branch.address}</div>
+                            <div class="store-phone">${orderDetail.branch.branchNumber}</div>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- JavaScript로 로드-->
+                            <div class="store-name" id="storeName">매장 정보 로딩중...</div>
+                            <div class="store-address" id="storeAddress">-</div>
+                            <div class="store-phone" id="storePhone">-</div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded',function (){
+                                    if(window.branchSelection && typeof window.branchSelection.load()=='function'){
+                                        const branch = window.branchSelection.load();
+                                        if(branch){
+                                            document.getElementById('storeName').textContent = branch.name;
+                                            document.getElementById('storeAddress').textContent = branch.address;
+                                            document.getElementById('storePhone').textContent = branch.phone;
+                                        }
+                                    }
+                                });
+                            </script>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </div>
         </div>
 
@@ -94,27 +150,61 @@
                 <div class="payment-details">
                     <div class="payment-method">
                         <span class="method-label">결제수단</span>
-                        <span class="method-value">-</span>
+                        <span class="method-value">
+                            <c:choose>
+                                <c:when test="${not empty orderDetail.payment.paymentMethod}">
+                                    ${orderDetail.payment.paymentMethod}
+                                </c:when>
+                                <c:otherwise>신용카드</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                     <div class="payment-date">
                         <span class="date-label">결제일시</span>
-                        <span class="date-value">-</span>
+                        <span class="date-value">
+                            <c:choose>
+                                <c:when test="${not empty orderDetail.payment.paymentDate}">
+                                    ${orderDetail.payment.paymentDate.toString().substring(0,16).replace('T', ' ')}
+                                </c:when>
+                                <c:otherwise>-</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                 </div>
 
                 <div class="payment-summary">
                     <div class="summary-row">
                         <span>주문금액</span>
-                        <span class="order-amount">0원</span>
+                        <span class="order-amount">
+                            <c:choose>
+                                <c:when test="${not empty orderDetail.payment.totalAmount}">
+                                    <fmt:formatNumber value="${orderDetail.payment.totalAmount}" type="currency" currencySymbol="₩"/>
+                                </c:when>
+                                <c:otherwise>0원</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
+
+                    <!-- 할인 행 - 할인이 있을 때만 표시 -->
+                    <c:if test="${not empty orderDetail.payment.discount && orderDetail.payment.discount >0}">
+                        <div class="summary-row coupon-discount">
+                            <span> 쿠폰 할인 </span>
+                            <span class="discount-amount">-<fmt:formatNumber value="${orderDetail.payment.discount}" type="currency" currencySymbol=""/>원</span>
+                        </div>
+                    </c:if>
+
                     <div class="summary-row">
                         <span>총 수량</span>
-                        <span class="total-qty">0개</span>
+                        <span class="total-qty">${orderDetail.orderItems.size()}개</span>
                     </div>
+
                     <div class="summary-divider"></div>
+
                     <div class="summary-row total">
                         <span>총 결제금액</span>
-                        <span class="total-amount">0원</span>
+                        <span class="total-amount">
+                            <fmt:formatNumber value="${orderDetail.payment.finalAmount != null ? orderDetail.payment.finalAmount : orderDetail.payment.totalAmount}" type="currency" currencySymbol=""/>원
+                        </span>
                     </div>
                 </div>
             </div>
@@ -578,360 +668,22 @@
         window.location.href = '/orders';
     }
 
-    // 로컬 저장된 선택 매장 이름 보조 함수
-    function getSelectedBranchName() {
-        try {
-            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
-            return (sel && sel.name) ? sel.name : '';
-        } catch (e) { return ''; }
-    }
-    function setStoreNameIfEmpty(name) {
-        var el = document.querySelector('.store-name');
-        var target = name && String(name).trim() ? String(name).trim() : '';
-        if (!el) return false;
-        if (!el.textContent || el.textContent === '-') {
-            if (target) { el.textContent = target; return true; }
-        }
-        return false;
-    }
+    // 리뷰 작성 함수
+    function writeReview(orderDetailId){
+        // POST 폼으로 리뷰 작성 페이지 이동
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/users/reviews';
 
-    function setStoreInfoFallbackFromLocal() {
-        try {
-            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
-            if (!sel) return;
-            var nameSet = setStoreNameIfEmpty(sel.name);
-            var addrEl = document.querySelector('.store-address');
-            if (addrEl && (!addrEl.textContent || addrEl.textContent === '-')) {
-                if (sel.address) addrEl.textContent = sel.address;
-            }
-        } catch (e) { /* noop */ }
-    }
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'orderDetailId';
+        input.value = orderDetailId;
+        form.appendChild(input);
 
-    // 페이지 로드 시: 먼저 로컬 선택 매장 표시 후 상세 정보 로드
-    document.addEventListener('DOMContentLoaded', function() {
-        hydrateStoreNameFromHiddenOrLocal();
-        loadOrderDetailFromSessionOrFetch();
-    });
-
-    // checkout.jsp와 동일 패턴의 매장명 하이드레이션
-    function hydrateStoreNameFromHiddenOrLocal() {
-        var idInput = document.getElementById('selectedBranchIdInput');
-        var nameInput = document.getElementById('selectedBranchNameInput');
-        var storeNameEl = document.querySelector('.store-name');
-
-        function setName(name) {
-            var display = name && String(name).trim() ? String(name).trim() : '';
-            if (storeNameEl && (!storeNameEl.textContent || storeNameEl.textContent === '-' || storeNameEl.textContent === '매장 정보 없음')) {
-                storeNameEl.textContent = display || '매장 정보 없음';
-            }
-            if (nameInput) nameInput.value = display;
-        }
-
-        var id = idInput && idInput.value ? String(idInput.value).trim() : '';
-        var nm = nameInput && nameInput.value ? String(nameInput.value).trim() : '';
-        if (nm) { setName(nm); return; }
-        if (id) {
-            setName('매장 정보를 불러오는 중...');
-            fetch('/branch/info/' + encodeURIComponent(id))
-                .then(function(r){ if(!r.ok) throw 0; return r.json(); })
-                .then(function(d){ setName(d && (d.name || d.branchName) ? (d.name || d.branchName) : ('ID ' + id)); })
-                .catch(function(){ setName('매장 정보를 불러오지 못했습니다'); });
-            return;
-        }
-        try {
-            var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
-            setName(sel && sel.name ? sel.name : '');
-        } catch (e) { setName(''); }
-    }
-
-    // 주문 상세 정보는 서버에서만 조회하여 렌더 (세션스토리지 의존 제거)
-    function loadOrderDetailFromSessionOrFetch() {
-        const path = window.location.pathname;
-        const m = path.match(/\/orders\/(\d+)/);
-        if (!m) {
-            alert('주문 정보를 찾을 수 없습니다.');
-            window.location.href = '/orders';
-            return;
-        }
-        const orderId = m[1];
-
-        // 서버에서 상세 조회하여 정확한 매장/결제 정보로 렌더
-        fetch(`/users/orders/${orderId}`)
-            .then(res => {
-                if (!res.ok) throw new Error('주문 정보를 불러오지 못했습니다');
-                return res.json();
-            })
-            .then(data => updateOrderDetailFromApi(data))
-            .catch(err => {
-                console.error(err);
-                alert('주문 정보를 불러오지 못했습니다.');
-            });
-    }
-
-    // 주문 상세 정보 업데이트 (API 응답 구조 사용)
-    function updateOrderDetailFromApi(data) {
-        const orderNumber = data.orderNumber || String(data.orderId || '');
-        document.querySelector('.order-number').textContent = '주문번호(' + orderNumber + ')';
-
-        const status = '픽업완료';
-        const statusBadge = document.querySelector('.status-badge');
-        statusBadge.textContent = status;
-        statusBadge.className = 'status-badge ' + getStatusClass(status);
-
-        const progressFill = document.querySelector('.progress-fill');
-        progressFill.style.width = getProgressWidth(status) + '%';
-        updateProgressSteps(status);
-
-        // 주문 메타 정보
-        const fmt = d => d ? new Date(d).toLocaleString() : '-';
-        const orderDateEl = document.querySelector('.order-date-value');
-        const pickupTimeEl = document.querySelector('.pickup-time-value');
-        const orderTypeEl = document.querySelector('.order-type-value');
-        const pickupMethodEl = document.querySelector('.pickup-method-value');
-        const requestNoteEl = document.querySelector('.request-note-value');
-        if (orderDateEl) orderDateEl.textContent = fmt(data.orderDate);
-        if (pickupTimeEl) pickupTimeEl.textContent = fmt(data.pickupTime);
-        if (orderTypeEl) orderTypeEl.textContent = data.isTakeout ? '테이크아웃' : '매장';
-        if (pickupMethodEl) pickupMethodEl.textContent = data.isTakeout ? '포장' : '매장';
-        if (requestNoteEl) requestNoteEl.textContent = data.requestNote || '요청사항 없음';
-
-        // 주문 상품 목록
-        const listContainer = document.querySelector('.order-items');
-        if (listContainer) {
-            listContainer.innerHTML = '';
-            if (Array.isArray(data.orderItems)) {
-                data.orderItems.forEach((item, idx) => {
-                    const unit = Number(item.price || 0);
-                    const qty = Number(item.quantity || 1);
-                    const total = item.totalPrice != null ? Number(item.totalPrice) : (unit * qty);
-                    const optionsHtml = (item.options && item.options.length > 0) ? 
-                        '<ul class="order-option-list">' + 
-                        item.options.map(opt => {
-                            const priceText = (opt.extraPrice && opt.extraPrice > 0) ? 
-                                '<em>+' + opt.extraPrice.toLocaleString() + '원</em>' : '';
-                            return '<li><span>' + opt.optionStyle + '</span>' + priceText + '</li>';
-                        }).join('') + 
-                        '</ul>' : '';
-                    const html = '<div class="order-item">'
-                        + '<div class="item-number">' + (idx + 1) + '</div>'
-                        + '<div class="item-details">'
-                        +   '<div class="item-name">' + (item.productName || '') + '</div>'
-                        +   '<div class="item-options">' + optionsHtml + '</div>'
-                        +   '<div class="item-quantity">수량: ' + qty + '개</div>'
-                        + '</div>'
-                        + '<div class="item-pricing">'
-                        +   '<div class="unit-price">단가: ' + unit.toLocaleString() + '원</div>'
-                        +   '<div class="total-price">' + total.toLocaleString() + '원</div>'
-                        +   '<div class="item-actions"><button class="btn btn-outline btn-sm" data-review-id="' + (item.orderDetailId || '') + '">리뷰 작성</button></div>'
-                        + '</div>'
-                        + '</div>';
-                    listContainer.insertAdjacentHTML('beforeend', html);
-                });
-                listContainer.addEventListener('click', function(e){
-                    const btn = e.target.closest('[data-review-id]');
-                    if (!btn) return;
-                    const odId = btn.getAttribute('data-review-id');
-                    if (!odId) return;
-
-                    // POST 폼을 동적으로 생성하여 리뷰 작성 페이지로 이동
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/users/reviews';
-
-                    const orderDetailIdInput = document.createElement('input');
-                    orderDetailIdInput.type = 'hidden';
-                    orderDetailIdInput.name = 'orderDetailId';
-                    orderDetailIdInput.value = odId;
-                    form.appendChild(orderDetailIdInput);
-
-                    // CSRF 토큰 추가
-                    const csrfToken = document.querySelector('meta[name="_csrf"]');
-                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]');
-                    if (csrfToken && csrfHeader) {
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = '_csrf';
-                        csrfInput.value = csrfToken.getAttribute('content');
-                        form.appendChild(csrfInput);
-                    }
-
-                    document.body.appendChild(form);
-                    form.submit();
-                });
-            }
-        }
-
-        // 지점 정보
-        if (data.branch) {
-            const b = data.branch;
-            const storeNameEl = document.querySelector('.store-name');
-            const storeAddressEl = document.querySelector('.store-address');
-            const storePhoneEl = document.querySelector('.store-phone');
-            if (storeNameEl) storeNameEl.textContent = b.branchName || '';
-            if (storeAddressEl) storeAddressEl.textContent = b.address || '';
-            if (storePhoneEl) storePhoneEl.textContent = b.branchNumber || '';
-        } else {
-            // API에 지점 정보가 없으면 로컬 선택값으로 보정
-            setStoreInfoFallbackFromLocal();
-        }
-
-        // 여전히 비어있다면 마지막으로 로컬 선택값으로 보정
-        setStoreInfoFallbackFromLocal();
-
-        // 결제/요약 정보
-        const paymentMethodVal = document.querySelector('.payment-method .method-value');
-        const paymentDateVal = document.querySelector('.payment-date .date-value');
-        const orderAmountVal = document.querySelector('.payment-summary .order-amount');
-        const totalQtyVal = document.querySelector('.payment-summary .total-qty');
-        const totalAmountEl = document.querySelector('.total-amount');
-
-        // 주문금액/총수량 계산
-        let orderAmountCalc = 0;
-        let qtyCalc = 0;
-        if (Array.isArray(data.orderItems)) {
-            data.orderItems.forEach(it => {
-                const unit = Number(it.price || 0);
-                const qty = Number(it.quantity || 1);
-                const line = it.totalPrice != null ? Number(it.totalPrice) : unit * qty;
-                orderAmountCalc += line;
-                qtyCalc += qty;
-            });
-        }
-        if (orderAmountVal) orderAmountVal.textContent = orderAmountCalc.toLocaleString() + '원';
-        if (totalQtyVal) totalQtyVal.textContent = qtyCalc + '개';
-
-        if (data.payment) {
-            const p = data.payment;
-            if (paymentMethodVal) paymentMethodVal.textContent = p.paymentMethod || '';
-            if (paymentDateVal) paymentDateVal.textContent = (p.paymentDate ? new Date(p.paymentDate).toLocaleString() : (data.orderDate ? new Date(data.orderDate).toLocaleString() : '-'));
-            if (totalAmountEl) totalAmountEl.textContent = (p.totalAmount || orderAmountCalc).toLocaleString() + '원';
-        } else {
-            if (totalAmountEl) totalAmountEl.textContent = (data.totalAmount != null ? data.totalAmount : orderAmountCalc).toLocaleString() + '원';
-            if (paymentMethodVal) paymentMethodVal.textContent = '-';
-            if (paymentDateVal) paymentDateVal.textContent = (data.orderDate ? new Date(data.orderDate).toLocaleString() : '-');
-        }
-    }
-
-    // 상태에 따른 CSS 클래스 반환
-    function getStatusClass(status) {
-        switch(status) {
-            case '주문접수': return 'status-received';
-            case '제조중': return 'status-making';
-            case '제조완료': return 'status-complete';
-            case '픽업완료': return 'status-pickup';
-            default: return 'status-making';
-        }
-    }
-
-    // 상태에 따른 진행률 반환
-    function getProgressWidth(status) {
-        switch(status) {
-            case '주문접수': return 25;
-            case '제조중': return 50;
-            case '제조완료': return 75;
-            case '픽업완료': return 100;
-            default: return 25;
-        }
-    }
-
-    // 진행 단계 업데이트
-    function updateProgressSteps(status) {
-        const steps = document.querySelectorAll('.step');
-        const statusOrder = ['주문접수', '제조중', '제조완료', '픽업완료'];
-        const currentIndex = statusOrder.indexOf(status);
-
-        steps.forEach((step, index) => {
-            step.classList.remove('completed', 'active');
-            if (index < currentIndex) {
-                step.classList.add('completed');
-            } else if (index === currentIndex) {
-                step.classList.add('active');
-            }
-        });
-    }
-    
-    // 주문 상품 정보 업데이트 (체크아웃에서 세션으로 온 구조)
-    function updateOrderItems(orderItems) {
-        const container = document.querySelector('.order-items');
-        if (!container) return;
-        container.innerHTML = '';
-        orderItems.forEach((item, idx) => {
-            const name = item.name || '';
-            const qty = Number(item.quantity || 0);
-            const unit = Number(item.price || 0);
-            const total = Number(item.total || unit * qty);
-            const html = '<div class="order-item">'
-                + '<div class="item-number">' + (idx + 1) + '</div>'
-                + '<div class="item-details">'
-                +   '<div class="item-name">' + name + '</div>'
-                +   '<div class="item-quantity">수량: ' + qty + '개</div>'
-                +   '<div class="item-actions"><button class="btn btn-outline btn-sm" disabled>리뷰 달기</button></div>'
-                + '</div>'
-                + '<div class="item-pricing">'
-                +   '<div class="unit-price">단가: ' + unit.toLocaleString() + '원</div>'
-                +   '<div class="total-price">' + total.toLocaleString() + '원</div>'
-                + '</div>'
-                + '</div>';
-            container.insertAdjacentHTML('beforeend', html);
-        });
-    }
-    
-    // 결제 정보 업데이트
-    function updatePaymentInfo(orderData) {
-        const paymentMethodEl = document.querySelector('.payment-method');
-        const orderAmountEl = document.querySelector('.order-amount');
-        const discountAmountEl = document.querySelector('.discount-amount');
-        const totalAmountEl = document.querySelector('.total-amount');
-        
-        if (paymentMethodEl) paymentMethodEl.textContent = orderData.paymentMethod;
-        if (orderAmountEl) orderAmountEl.textContent = orderData.orderAmount.toLocaleString() + '원';
-        if (discountAmountEl) {
-            if (orderData.discountAmount > 0) {
-                discountAmountEl.textContent = '-' + orderData.discountAmount.toLocaleString() + '원';
-                discountAmountEl.parentElement.style.display = 'flex';
-            } else {
-                discountAmountEl.parentElement.style.display = 'none';
-            }
-        }
-        if (totalAmountEl) totalAmountEl.textContent = orderData.totalAmount.toLocaleString() + '원';
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>
 
-<script>
-    (function(){
-        var nameTarget = document.getElementById('checkoutBranchName');
-        var storeTitleTarget = document.getElementById('checkoutStoreName');
-        var idInput = document.getElementById('selectedBranchIdInput');
-        var nameInput = document.getElementById('selectedBranchNameInput');
-
-        function setName(name){
-            var display = name && String(name).trim() ? String(name).trim() : '-';
-            if (nameTarget) nameTarget.textContent = display;
-            if (storeTitleTarget) storeTitleTarget.textContent = display === '-' ? '매장 정보 없음' : display;
-            if (nameInput) nameInput.value = name ? String(name).trim() : '';
-        }
-
-        function hydrate(){
-            var id = idInput && idInput.value ? String(idInput.value).trim() : '';
-            var nm = nameInput && nameInput.value ? String(nameInput.value).trim() : '';
-            if (nm) { setName(nm); return; }
-            if (id) {
-                setName('매장 정보를 불러오는 중...');
-                fetch('/branch/info/' + encodeURIComponent(id))
-                    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
-                    .then(function(d){ setName(d && (d.name || d.branchName) ? (d.name || d.branchName) : ('ID ' + id)); })
-                    .catch(function(){ setName('매장 정보를 불러오지 못했습니다'); });
-                return;
-            }
-            try {
-                var sel = (window.branchSelection && typeof window.branchSelection.load === 'function') ? window.branchSelection.load() : null;
-                setName(sel && sel.name ? sel.name : '');
-            } catch(e) {
-                setName('');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', hydrate);
-    })();
-</script>
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

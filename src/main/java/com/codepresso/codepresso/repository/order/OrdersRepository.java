@@ -37,8 +37,4 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
      * */
     long countByMemberId(Long memberId);
 
-
-
-
-
 }

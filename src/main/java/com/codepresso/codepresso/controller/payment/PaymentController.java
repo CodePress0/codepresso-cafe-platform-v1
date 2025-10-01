@@ -1,9 +1,7 @@
 package com.codepresso.codepresso.controller.payment;
 
-import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.payment.PaymentService;
 import jakarta.validation.Valid;
@@ -31,8 +29,9 @@ public class PaymentController {
      * 장바구니 결제페이지 데이터 조회 API
      */
     @GetMapping("/cart")
-    public ResponseEntity<CartCheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
-        CartCheckoutResponse response = paymentService.prepareCartCheckout(loginUser.getMemberId());
+    public ResponseEntity<CheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
+        CheckoutResponse response = paymentService.prepareCheckout(
+            loginUser.getMemberId(), null, null, null);
         return ResponseEntity.ok(response);
     }
 
@@ -40,10 +39,11 @@ public class PaymentController {
      * 직접 결제 페이지 데이터 조회 API
      */
     @GetMapping("/direct")
-    public ResponseEntity<DirectCheckoutResponse> getDirectCheckoutData(
+    public ResponseEntity<CheckoutResponse> getDirectCheckoutData(
             @RequestBody @Valid CheckoutRequest.OrderItem orderItem) {
         try {
-            DirectCheckoutResponse response = paymentService.prepareDirectCheckout(
+            CheckoutResponse response = paymentService.prepareCheckout(
+                    null,
                     orderItem.getProductId(),
                     orderItem.getQuantity(),
                     orderItem.getOptionIds());
