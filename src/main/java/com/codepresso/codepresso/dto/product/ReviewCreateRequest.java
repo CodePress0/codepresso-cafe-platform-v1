@@ -1,6 +1,5 @@
-package com.codepresso.codepresso.dto.product;
+package com.codepresso.codepresso.dto.review;
 
-import com.codepresso.codepresso.entity.order.OrdersDetail;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;

@@ -27,7 +27,7 @@ public class Review {
     @Column(name = "content", nullable = false, length = 500)
     private String content;
 
-    @Column(name = "photo_url", nullable = false, length = 500)
+    @Column(name = "photo_url", length = 500)
     private String photoUrl;
 
     @CreatedDate

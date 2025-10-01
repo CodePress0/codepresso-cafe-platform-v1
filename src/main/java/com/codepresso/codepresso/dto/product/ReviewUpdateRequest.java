@@ -1,4 +1,4 @@
-package com.codepresso.codepresso.dto.product;
+package com.codepresso.codepresso.dto.review;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -21,6 +22,8 @@ public class ReviewUpdateRequest {
 
     @Size(max = 500, message = "내용은 최대 500자까지만 가능합니다.")
     private String content;
+
+    private MultipartFile photos;
 
     @URL
     private String photoUrl;
