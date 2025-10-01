@@ -1,19 +1,19 @@
 package com.codepresso.codepresso.controller.payment;
 
-import com.codepresso.codepresso.config.TossPaymentsConfig;
-import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.DirectOrderForm;
-import com.codepresso.codepresso.dto.cart.CartResponse;
-import com.codepresso.codepresso.dto.payment.TossPaymentConfirmResponse;
+import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
+import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
+import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.security.LoginUser;
-import com.codepresso.codepresso.service.coupon.CouponService;
+import com.codepresso.codepresso.service.branch.BranchService;
 import com.codepresso.codepresso.service.payment.PaymentService;
-import com.codepresso.codepresso.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 결제 페이지 뷰 컨트롤러
@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentViewController {
 
     private final PaymentService paymentService;
-    private final CartService cartService;
-    private final CouponService couponService;
-    private final TossPaymentsConfig tossPaymentsConfig;
+    private final BranchService branchService;
 
     /**
      * 장바구니에서 결제페이지로
@@ -35,27 +33,28 @@ public class PaymentViewController {
     @GetMapping("/cart")
     public String cartCheckoutPage(
             @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam(required = false) Long branchId,
             Model model) {
         try {
             if (loginUser == null) {
                 return "redirect:/auth/login?redirect=/payments/cart";
             }
 
-            CartResponse cartData = cartService.getCartByMemberId(loginUser.getMemberId());
-            model.addAttribute("cartData", cartData);
-            int totalAmount = cartData.getItems() == null ? 0 : cartData.getItems().stream().mapToInt(i -> i.getPrice()).sum();
-            int totalQuantity = cartData.getItems() == null ? 0 : cartData.getItems().stream().mapToInt(i -> i.getQuantity()).sum();
-            model.addAttribute("totalAmount", totalAmount);
-            model.addAttribute("totalQuantity", totalQuantity);
+            CartCheckoutResponse checkoutData = paymentService.prepareCartCheckout(loginUser.getMemberId());
+            model.addAttribute("cartData", checkoutData.getCartData());
+            model.addAttribute("totalAmount", checkoutData.getTotalAmount());
+            model.addAttribute("totalQuantity", checkoutData.getTotalQuantity());
             model.addAttribute("isFromCart", true);
-            model.addAttribute("validCouponCount", couponService.getMemberValidCouponCount(loginUser.getMemberId()));
+
+            if (branchId != null) {
+                model.addAttribute("branchId", branchId);
+            }
 
         } catch (Exception e) {
             model.addAttribute("errorMessage", "장바구니 정보를 불러올 수 없습니다: " + e.getMessage());
             return "redirect:/cart?error=" + e.getMessage();
         }
 
-        model.addAttribute("clientKey", tossPaymentsConfig.getClientKey());
         return "payment/checkout";
     }
 
@@ -65,122 +64,243 @@ public class PaymentViewController {
      */
     @PostMapping("/direct")
     public String directCheckoutPost(
-            @AuthenticationPrincipal LoginUser loginUser,
-            @ModelAttribute DirectOrderForm form,
+            @RequestParam Long productId,
+            @RequestParam Integer quantity,
+            @RequestParam(required = false) List<Long> optionIds,
+            @RequestParam(required = false) Long branchId,
             Model model
     ) {
         try {
-            CheckoutResponse checkoutData = paymentService.prepareCheckout(
-                loginUser.getMemberId(), form.getProductId(), form.getQuantity(), form.getOptionIds());
-
-            model.addAttribute("directItems", checkoutData.getOrderItems());
-            model.addAttribute("directItemsCount", checkoutData.getTotalQuantity());
-            model.addAttribute("totalAmount", checkoutData.getTotalAmount());
-            model.addAttribute("totalQuantity", checkoutData.getTotalQuantity());
+            // 직접 주문 데이터 준비
+            DirectCheckoutResponse directData = paymentService.prepareDirectCheckout(productId, quantity, optionIds);
+            
+            // JSP에서 사용할 수 있도록 데이터 변환
+            Map<String, Object> directItem = new HashMap<>();
+            directItem.put("productName", directData.getProductDetail().getProductName());
+            directItem.put("productPhoto", directData.getProductDetail().getProductPhoto());
+            directItem.put("unitPrice", directData.getTotalAmount() / quantity);
+            directItem.put("quantity", quantity);
+            directItem.put("lineTotal", directData.getTotalAmount());
+            
+            List<String> optionNames = new ArrayList<>();
+            if (directData.getSelectedOptions() != null) {
+                for (var option : directData.getSelectedOptions()) {
+                    optionNames.add(option.getOptionStyleName());
+                }
+            }
+            directItem.put("optionNames", optionNames);
+            
+            List<Map<String, Object>> directItems = new ArrayList<>();
+            directItems.add(directItem);
+            
+            model.addAttribute("directItems", directItems);
+            model.addAttribute("directItemsCount", 1);
+            model.addAttribute("totalAmount", directData.getTotalAmount());
+            model.addAttribute("totalQuantity", quantity);
             model.addAttribute("isFromCart", false);
-            model.addAttribute("validCouponCount", couponService.getMemberValidCouponCount(loginUser.getMemberId()));
+            model.addAttribute("branchId", branchId != null ? branchId : 1L);
+            
+            // 매장 정보 조회 및 추가
+            Long finalBranchId = branchId != null ? branchId : 1L;
+            Branch branch = branchService.getBranch(finalBranchId);
+            model.addAttribute("branch", branch);
+            model.addAttribute("branchName", branch.getBranchName());
+            
+            // orderItemsPayloadJson 생성
+            String orderItemsPayloadJson = "[{" +
+                    "\"productId\":" + productId +
+                    ",\"quantity\":" + quantity +
+                    ",\"price\":" + (directData.getTotalAmount() / quantity) +
+                    ",\"optionIds\":[" + optionIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "]" +
+                    "}]";
+            model.addAttribute("orderItemsPayloadJson", orderItemsPayloadJson);
+            
+            return "payment/checkout";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "결제 정보를 준비하는 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/products/" + (form != null ? form.getProductId() : "") + "?error=" + e.getMessage();
+            return "redirect:/products/" + productId + "?error=" + e.getMessage();
         }
-
-        model.addAttribute("clientKey", tossPaymentsConfig.getClientKey());
-        return "payment/checkout";
     }
 
     /**
-     * 토스 페이먼츠 결제 페이지
-     * */
+     * 토스페이먼츠 결제 페이지
+     * GET /payments/toss-checkout
+     */
     @GetMapping("/toss-checkout")
     public String tossCheckoutPage(
             @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam(required = false) Long branchId,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) Integer amount,
-            @RequestParam(required = false) String orderName,
+            HttpServletRequest request,
             Model model) {
-
-        try{
+        try {
             if (loginUser == null) {
                 return "redirect:/auth/login?redirect=/payments/toss-checkout";
             }
 
-            // 기본값 설정
-            int finalAmount = amount != null ? amount : 500;
-            String finalOrderName = orderName != null ? orderName : "CodePresso 카페주문";
-
-            // 장바구니에서 온 경우
-            if("cart".equals(from)){
-                try{
-                    CartResponse cartData = cartService.getCartByMemberId(loginUser.getMemberId());
-                    finalAmount = cartData.getItems().stream().mapToInt(i -> i.getPrice()).sum();
-                    finalOrderName = "장바구니 주문";
-
-                    model.addAttribute("cartData", cartData);
-                    model.addAttribute("isFromCart", true);
-                }catch(Exception e){
-                    model.addAttribute("errorMessage", "장바구니 정보 없음");
+            // from 파라미터에 따라 다른 데이터 로드
+            if ("cart".equals(from)) {
+                // 장바구니에서 온 경우
+                CartCheckoutResponse checkoutData = paymentService.prepareCartCheckout(loginUser.getMemberId());
+                model.addAttribute("cartData", checkoutData.getCartData());
+                model.addAttribute("totalAmount", checkoutData.getTotalAmount());
+                model.addAttribute("totalQuantity", checkoutData.getTotalQuantity());
+                model.addAttribute("isFromCart", true);
+            } else if ("direct".equals(from)) {
+                // 상품상세에서 바로 결제하는 경우
+                // URL 파라미터에서 주문 정보 추출
+                Long productId = Long.valueOf(request.getParameter("productId"));
+                Integer quantity = Integer.valueOf(request.getParameter("quantity"));
+                String optionIdsStr = request.getParameter("optionIds");
+                
+                List<Long> optionIds = new ArrayList<>();
+                if (optionIdsStr != null && !optionIdsStr.isEmpty()) {
+                    String[] optionIdArray = optionIdsStr.split(",");
+                    for (String id : optionIdArray) {
+                        optionIds.add(Long.valueOf(id.trim()));
+                    }
                 }
+                
+                // 직접 주문 데이터 준비
+                DirectCheckoutResponse directData = paymentService.prepareDirectCheckout(productId, quantity, optionIds);
+                
+                // JSP에서 사용할 수 있도록 데이터 변환
+                Map<String, Object> directItem = new HashMap<>();
+                directItem.put("productName", directData.getProductDetail().getProductName());
+                directItem.put("productPhoto", directData.getProductDetail().getProductPhoto());
+                directItem.put("unitPrice", directData.getTotalAmount() / quantity);
+                directItem.put("quantity", quantity);
+                directItem.put("lineTotal", directData.getTotalAmount());
+                
+                List<String> optionNames = new ArrayList<>();
+                if (directData.getSelectedOptions() != null) {
+                    for (var option : directData.getSelectedOptions()) {
+                        optionNames.add(option.getOptionStyleName());
+                    }
+                }
+                directItem.put("optionNames", optionNames);
+                
+                List<Map<String, Object>> directItems = new ArrayList<>();
+                directItems.add(directItem);
+                
+                model.addAttribute("directItems", directItems);
+                model.addAttribute("directItemsCount", 1);
+                model.addAttribute("totalAmount", directData.getTotalAmount());
+                model.addAttribute("totalQuantity", quantity);
+                model.addAttribute("isFromCart", false);
+                
+                // orderItemsPayloadJson 생성
+                String orderItemsPayloadJson = "[{" +
+                        "\"productId\":" + productId +
+                        ",\"quantity\":" + quantity +
+                        ",\"price\":" + (directData.getTotalAmount() / quantity) +
+                        ",\"optionIds\":[" + optionIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "]" +
+                        "}]";
+                model.addAttribute("orderItemsPayloadJson", orderItemsPayloadJson);
+            } else {
+                // URL 파라미터로 전달된 amount가 있으면 사용, 없으면 기본값
+                System.out.println("tossCheckoutPage - amount 파라미터: " + amount);
+                if (amount != null && amount > 0) {
+                    model.addAttribute("totalAmount", amount);
+                    System.out.println("tossCheckoutPage - 전달된 amount 사용: " + amount);
+                } else {
+                    model.addAttribute("totalAmount", 5000);
+                    System.out.println("tossCheckoutPage - 기본값 사용: 5000");
+                }
+                model.addAttribute("totalQuantity", 1);
+                model.addAttribute("isFromCart", false);
             }
 
-            // 토스 페이먼츠 설정값들
-            model.addAttribute("clientKey",tossPaymentsConfig.getClientKey());
-            model.addAttribute("successUrl", tossPaymentsConfig.getSuccessUrl());
-            model.addAttribute("failureUrl", tossPaymentsConfig.getFailureUrl());
+            // 매장 정보 조회
+            Long finalBranchId = branchId != null ? branchId : 1L;
+            Branch branch = branchService.getBranch(finalBranchId);
+            
+            model.addAttribute("branchId", finalBranchId);
+            model.addAttribute("branchName", branch.getBranchName());
+            model.addAttribute("branch", branch); // 전체 Branch 객체도 전달
 
-            // 결제 정보
-            model.addAttribute("amount",finalAmount);
-            model.addAttribute("orderName",finalOrderName);
-            model.addAttribute("customerEmail",loginUser.getEmail());
-            model.addAttribute("customerName",loginUser.getName());
-            model.addAttribute("memberId", loginUser.getMemberId());
-
-            // 고유한 주문 ID 생성 (현재시간 + 멤버ID)
-            String orderId = "ORDER_" + System.currentTimeMillis() + "_" + loginUser.getMemberId();
-            model.addAttribute("orderId", orderId);
-        }catch(Exception e){
-            model.addAttribute("errorMessage","결제 페이지를 불러올 수 없습니다: " + e.getMessage());
-            return "redirect:/payments/toss-checkout?error=" + e.getMessage();
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "결제 페이지를 불러올 수 없습니다: " + e.getMessage());
+            return "redirect:/payments/cart?error=" + e.getMessage();
         }
+
         return "payment/toss-checkout";
     }
+
     /**
-     * 토스 페이먼츠 결제 성공 페이지
-     * */
+     * 토스페이먼츠 결제 성공 페이지
+     * GET /payments/success
+     */
     @GetMapping("/success")
     public String paymentSuccessPage(
             @RequestParam(required = false) String orderId,
             @RequestParam(required = false) String paymentKey,
             @RequestParam(required = false) String amount,
-            @AuthenticationPrincipal LoginUser loginUser,
-            Model model){
+            @RequestParam(required = false) String orderName,
+            Model model) {
+        
         try {
-            // 이미 주문이 생성된 상태이므로 결제 승인만 처리
-            TossPaymentConfirmResponse confirmResponse = paymentService.confirmTossPayment(
-                    paymentKey, orderId, amount);
-
-            // 주문 상세 페이지로 리다이렉트
-            return "redirect:/orders/" + orderId;
-
+            System.out.println("Payment success page called with:");
+            System.out.println("  orderId: " + orderId);
+            System.out.println("  paymentKey: " + paymentKey);
+            System.out.println("  amount: " + amount);
+            System.out.println("  orderName: " + orderName);
+            
+            model.addAttribute("orderId", orderId);
+            model.addAttribute("paymentKey", paymentKey);
+            model.addAttribute("amount", amount);
+            model.addAttribute("orderName", orderName);
+            
+            System.out.println("Returning payment/success view");
+            return "payment/success";
         } catch (Exception e) {
-            return "redirect:/payments/fail?message=" + e.getMessage();
+            // 로그 출력
+            System.err.println("Payment success page error: " + e.getMessage());
+            e.printStackTrace();
+            
+            // 실패 페이지로 리다이렉트
+            try {
+                return "redirect:/payments/fail?message=" + 
+                       java.net.URLEncoder.encode("결제 성공 페이지를 불러올 수 없습니다: " + e.getMessage(), "UTF-8") + 
+                       "&code=SERVER_ERROR";
+            } catch (java.io.UnsupportedEncodingException ex) {
+                return "redirect:/payments/fail?message=Server%20Error&code=SERVER_ERROR";
+            }
         }
-
     }
 
     /**
-     * 토스 페이먼츠 결제 실패 페이지
-     * */
+     * 토스페이먼츠 결제 실패 페이지
+     * GET /payments/fail
+     */
     @GetMapping("/fail")
     public String paymentFailPage(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String message,
             @RequestParam(required = false) String orderId,
-            Model model
-    ){
-        model.addAttribute("code", code);
-        model.addAttribute("errorMessage", message);
-        model.addAttribute("orderId", orderId);
-
-        return "payment/fail";
+            Model model) {
+        
+        try {
+            model.addAttribute("code", code);
+            model.addAttribute("message", message);
+            model.addAttribute("orderId", orderId);
+            
+            return "payment/fail";
+        } catch (Exception e) {
+            // 로그 출력
+            System.err.println("Payment fail page error: " + e.getMessage());
+            e.printStackTrace();
+            
+            // 기본 실패 페이지로 리다이렉트
+            try {
+                return "redirect:/payments/fail?message=" + 
+                       java.net.URLEncoder.encode("결제 실패 페이지를 불러올 수 없습니다: " + e.getMessage(), "UTF-8") + 
+                       "&code=PAGE_ERROR";
+            } catch (java.io.UnsupportedEncodingException ex) {
+                return "redirect:/payments/fail?message=Page%20Error&code=PAGE_ERROR";
+            }
+        }
     }
+
 }

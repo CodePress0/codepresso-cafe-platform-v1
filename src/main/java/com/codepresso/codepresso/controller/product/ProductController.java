@@ -37,7 +37,8 @@ public class ProductController {
      * 상품 리뷰 목록 조회
      */
     @GetMapping("/{productId}/reviews")
-    public ResponseEntity<List<ReviewListResponse>> getProductReviews(@PathVariable Long productId) {
+    public ResponseEntity<List<ReviewListResponse>> getProductReviews(
+            @PathVariable Long productId) {
         List<ReviewListResponse> reviews = productService.findProductReviews(productId);
         return ResponseEntity.ok(reviews);
     }

@@ -18,7 +18,7 @@ class ProductServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(ProductServiceTest.class);
 //    @Autowired
-//    // private com.codepresso.codepresso.service.ProductService productService;
+//    private com.codepresso.codepresso.service.ProductService productService;
 //    @Autowired
 //    private ProductRepository productRepository;
 //
