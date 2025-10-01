@@ -25,11 +25,6 @@ public class Stamp {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    // FK → OrderSlave (주문 상세)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_detail_id", nullable = false)
-    private OrdersDetail ordersDetail;
-
     @Column(name = "earned_date")
     private LocalDateTime earnedDate;
 

@@ -25,15 +25,11 @@ public class CheckoutRequest {
 
     @NotNull
     private Boolean isTakeout;
-
     private LocalDateTime pickupTime;
-
-    @NotBlank
-    private String pickupMethod;
-
     private String requestNote;
-
     private Boolean isFromCart;     // 장바구니에서 온 주문인지 구분
+    private Long usedCouponId;      // 사용할 couponId
+    private Integer couponDiscountAmount;   // 쿠폰 할인 금액
 
     @NotEmpty
     @Valid
@@ -66,14 +62,15 @@ public class CheckoutRequest {
                 .sum();
     }
 
-    /**
-     * 전체 주문 수량 계산
-     */
-    public int getTotalQuantity() {
-        if (orderItems == null) return 0;
-        return orderItems.stream()
-                .mapToInt(OrderItem::getQuantity)
-                .sum();
+    public int getTotalDiscountAmount() {
+        int totalDiscountAmount = 0;
+
+        // 쿠폰 할인
+        if(couponDiscountAmount != null && couponDiscountAmount>0) {
+            totalDiscountAmount = couponDiscountAmount;
+        }
+
+        return Math.min(totalDiscountAmount, getTotalAmount());
     }
 
 }

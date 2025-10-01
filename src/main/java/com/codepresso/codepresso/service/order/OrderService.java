@@ -6,8 +6,6 @@ import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
-import com.codepresso.codepresso.entity.payment.PaymentDetail;
-import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -73,11 +71,9 @@ public class OrderService {
          // 대표 상품명 계산
          String representativeItem = calculateRepresentativeItem(orders.getOrdersDetails());
 
-         // 총 금액 계산
-          int totalAmount = 0;
-          for (OrdersDetail detail : orders.getOrdersDetails()) {
-          totalAmount += detail.getPrice();
-    }
+         // 총 상품 금액 계산
+         int totalAmount = calculateTotalAmount(orders);
+
 
          return OrderListResponse.OrderSummary.builder()
                  .orderId(orders.getId())
@@ -108,8 +104,18 @@ public class OrderService {
                  .branchNumber(orders.getBranch().getBranchNumber())
                  .build();
 
-         // 결제 정보 (Payment 엔티티가 있다면)
-         OrderDetailResponse.PaymentInfo payment = convertToPaymentInfo(orders);
+          // 결제 정보 생성
+         int totalAmount = calculateTotalAmount(orders);
+         int discount = orders.getDiscountAmount() != null ? orders.getDiscountAmount() : 0;
+         int finalAmount = totalAmount - discount;
+
+         OrderDetailResponse.PaymentInfo payment = OrderDetailResponse.PaymentInfo.builder()
+                 .paymentMethod("신용카드")
+                 .totalAmount(totalAmount)
+                 .discount(discount)
+                 .finalAmount(finalAmount)
+                 .paymentDate(orders.getOrderDate())
+                 .build();
 
          return OrderDetailResponse.builder()
                  .orderId(orders.getId())
@@ -150,32 +156,6 @@ public class OrderService {
                  .price(detail.getProduct().getPrice())
                  .totalPrice(detail.getPrice())
                  .options(options)
-                 .build();
-     }
-
-     private OrderDetailResponse.PaymentInfo convertToPaymentInfo(Orders orders) {
-         // Payment 엔티티가 있는 경우
-         if (orders.getPayment() != null && !orders.getPayment().getPaymentDetail().isEmpty()) {
-             String paymentMethod = orders.getPayment().getPaymentDetail().get(0)
-                     .getPaymentType().getPaymentTypeName();
-             int totalAmount = orders.getPayment().getPaymentDetail().stream()
-                     .mapToInt(PaymentDetail::getPaymentAmt)
-                     .sum();
-             LocalDateTime paymentDate = orders.getPayment().getPaymentDetail().get(0)
-                     .getPaymentDate();
-
-             return OrderDetailResponse.PaymentInfo.builder()
-                     .paymentMethod(paymentMethod)
-                     .totalAmount(totalAmount)
-                     .paymentDate(paymentDate)
-                     .build();
-         }
-
-         // Payment 정보가 없는 경우 기본값
-         return OrderDetailResponse.PaymentInfo.builder()
-                 .paymentMethod("결제 정보 없음")
-                 .totalAmount(0)
-                 .paymentDate(orders.getOrderDate())
                  .build();
      }
 
@@ -227,10 +207,6 @@ public class OrderService {
         }
     }
 
-
-
-    // ========== 하드코딩 더미 데이터 생성 메서드들 (나중에 삭제) ==========
-
     /**
      * 특정 주문 상품
      */
@@ -239,5 +215,17 @@ public class OrderService {
 
         return OrdersDetailResponse.of(ordersDetail);
     }
+
+    /**
+     * 주문 제품들의 가격 합
+     * */
+    private int calculateTotalAmount(Orders orders){
+        int totalAmount = 0;
+        for (OrdersDetail detail : orders.getOrdersDetails()) {
+            totalAmount += detail.getPrice();
+        }
+        return totalAmount;
+    }
+
 
 }
