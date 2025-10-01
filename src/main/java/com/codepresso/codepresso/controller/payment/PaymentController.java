@@ -1,8 +1,8 @@
 package com.codepresso.codepresso.controller.payment;
 
+import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.TossPaymentRequest;
 import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.TossPaymentSuccessRequest;
 import com.codepresso.codepresso.security.LoginUser;
@@ -11,9 +11,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * 결제 관련 컨트롤러
@@ -30,11 +32,8 @@ public class PaymentController {
      * 장바구니 결제페이지 데이터 조회 API
      */
     @GetMapping("/cart")
-    public ResponseEntity<CheckoutResponse> getCartCheckoutData(
-            @RequestBody @Valid CheckoutRequest.OrderItem orderItem,
-            @AuthenticationPrincipal LoginUser loginUser) {
-        CheckoutResponse response = paymentService.prepareCheckout(
-            loginUser.getMemberId(), orderItem.getProductId(), orderItem.getQuantity(), orderItem.getOptionIds());
+    public ResponseEntity<CartCheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
+        CartCheckoutResponse response = paymentService.prepareCartCheckout(loginUser.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -42,12 +41,10 @@ public class PaymentController {
      * 직접 결제 페이지 데이터 조회 API
      */
     @GetMapping("/direct")
-    public ResponseEntity<CheckoutResponse> getDirectCheckoutData(
-            @RequestBody @Valid CheckoutRequest.OrderItem orderItem,
-            @AuthenticationPrincipal  LoginUser loginUser) {
+    public ResponseEntity<DirectCheckoutResponse> getDirectCheckoutData(
+            @RequestBody @Valid CheckoutRequest.OrderItem orderItem) {
         try {
-            CheckoutResponse response = paymentService.prepareCheckout(
-                    loginUser.getMemberId(),
+            DirectCheckoutResponse response = paymentService.prepareDirectCheckout(
                     orderItem.getProductId(),
                     orderItem.getQuantity(),
                     orderItem.getOptionIds());
