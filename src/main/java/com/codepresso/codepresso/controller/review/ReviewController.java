@@ -4,7 +4,7 @@ import com.codepresso.codepresso.dto.review.MyReviewProjection;
 import com.codepresso.codepresso.dto.review.ReviewResponse;
 import com.codepresso.codepresso.dto.review.ReviewUpdateRequest;
 import com.codepresso.codepresso.security.LoginUser;
-import com.codepresso.codepresso.service.product.ReviewService;
+import com.codepresso.codepresso.service.review.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -42,29 +42,11 @@ public class ReviewController {
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@AuthenticationPrincipal LoginUser loginUser,
                                              @PathVariable Long reviewId) {
-        log.info("DELETE request received for reviewId: {}", reviewId);
-        log.info("Request mapping: /api/users/reviews/{}", reviewId);
 
         Long memberId = loginUser.getMemberId();
-        log.info("Member ID: {}", memberId);
-
         reviewService.deleteReview(memberId, reviewId);
-        log.info("Review deleted successfully for reviewId: {}", reviewId);
 
         return ResponseEntity.noContent().build(); // 상태 204, body 없음
     }
-
-    /**
-     * 내 리뷰 확인
-     */
-    @GetMapping("/myReviews")
-    public ResponseEntity<List<MyReviewProjection>> getMyReviews(@AuthenticationPrincipal LoginUser loginUser) {
-        Long memberId = loginUser.getMemberId();
-
-        List<MyReviewProjection> userReviews = reviewService.getReviewsByMember(memberId);
-
-        return ResponseEntity.ok(userReviews);
-    }
-
 
 }

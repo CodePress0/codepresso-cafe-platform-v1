@@ -122,7 +122,7 @@
                             </div>
 
                             <div class="menu-info">
-                                <div class="menu-name" title="${product.productContent}">
+                                <div class="menu-name">
                                     <c:out value="${product.productName}"/>
                                 </div>
                                 <div class="menu-price">
@@ -204,8 +204,7 @@
                 name: '${fn:escapeXml(product.productName)}',
                 price: ${product.price},
                 photo: '${product.productPhoto}',
-                categoryName: '${product.categoryName}',
-                description: '${fn:escapeXml(product.productContent)}'
+                categoryName: '${product.categoryName}'
             }<c:if test="${!status.last}">, </c:if>
             </c:forEach>
         ];

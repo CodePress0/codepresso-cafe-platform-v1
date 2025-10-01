@@ -4,13 +4,12 @@ import com.codepresso.codepresso.dto.member.ProfileUpdateRequest;
 import com.codepresso.codepresso.dto.member.UserDetailResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.member.MemberProfileService;
-import com.codepresso.codepresso.service.product.ReviewService;
+import com.codepresso.codepresso.service.review.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 /**

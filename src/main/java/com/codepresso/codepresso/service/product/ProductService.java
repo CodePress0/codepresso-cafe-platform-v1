@@ -15,11 +15,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepo;
@@ -30,20 +28,16 @@ public class ProductService {
     private final ReviewConverter reviewConverter;
     private final ProductConverter productConverter;
 
+    @Transactional
     public List<ProductListResponse> findProductsByCategory(String categoryCode) {
         List<Product> products = productRepo.findByCategoryCategoryCode(categoryCode);
-
-//        List<ProductListResponse> productResponseDTOs = new ArrayList<>();
-//        for (Product product : products) {
-//            ProductListResponse pr = new ProductListResponse(product);
-//            productResponseDTOs.add(pr);
-//        }
 
         return products.stream()
                 .map(productConverter::toDto)
                 .toList();
     }
 
+    @Transactional
     public List<ReviewListResponse> findProductReviews(Long productId) {
         List<Review> reviews = reviewRepo.findByProductReviews(productId);
         Double avgRating = reviewRepo.getAverageRatingByProduct(productId);
@@ -53,13 +47,31 @@ public class ProductService {
                 .toList();
     }
 
-
+    @Transactional
     public ProductDetailResponse findByProductId(Long productId) {
         Product product = productRepo.findProductById(productId);
         long favCount = favoriteRepo.countByProductId(productId);
         List<ProductOption> options = productOptRepo.findOptionByProductId(productId);
 
         return productConverter.toDetailDto(product, favCount, options);
+    }
+
+    @Transactional
+    public List<ProductListResponse> searchProductsByKeyword(String keyword) {
+        List<Product> products = productRepo.findByProductNameContaining(keyword);
+
+        return products.stream()
+                .map(productConverter::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public List<ProductListResponse> searchProductsByHashtag(String hashtag) {
+        List<Product> products = productRepo.findByHashtagsContaining(hashtag);
+
+        return products.stream()
+                .map(productConverter::toDto)
+                .toList();
     }
 
 }

@@ -88,7 +88,6 @@ public class ProductConverter {
                 .productId(product.getId())
                 .productName(product.getProductName())
                 .productPhoto(product.getProductPhoto())
-                .productContent(product.getProductContent())
                 .price(product.getPrice())
                 .categoryName(getCategoryName(product))
                 .categoryCode(getCategoryCode(product))

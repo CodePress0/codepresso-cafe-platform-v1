@@ -11,6 +11,8 @@ public interface MyReviewProjection {
     Long getProductId();
     String getProductName();
     String getProductPhoto();
+    String getBranchName();
+    LocalDateTime getOrderDate();
 
     default String getFormattedDate() {
         LocalDateTime createdAt = getCreatedAt();

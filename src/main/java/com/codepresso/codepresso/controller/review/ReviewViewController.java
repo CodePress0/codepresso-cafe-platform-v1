@@ -5,7 +5,7 @@ import com.codepresso.codepresso.dto.review.OrdersDetailResponse;
 import com.codepresso.codepresso.dto.review.ReviewResponse;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.order.OrderService;
-import com.codepresso.codepresso.service.product.ReviewService;
+import com.codepresso.codepresso.service.review.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

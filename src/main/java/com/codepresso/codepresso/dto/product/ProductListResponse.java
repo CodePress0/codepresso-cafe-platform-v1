@@ -12,8 +12,6 @@ public class ProductListResponse {
 
     private String productPhoto;
 
-    private String productContent;
-
     private Integer price;
 
     private String categoryName;

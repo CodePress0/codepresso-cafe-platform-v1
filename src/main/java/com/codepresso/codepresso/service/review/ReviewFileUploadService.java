@@ -1,5 +1,6 @@
 package com.codepresso.codepresso.service.review;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ public class ReviewFileUploadService {
     @Value("${file.upload.path:src/main/resources/static/uploads/reviews/}")
     private String uploadPath;
 
+    @Transactional
     public String saveFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;

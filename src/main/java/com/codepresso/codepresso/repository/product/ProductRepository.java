@@ -25,4 +25,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     })
     Product findProductById(@Param("id") Long id);
 
+    List<Product> findByProductNameContaining(@Param("keyword") String keyword);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.hashtags h WHERE h.hashtagName = :hashtag")
+    List<Product> findByHashtagsContaining(@Param("hashtag") String hashtag);
+
 }
