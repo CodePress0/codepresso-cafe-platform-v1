@@ -307,7 +307,7 @@
                 <!-- 결제 버튼 -->
                 <div class="payment-actions">
                     <button class="btn-cancel" onclick="history.back()">취소</button>
-                    <button class="btn-payment" id="paymentBtn" onclick="processPayment()">
+                    <button class="btn-payment" id="paymentBtn" onclick="redirectToTossPayment()">
                         <c:if test="${not empty totalAmount}">
                             <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="₩"/> 결제하기
                         </c:if>
@@ -1171,6 +1171,65 @@
 
     document.addEventListener('DOMContentLoaded', hydrate);
   })();
+</script>
+
+<!-- 토스페이먼츠 결제 페이지로 리다이렉트 -->
+<script>
+    function redirectToTossPayment() {
+        // 화면에 표시된 최종 결제금액 가져오기
+        const finalAmountElement = document.getElementById('totalAmount');
+        let finalAmount = 0;
+        
+        if (finalAmountElement) {
+            // "₩2,500.00" 형태에서 숫자만 추출
+            const amountText = finalAmountElement.textContent || finalAmountElement.innerText;
+            const amountMatch = amountText.match(/[\d,]+/);
+            if (amountMatch) {
+                finalAmount = parseInt(amountMatch[0].replace(/,/g, ''));
+            }
+        }
+        
+        // 만약 금액을 가져오지 못했다면 서버 금액에서 쿠폰 할인 계산
+        if (finalAmount === 0) {
+            const useCouponCheckbox = document.getElementById('useCoupon');
+            const originalAmount = ${totalAmount != null ? totalAmount : 0};
+            const discountAmount = useCouponCheckbox && useCouponCheckbox.checked ? 2000 : 0;
+            finalAmount = originalAmount - discountAmount;
+        }
+        
+        console.log('최종 결제금액:', finalAmount);
+        
+        // 선택된 매장 ID 가져오기
+        let branchId = 1; // 기본값
+        try {
+            const selected = window.branchSelection && window.branchSelection.load 
+                ? window.branchSelection.load() 
+                : null;
+            if (selected && selected.id) {
+                branchId = parseInt(selected.id);
+            } else {
+                // 서버에서 전달된 branchId 사용
+                const branchIdInput = document.getElementById('selectedBranchIdInput');
+                if (branchIdInput && branchIdInput.value) {
+                    branchId = parseInt(branchIdInput.value);
+                }
+            }
+        } catch(e) {
+            console.log('매장 선택 정보를 가져올 수 없습니다:', e);
+            // 서버에서 전달된 branchId 사용
+            const branchIdInput = document.getElementById('selectedBranchIdInput');
+            if (branchIdInput && branchIdInput.value) {
+                branchId = parseInt(branchIdInput.value);
+            }
+        }
+        
+        console.log('checkout.jsp - window.branchSelection에서 가져온 매장 ID:', branchId);
+        console.log('checkout.jsp - 서버에서 받은 branchId:', document.getElementById('selectedBranchIdInput')?.value);
+        console.log('토스페이먼츠로 전달할 매장 ID:', branchId);
+        
+        // 토스페이먼츠 결제 페이지로 이동 (결제금액과 매장ID 포함)
+        window.location.href = '/payments/toss-checkout?amount=' + finalAmount + '&branchId=' + branchId;
+    }
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>

@@ -6,6 +6,7 @@ import com.codepresso.codepresso.entity.payment.Payment;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,4 +54,16 @@ public class Orders {
     // 주문 <-> 결제 마스터 (1:1)
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
+
+    @Column(name = "total_amount")
+    private Integer totalAmount;     // 원래 주문 금액( 할인전 )
+
+    @Column(name ="discount_amount")
+    private Integer discountAmount;     // 할인금액
+
+    @Column(name = "final_amount")
+    private Integer finalAmount;        // 최종 결제 금액
+
+    @Column(name = "used_coupon_id")
+    private Long usedCouponId;          // 사용할 쿠폰 ID
 }

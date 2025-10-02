@@ -7,6 +7,8 @@ import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
+import com.codepresso.codepresso.entity.payment.PaymentDetail;
+import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -60,97 +62,111 @@ public class OrderService {
      * */
     public OrderDetailResponse getOrderDetail(Long orderId){
         //실제구현 나중에 주석 해제
-        Orders orders = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        return convertToOrderDetail(orders);
+         Orders orders = ordersRepository.findById(orderId)
+                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+         return convertToOrderDetail(orders);
 
 
     }
 
-    private OrderListResponse.OrderSummary convertToOrderSummary(Orders orders) {
-        // 대표 상품명 계산
-        String representativeItem = calculateRepresentativeItem(orders.getOrdersDetails());
+    // ========== 실제 구현 메서드들 (나중에 주석 해제) ==========
 
-        // 총 금액 계산
-        int totalAmount = 0;
-        for (OrdersDetail detail : orders.getOrdersDetails()) {
-            totalAmount += detail.getPrice();
-        }
+     private OrderListResponse.OrderSummary convertToOrderSummary(Orders orders) {
+         // 대표 상품명 계산
+         String representativeItem = calculateRepresentativeItem(orders.getOrdersDetails());
 
-        return OrderListResponse.OrderSummary.builder()
-                .orderId(orders.getId())
-                .orderNumber(generateOrderNumber(orders))
-                .orderDate(orders.getOrderDate())
-                .productionStatus(orders.getProductionStatus())
-                .branchName(orders.getBranch().getBranchName())
-                .isTakeout(orders.getIsTakeout())
-                .pickupTime(orders.getPickupTime())
-                .totalAmount(totalAmount)
-                .representativeName(representativeItem)
-                .build();
-    }
+         // 총 상품 금액 계산
+         int totalAmount = calculateTotalAmount(orders);
 
-    private OrderDetailResponse convertToOrderDetail(Orders orders) {
-        // 주문 상품 목록 변환
-        List<OrderDetailResponse.OrderItem> orderItems = new ArrayList<>();
-        for (OrdersDetail detail : orders.getOrdersDetails()) {
-            OrderDetailResponse.OrderItem orderItem = convertToOrderItem(detail);
-            orderItems.add(orderItem);
-        }
 
-        // 지점 정보
-        OrderDetailResponse.BranchInfo branch = OrderDetailResponse.BranchInfo.builder()
-                .branchId(orders.getBranch().getId())
-                .branchName(orders.getBranch().getBranchName())
-                .address(orders.getBranch().getAddress())
-                .branchNumber(orders.getBranch().getBranchNumber())
-                .build();
+         return OrderListResponse.OrderSummary.builder()
+                 .orderId(orders.getId())
+                 .orderNumber(generateOrderNumber(orders))
+                 .orderDate(orders.getOrderDate())
+                 .productionStatus(orders.getProductionStatus())
+                 .branchName(orders.getBranch().getBranchName())
+                 .isTakeout(orders.getIsTakeout())
+                 .pickupTime(orders.getPickupTime())
+                 .totalAmount(totalAmount)
+                 .representativeName(representativeItem)
+                 .build();
+     }
 
-        return OrderDetailResponse.builder()
-                .orderId(orders.getId())
-                .orderNumber(generateOrderNumber(orders))
-                .orderDate(orders.getOrderDate())
-                .productionStatus(orders.getProductionStatus())
-                .pickupTime(orders.getPickupTime())
-                .isTakeout(orders.getIsTakeout())
-                .requestNote(orders.getRequestNote())
-                .branch(branch)
-                .orderItems(orderItems)
-                .build();
-    }
+     private OrderDetailResponse convertToOrderDetail(Orders orders) {
+         // 주문 상품 목록 변환
+          List<OrderDetailResponse.OrderItem> orderItems = new ArrayList<>();
+          for (OrdersDetail detail : orders.getOrdersDetails()) {
+          OrderDetailResponse.OrderItem orderItem = convertToOrderItem(detail);
+          orderItems.add(orderItem);
+          }
 
-    private OrderDetailResponse.OrderItem convertToOrderItem(OrdersDetail detail) {
-        // 옵션들 수집 (기본 옵션 제외)
-        List<OrderDetailResponse.OrderOption> options = new ArrayList<>();
-        if (detail.getOptions() != null) {
-            for (OrdersItemOptions option : detail.getOptions()) {
-                String optionStyle = option.getOption().getOptionStyle().getOptionStyle();
-                Integer extraPrice = option.getOption().getOptionStyle().getExtraPrice();
+         // 지점 정보
+         OrderDetailResponse.BranchInfo branch = OrderDetailResponse.BranchInfo.builder()
+                 .branchId(orders.getBranch().getId())
+                 .branchName(orders.getBranch().getBranchName())
+                 .address(orders.getBranch().getAddress())
+                 .branchNumber(orders.getBranch().getBranchNumber())
+                 .build();
 
-                // "기본" 옵션 제외
-                if (!"기본".equals(optionStyle)) {
-                    options.add(OrderDetailResponse.OrderOption.builder()
-                            .optionStyle(optionStyle)
-                            .extraPrice(extraPrice)
-                            .build());
-                }
-            }
-        }
+          // 결제 정보 생성
+         int totalAmount = calculateTotalAmount(orders);
+         int discount = orders.getDiscountAmount() != null ? orders.getDiscountAmount() : 0;
+         int finalAmount = totalAmount - discount;
 
-        return OrderDetailResponse.OrderItem.builder()
-                .orderDetailId(detail.getId())
-                .productName(detail.getProduct().getProductName())
-                .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
-                .price(detail.getProduct().getPrice())
-                .totalPrice(detail.getPrice())
-                .options(options)
-                .build();
-    }
+         OrderDetailResponse.PaymentInfo payment = OrderDetailResponse.PaymentInfo.builder()
+                 .paymentMethod("신용카드")
+                 .totalAmount(totalAmount)
+                 .discount(discount)
+                 .finalAmount(finalAmount)
+                 .paymentDate(orders.getOrderDate())
+                 .build();
 
-    private String calculateRepresentativeItem(List<OrdersDetail> orderDetails) {
-        if (orderDetails.isEmpty()) {
-            return "주문 상품 없음";
-        }
+         return OrderDetailResponse.builder()
+                 .orderId(orders.getId())
+                 .orderNumber(generateOrderNumber(orders))
+                 .orderDate(orders.getOrderDate())
+                 .productionStatus(orders.getProductionStatus())
+                 .pickupTime(orders.getPickupTime())
+                 .isTakeout(orders.getIsTakeout())
+                 .requestNote(orders.getRequestNote())
+                 .branch(branch)
+                 .orderItems(orderItems)
+                 .payment(payment)
+                 .build();
+     }
+
+     private OrderDetailResponse.OrderItem convertToOrderItem(OrdersDetail detail) {
+         // 옵션들 수집 (기본 옵션 제외)
+          List<OrderDetailResponse.OrderOption> options = new ArrayList<>();
+          if (detail.getOptions() != null) {
+          for (OrdersItemOptions option : detail.getOptions()) {
+              String optionStyle = option.getOption().getOptionStyle().getOptionStyle();
+              Integer extraPrice = option.getOption().getOptionStyle().getExtraPrice();
+              
+              // "기본" 옵션 제외
+              if (!"기본".equals(optionStyle)) {
+                  options.add(OrderDetailResponse.OrderOption.builder()
+                          .optionStyle(optionStyle)
+                          .extraPrice(extraPrice)
+                          .build());
+              }
+          }
+          }
+
+         return OrderDetailResponse.OrderItem.builder()
+                 .orderDetailId(detail.getId())
+                 .productName(detail.getProduct().getProductName())
+                 .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
+                 .price(detail.getProduct().getPrice())
+                 .totalPrice(detail.getPrice())
+                 .options(options)
+                 .build();
+     }
+
+     private String calculateRepresentativeItem(List<OrdersDetail> orderDetails) {
+         if (orderDetails.isEmpty()) {
+             return "주문 상품 없음";
+         }
 
         String firstProductName = orderDetails.get(0).getProduct().getProductName();
         int totalItems = orderDetails.size();
@@ -198,14 +214,23 @@ public class OrderService {
     /**
      * 특정 주문 상품
      */
-    /**
-     * 특정 주문 상품
-     */
     public OrdersDetailResponse getOrdersDetail(Long orderDetailId) {
         OrdersDetail ordersDetail = ordersDetailRepository.findById(orderDetailId)
                 .orElseThrow(() -> new RuntimeException("OrdersDetail not found: " + orderDetailId));
 
         return orderConverter.toDto(ordersDetail);
     }
+
+    /**
+     * 주문 제품들의 가격 합
+     * */
+    private int calculateTotalAmount(Orders orders){
+        int totalAmount = 0;
+        for (OrdersDetail detail : orders.getOrdersDetails()) {
+            totalAmount += detail.getPrice();
+        }
+        return totalAmount;
+    }
+
 
 }

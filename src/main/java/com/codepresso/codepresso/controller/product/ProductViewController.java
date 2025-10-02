@@ -39,7 +39,7 @@ public class ProductViewController {
      * 상품 상세 페이지
      */
     @GetMapping("/{productId}")
-    public String productDetail(@PathVariable Long productId, Model model) {
+    public String getProductDetail(@PathVariable Long productId, Model model) {
         try {
             ProductDetailResponse product = productService.findByProductId(productId);
             model.addAttribute("product", product);
@@ -53,7 +53,7 @@ public class ProductViewController {
      * 상품별 리뷰 조회
      */
     @GetMapping("/{productId}/reviews")
-    public String productReviews(@PathVariable Long productId, Model model) {
+    public String getProductReviews(@PathVariable Long productId, Model model) {
         try {
             ProductDetailResponse product = productService.findByProductId(productId);
             model.addAttribute("product", product);
@@ -61,5 +61,10 @@ public class ProductViewController {
             model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "product/productReviews";
+    }
+
+    @GetMapping("/search")
+    public String searchProducts() {
+        return "product/productSearch";
     }
 }

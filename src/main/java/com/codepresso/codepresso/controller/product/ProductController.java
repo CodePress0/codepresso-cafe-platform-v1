@@ -17,6 +17,16 @@ public class ProductController {
     private final ProductService productService;
 
     /**
+     * 전체 상품 목록 조회 (카테고리별)
+     */
+    @GetMapping
+    public ResponseEntity<List<ProductListResponse>> getAllProducts(
+            @RequestParam(required = false, defaultValue = "COFFEE") String category) {
+        List<ProductListResponse> products = productService.findProductsByCategory(category);
+        return ResponseEntity.ok(products);
+    }
+
+    /**
      * 상품 리뷰 목록 조회
      */
     @GetMapping("/{productId}/reviews")
