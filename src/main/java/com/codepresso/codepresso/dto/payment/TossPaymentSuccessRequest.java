@@ -39,6 +39,7 @@ public class TossPaymentSuccessRequest {
     private Boolean useCoupon = false;
     private Integer discountAmount = 0;
     private Integer finalAmount;
+    private Boolean isFromCart =  false;
     
     @Data
     public static class OrderItem {

@@ -1,9 +1,7 @@
 package com.codepresso.codepresso.controller.payment;
 
-import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.TossPaymentSuccessRequest;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.payment.PaymentService;
@@ -32,8 +30,8 @@ public class PaymentController {
      * 장바구니 결제페이지 데이터 조회 API
      */
     @GetMapping("/cart")
-    public ResponseEntity<CartCheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
-        CartCheckoutResponse response = paymentService.prepareCartCheckout(loginUser.getMemberId());
+    public ResponseEntity<CheckoutResponse> getCartCheckoutData(@AuthenticationPrincipal LoginUser loginUser) {
+        CheckoutResponse response = paymentService.prepareCartCheckout(loginUser.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -41,34 +39,16 @@ public class PaymentController {
      * 직접 결제 페이지 데이터 조회 API
      */
     @GetMapping("/direct")
-    public ResponseEntity<DirectCheckoutResponse> getDirectCheckoutData(
+    public ResponseEntity<CheckoutResponse> getDirectCheckoutData(
             @RequestBody @Valid CheckoutRequest.OrderItem orderItem) {
         try {
-            DirectCheckoutResponse response = paymentService.prepareDirectCheckout(
+            CheckoutResponse response = paymentService.prepareDirectCheckout(
                     orderItem.getProductId(),
                     orderItem.getQuantity(),
                     orderItem.getOptionIds());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new IllegalArgumentException("결제 정보를 준비하는 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 결제 처리 API
-     * POST /api/payments/checkout
-     */
-    @PostMapping("/checkout")
-    public ResponseEntity<CheckoutResponse> processCheckout(
-            @AuthenticationPrincipal LoginUser loginUser,
-            @RequestBody @Valid CheckoutRequest request) {
-        try {
-            request.setMemberId(loginUser.getMemberId());
-
-            CheckoutResponse response = paymentService.processCheckout(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("결제 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 

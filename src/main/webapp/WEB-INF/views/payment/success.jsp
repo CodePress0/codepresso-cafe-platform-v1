@@ -97,6 +97,7 @@
                 pickupMethod: orderData.package === 'carrier' ? '전체포장(케리어)' : '포장안함',
                 useCoupon: orderData.useCoupon || false,
                 discountAmount: orderData.discountAmount || 0,
+                isFromCart: orderData.isFromCart || false,
                 finalAmount: parseInt(amount)
             };
 

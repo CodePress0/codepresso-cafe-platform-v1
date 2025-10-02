@@ -1,11 +1,9 @@
 package com.codepresso.codepresso.service.payment;
 
 import com.codepresso.codepresso.dto.cart.CartItemResponse;
+import com.codepresso.codepresso.dto.cart.CartOptionResponse;
 import com.codepresso.codepresso.dto.cart.CartResponse;
-import com.codepresso.codepresso.dto.payment.CartCheckoutResponse;
-import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
-import com.codepresso.codepresso.dto.payment.DirectCheckoutResponse;
 import com.codepresso.codepresso.dto.payment.TossPaymentSuccessRequest;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductOptionDTO;
@@ -22,16 +20,15 @@ import com.codepresso.codepresso.repository.order.OrdersRepository;
 import com.codepresso.codepresso.repository.product.ProductOptionRepository;
 import com.codepresso.codepresso.repository.product.ProductRepository;
 import com.codepresso.codepresso.service.cart.CartService;
+import com.codepresso.codepresso.service.coupon.CouponService;
 import com.codepresso.codepresso.service.product.ProductService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 결제 서비스
@@ -48,11 +45,12 @@ public class PaymentService {
     private final ProductOptionRepository productOptionRepository;
     private final CartService cartService;
     private final ProductService productService;
+    private final CouponService couponService;
 
     /**
      * 장바구니 결제페이지 데이터 준비
-     * */
-    public CartCheckoutResponse prepareCartCheckout(Long memberId){
+     */
+    public CheckoutResponse prepareCartCheckout(Long memberId) {
         CartResponse cartData = cartService.getCartByMemberId(memberId);
 
         int totalAmount = cartData.getItems().stream()
@@ -63,99 +61,141 @@ public class PaymentService {
                 .mapToInt(CartItemResponse::getQuantity)
                 .sum();
 
-        return CartCheckoutResponse.builder()
-                .cartData(cartData)
-                .totalAmount(totalAmount)
-                .totalQuantity(totalQuantity)
-                .isFromCart(true)
-                .build();
+        List<CheckoutResponse.OrderItem> orderItems = cartData.getItems().stream()
+                .map(this::convertCartItemToOrderItem)
+                .collect(Collectors.toList());
+
+        return buildCheckoutResponse(totalAmount, totalQuantity, true, orderItems);
     }
 
     /**
      * 직접 결제페이지 데이터 준비
-     * */
-    public DirectCheckoutResponse prepareDirectCheckout(Long productId, Integer quantity,List<Long> optionIds){
-        // 1. 수량 검증
-        if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
-        }
+     */
+    public CheckoutResponse prepareDirectCheckout(Long productId, Integer quantity, List<Long> optionIds) {
+        validateQuantity(quantity);
 
-        // 2. 상품 상세 정보 조회 (ProductService에서 상품 존재 검증 포함)
         ProductDetailResponse productDetail = productService.findByProductId(productId);
-
-        // 3. 선택된 옵션들과 총 가격 계산
         List<ProductOptionDTO> selectedOptions = new ArrayList<>();
         int totalAmount = calculateTotalAmount(productDetail, optionIds, quantity, selectedOptions);
 
-        return DirectCheckoutResponse.builder()
-                .productDetail(productDetail)
-                .quantity(quantity)
-                .selectedOptions(selectedOptions)
+        CheckoutResponse.OrderItem orderItem = convertDirectItemToOrderItem(
+                productDetail, selectedOptions, quantity, totalAmount, optionIds);
+
+        return buildCheckoutResponse(totalAmount, quantity, false, Collections.singletonList(orderItem));
+    }
+
+    // ========== Private Helper Methods ==========
+
+    /**
+     * CheckoutResponse 빌더 공통 로직
+     */
+    private CheckoutResponse buildCheckoutResponse(
+            Integer totalAmount,
+            Integer totalQuantity,
+            Boolean isFromCart,
+            List<CheckoutResponse.OrderItem> orderItems) {
+
+        return CheckoutResponse.builder()
                 .totalAmount(totalAmount)
-                .isFromCart(false)
+                .totalQuantity(totalQuantity)
+                .isFromCart(isFromCart)
+                .orderItems(orderItems)
                 .build();
     }
 
     /**
-     * 결제 페이지(JSP)에서 사용할 모델 속성 조립 (기존 DTO 재사용)
+     * 수량 검증
      */
-    public Map<String, Object> buildDirectViewModel(Long productId, Integer quantity, List<Long> optionIds) {
-        DirectCheckoutResponse direct = prepareDirectCheckout(productId, quantity, optionIds);
-
-        int qty = direct.getQuantity() != null ? direct.getQuantity() : 1;
-        int total = direct.getTotalAmount() != null ? direct.getTotalAmount() : 0;
-        int unitPrice = qty > 0 ? (total / qty) : total;
-
-        List<String> optionNames = new ArrayList<>();
-        if (direct.getSelectedOptions() != null) {
-            for (ProductOptionDTO dto : direct.getSelectedOptions()) {
-                String optionName = dto.getOptionName();
-                String optionStyle = dto.getOptionStyleName();
-                optionNames.add(optionName + " : " + optionStyle);
-            }
+    private void validateQuantity(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
         }
-
-        Map<String, Object> directItem = new HashMap<>();
-        directItem.put("productName", direct.getProductDetail().getProductName());
-        directItem.put("productPhoto", direct.getProductDetail().getProductPhoto());
-        directItem.put("unitPrice", unitPrice);
-        directItem.put("quantity", qty);
-        directItem.put("lineTotal", total);
-        directItem.put("optionNames", optionNames);
-
-        // orderItemsPayloadJson 구성 (CheckoutRequest.OrderItem 규격)
-        String optionIdsJson;
-        if (optionIds == null || optionIds.isEmpty()) {
-            optionIdsJson = "[]";
-        } else {
-            StringBuilder sb = new StringBuilder("[");
-            for (int i = 0; i < optionIds.size(); i++) {
-                if (i > 0) sb.append(',');
-                sb.append(optionIds.get(i));
-            }
-            sb.append(']');
-            optionIdsJson = sb.toString();
-        }
-
-        String orderItemsPayloadJson = "[{" +
-                "\"productId\":" + direct.getProductDetail().getProductId() +
-                ",\"quantity\":" + qty +
-                ",\"price\":" + unitPrice +
-                ",\"optionIds\":" + optionIdsJson +
-                "}]";
-
-        Map<String, Object> model = new HashMap<>();
-        List<Map<String, Object>> directItems = new ArrayList<>();
-        directItems.add(directItem);
-
-        model.put("directItems", directItems);
-        model.put("directItemsCount", 1);
-        model.put("totalAmount", total);
-        model.put("isFromCart", false);
-        model.put("orderItemsPayloadJson", orderItemsPayloadJson);
-
-        return model;
     }
+
+    /**
+     * CartItemResponse를 CheckoutResponse.OrderItem으로 변환
+     */
+    private CheckoutResponse.OrderItem convertCartItemToOrderItem(CartItemResponse cartItem) {
+        int unitPrice = cartItem.getPrice() / cartItem.getQuantity();
+
+        return CheckoutResponse.OrderItem.builder()
+                .productId(cartItem.getProductId())
+                .productName(cartItem.getProductName())
+                .productPhoto(cartItem.getProductPhoto())
+                .quantity(cartItem.getQuantity())
+                .unitPrice(unitPrice)
+                .price(cartItem.getPrice())
+                .lineTotal(cartItem.getPrice())
+                .optionIds(extractOptionIdsFromCartItem(cartItem))
+                .optionNames(extractOptionNamesFromCartItem(cartItem))
+                .build();
+    }
+
+    /**
+     * 직접 결제 정보를 CheckoutResponse.OrderItem으로 변환
+     */
+    private CheckoutResponse.OrderItem convertDirectItemToOrderItem(
+            ProductDetailResponse productDetail,
+            List<ProductOptionDTO> selectedOptions,
+            Integer quantity,
+            Integer totalAmount,
+            List<Long> optionIds) {
+
+        int unitPrice = totalAmount / quantity;
+
+        return CheckoutResponse.OrderItem.builder()
+                .productId(productDetail.getProductId())
+                .productName(productDetail.getProductName())
+                .productPhoto(productDetail.getProductPhoto())
+                .quantity(quantity)
+                .unitPrice(unitPrice)
+                .price(unitPrice)
+                .lineTotal(totalAmount)
+                .optionIds(optionIds != null ? optionIds : Collections.emptyList())
+                .optionNames(extractOptionNamesFromProductOptions(selectedOptions))
+                .build();
+    }
+
+    /**
+     * CartItem 옵션 ID 추출
+     */
+    private List<Long> extractOptionIdsFromCartItem(CartItemResponse cartItem) {
+        if (cartItem.getOptions() == null || cartItem.getOptions().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return cartItem.getOptions().stream()
+                .map(CartOptionResponse::getOptionId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * CartItem 옵션 이름 추출
+     */
+    private List<String> extractOptionNamesFromCartItem(CartItemResponse cartItem) {
+        if (cartItem.getOptions() == null || cartItem.getOptions().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return cartItem.getOptions().stream()
+                .map(CartOptionResponse::getOptionStyle)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * ProductOptionDTO 옵션 이름 추출
+     */
+    private List<String> extractOptionNamesFromProductOptions(List<ProductOptionDTO> selectedOptions) {
+        if (selectedOptions == null || selectedOptions.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return selectedOptions.stream()
+                .map(ProductOptionDTO::getOptionStyleName)
+                .collect(Collectors.toList());
+    }
+
+
     /**
      * 총 가격 계산 및 선택된 옵션 수집
      */
@@ -179,91 +219,6 @@ public class PaymentService {
             }
         }
         return (basePrice + optionPrice) * quantity;
-    }
-
-
-    /**
-     * 주문 및 결제 처리 ( 결제없이 주문만 생성 )
-     */
-    @Transactional
-    public CheckoutResponse processCheckout(CheckoutRequest request) {
-        // 1. 회원 및 지점 정보 조회
-        Member member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-
-        // 지점정보조회
-        Branch branch = branchRepository.findById(request.getBranchId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지점입니다."));
-
-        // 2. 주문생성 ( 장바구니, 단일상품 동일하게 처리 )
-        Orders orders = createOrder(request, member, branch);
-
-        // 3. 주문 상세 생성
-        List<OrdersDetail> ordersDetails = createOrderDetails(request.getOrderItems(), orders);
-        orders.setOrdersDetails(ordersDetails);
-
-        // 4. 주문 저장
-        Orders savedOrder = ordersRepository.save(orders);
-
-        // 5. 장바구니에서 온 주문인 경우 장바구니 비우기
-        if (Boolean.TRUE.equals(request.getIsFromCart())) {
-            System.out.println("장바구니 결제 감지 - 장바구니 비우기 실행 시작 (memberId: " + member.getId() + ")");
-            try {
-                CartResponse cartData = cartService.getCartByMemberId(member.getId());
-                cartService.clearCart(member.getId(), cartData.getCartId());
-                System.out.println("✅ 장바구니 비우기 성공 - memberId: " + member.getId() + ", cartId: " + cartData.getCartId());
-            } catch (Exception e) {
-                // 장바구니 비우기 실패해도 주문은 유지 (로그 남기고 계속 진행)
-                System.err.println("❌ 장바구니 비우기 실패 - memberId: " + member.getId() + ", 오류: " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("단일 상품 결제 - 장바구니 비우기 건너뛰기 (isFromCart: " + request.getIsFromCart() + ")");
-        }
-
-        // 6. 응답 데이터 생성
-        return buildCheckoutResponse(savedOrder);
-    }
-
-    private Orders createOrder(CheckoutRequest request, Member member, Branch branch) {
-        return Orders.builder()
-                .member(member)
-                .branch(branch)
-                .productionStatus("픽업완료")
-                .isTakeout(request.getIsTakeout())
-                .pickupTime(request.getPickupTime())
-                .orderDate(LocalDateTime.now())
-                .requestNote(request.getRequestNote())
-                .isPickup(true)
-                .build();
-    }
-
-    private List<OrdersDetail> createOrderDetails(List<CheckoutRequest.OrderItem> orderItems, Orders orders) {
-        List<OrdersDetail> orderDetails = new ArrayList<>();
-
-        for (CheckoutRequest.OrderItem item : orderItems) {
-
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + item.getProductId()));
-
-            // 주문 상세 생성 (총액 = 단가*수량, 수량은 OrdersDetail에 저장)
-            OrdersDetail orderDetail = OrdersDetail.builder()
-                    .orders(orders)
-                    .product(product)
-                    .price(item.getPrice() * item.getQuantity())
-                    .quantity(item.getQuantity())
-                    .build();
-
-            // 옵션 추가
-            if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
-                List<OrdersItemOptions> options = createOrderItemOptions(item.getOptionIds(), orderDetail);
-                orderDetail.setOptions(options);
-            }
-
-            orderDetails.add(orderDetail);
-        }
-
-        return orderDetails;
     }
 
 
@@ -306,6 +261,35 @@ public class PaymentService {
 
         // 4. 주문 저장
         Orders savedOrder = ordersRepository.save(orders);
+
+        // 5. 장바구니 비우기 로직 추가
+        if (Boolean.TRUE.equals(request.getIsFromCart())) {
+            try {
+                CartResponse cartData = cartService.getCartByMemberId(member.getId());
+                cartService.clearCart(member.getId(), cartData.getCartId());
+                System.out.println("✅ 토스 결제 후 장바구니 비우기 성공");
+            } catch (Exception e) {
+                System.err.println("❌ 토스 결제 후 장바구니 비우기 실패: " + e.getMessage());
+            }
+        }
+
+        // 6. 쿠폰 사용 처리
+        if (Boolean.TRUE.equals(request.getUseCoupon()) && request.getDiscountAmount() != null && request.getDiscountAmount() > 0) {
+            try {
+                // 회원의 사용 가능한 쿠폰 중 첫 번째 쿠폰 사용
+                var validCoupons = couponService.getMemberValidCoupons(member.getId());
+                if (!validCoupons.isEmpty()) {
+                    Long couponId = validCoupons.get(0).getCouponId();
+                    couponService.useCoupon(couponId);
+                    System.out.println("✅ 쿠폰 사용 처리 성공 - couponId: " + couponId);
+                } else {
+                    System.err.println("⚠️ 사용 가능한 쿠폰이 없습니다.");
+                }
+            } catch (Exception e) {
+                System.err.println("❌ 쿠폰 사용 처리 실패: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
         // 5. 응답 데이터 생성
         return buildCheckoutResponse(savedOrder);
