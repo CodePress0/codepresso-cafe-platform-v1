@@ -260,40 +260,116 @@
 
         // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
         button.addEventListener("click", async function () {
+            // sessionStorage에서 주문 옵션 가져오기
+            const checkoutOptions = JSON.parse(sessionStorage.getItem('checkoutOptions') || '{}');
+
+            // localStorage에서 branch 정보 가져오기
+            const getBranchInfo = () => {
+                try {
+                    const selected = window.branchSelection && window.branchSelection.load
+                        ? window.branchSelection.load()
+                        : null;
+                    return {
+                        id: selected && selected.id ? parseInt(selected.id) : 1,
+                        name: selected && selected.name ? selected.name : '매장을 선택해주세요'
+                    };
+                } catch(e) {
+                    return { id: 1, name: '매장을 선택해주세요' };
+                }
+            };
+            const branchInfo = getBranchInfo();
+
+            // 픽업 예정시간 계산
+            const pickupMinutes = checkoutOptions.pickupMinutes || 5;
+            const pickupTime = new Date(Date.now() + pickupMinutes * 60 * 1000).toISOString();
+
+            // 주문 아이템 구성
+            const orderItems = [
+                <c:choose>
+                    <%-- 직접결제인 경우 --%>
+                    <c:when test="${not empty directItems}">
+                        <c:forEach var="item" items="${directItems}" varStatus="status">
+                        {
+                            productId: ${item.productId},
+                            quantity: ${item.quantity},
+                            price: ${item.price},
+                            optionIds: [
+                                <c:if test="${not empty item.optionIds}">
+                                    <c:forEach var="optId" items="${item.optionIds}" varStatus="optStatus">
+                                        ${optId}<c:if test="${!optStatus.last}">,</c:if>
+                                    </c:forEach>
+                                </c:if>
+                            ]
+                        }<c:if test="${!status.last}">,</c:if>
+                        </c:forEach>
+                    </c:when>
+                    <%-- 장바구니 결제인 경우 --%>
+                    <c:when test="${not empty orderItems}">
+                        <c:forEach var="item" items="${orderItems}" varStatus="status">
+                        {
+                            productId: ${item.productId},
+                            quantity: ${item.quantity},
+                            price: Math.round(${item.price} / ${item.quantity}),
+                            optionIds: [
+                                <c:if test="${not empty item.optionIds}">
+                                    <c:forEach var="optId" items="${item.optionIds}" varStatus="optStatus">
+                                        ${optId}<c:if test="${!optStatus.last}">,</c:if>
+                                    </c:forEach>
+                                </c:if>
+                            ]
+                        }<c:if test="${!status.last}">,</c:if>
+                        </c:forEach>
+                    </c:when>
+                </c:choose>
+            ];
+
             // 주문 정보를 세션 스토리지에 저장
             const orderInfo = {
-                memberId: 1, // 기본값, 실제로는 로그인한 사용자 ID 사용
-                branchId: ${branchId != null ? branchId : 1},
-                branchName: "${branchName != null ? branchName : '매장 정보 없음'}",
+                memberId: ${memberId != null ? memberId : 1},
+                branchId: branchInfo.id,
+                branchName: branchInfo.name,
                 totalAmount: serverAmount,
-                totalQuantity: 1,
-                orderType: 'takeout',
-                package: 'none',
-                pickupTime: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5분 후
-                requestNote: '',
-                useCoupon: false,
-                discountAmount: 0,
-                orderItems: [{
-                    productId: 1, // 기본값, 실제로는 선택한 상품 ID 사용
-                    quantity: 1,
-                    price: serverAmount,
-                    optionIds: []
-                }]
+                totalQuantity: ${totalQuantity != null ? totalQuantity : 1},
+                orderType: checkoutOptions.orderType || 'takeout',
+                package: checkoutOptions.packageType || 'none',
+                pickupTime: pickupTime,
+                requestNote: checkoutOptions.requestNote || '',
+                useCoupon: checkoutOptions.useCoupon || false,
+                discountAmount: checkoutOptions.discountAmount || 0,
+                isFromCart: ${isFromCart != null ? isFromCart : false},
+                orderItems: orderItems
             };
-            
+
             sessionStorage.setItem('tossOrderInfo', JSON.stringify(orderInfo));
-            console.log('toss-checkout.jsp - 서버에서 받은 branchId:', ${branchId != null ? branchId : 'null'});
-            console.log('toss-checkout.jsp - 서버에서 받은 branchName:', "${branchName != null ? branchName : 'null'}");
             console.log('주문 정보를 세션 스토리지에 저장:', orderInfo);
+
+            // 주문명 구성
+            const orderName = (() => {
+                <c:choose>
+                    <c:when test="${not empty directItems}">
+                        const firstProductName = '${directItems[0].productName}';
+                        const itemCount = ${directItemsCount};
+                        return itemCount > 1 ? firstProductName + ' 외 ' + (itemCount - 1) + '건' : firstProductName;
+                    </c:when>
+                    <c:when test="${not empty orderItems}">
+                        const firstProductName = '${orderItems[0].productName}';
+                        const itemCount = ${orderItems.size()};
+                        return itemCount > 1 ? firstProductName + ' 외 ' + (itemCount - 1) + '건' : firstProductName;
+                    </c:when>
+                    <c:otherwise>
+                        return '상품 주문';
+                    </c:otherwise>
+                </c:choose>
+            })();
 
             await widgets.requestPayment({
                 orderId: "order_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
-                orderName: "토스 티셔츠 외 2건",
+                orderName: orderName,
                 successUrl: window.location.origin + "/payments/success",
                 failUrl: window.location.origin + "/payments/fail",
-                customerEmail: "customer123@gmail.com",
-                customerName: "김토스",
-                customerMobilePhone: "01012341234",
+                customerEmail: '${memberEmail != null ? memberEmail : "customer@example.com"}',
+                customerName: '${memberName != null ? memberName : "고객"}',
+                customerMobilePhone: '${memberPhone != null ? memberPhone : "01000000000"}',
             });
         });
     }
