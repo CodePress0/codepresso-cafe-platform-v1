@@ -430,6 +430,25 @@
   })();
 </script>
 
+<!-- 직접결제 데이터를 JavaScript 변수로 변환 -->
+<script>
+    // JSTL에서 직접결제 데이터 추출
+    const directCheckoutData = <c:choose>
+        <c:when test="${not empty directItems}">
+            <c:forEach var="item" items="${directItems}" varStatus="status">
+                <c:if test="${status.first}">
+                {
+                    productId: '${item.productId}',
+                    quantity: '${item.quantity}',
+                    optionIds: [<c:forEach var="optId" items="${item.optionIds}" varStatus="optStatus">'${optId}'<c:if test="${!optStatus.last}">,</c:if></c:forEach>]
+                }
+                </c:if>
+            </c:forEach>
+        </c:when>
+        <c:otherwise>null</c:otherwise>
+    </c:choose>;
+</script>
+
 <!-- 토스페이먼츠 결제 페이지로 리다이렉트 -->
 <script>
     function redirectToTossPayment() {
@@ -484,37 +503,33 @@
         amountInput.value = finalAmount;
         form.appendChild(amountInput);
 
-        // 직접결제인 경우 추가 파라미터 전달
-        <c:if test="${not empty directItems}">
-        <c:forEach var="item" items="${directItems}" varStatus="status">
-        <c:if test="${status.first}">
-        // productId
-        const productIdInput = document.createElement('input');
-        productIdInput.type = 'hidden';
-        productIdInput.name = 'productId';
-        productIdInput.value = '${item.productId}';
-        form.appendChild(productIdInput);
+        // 직접결제인 경우 추가 파라미터 전달 (JavaScript로 처리)
+        if (directCheckoutData) {
+            // productId
+            const productIdInput = document.createElement('input');
+            productIdInput.type = 'hidden';
+            productIdInput.name = 'productId';
+            productIdInput.value = directCheckoutData.productId;
+            form.appendChild(productIdInput);
 
-        // quantity
-        const quantityInput = document.createElement('input');
-        quantityInput.type = 'hidden';
-        quantityInput.name = 'quantity';
-        quantityInput.value = '${item.quantity}';
-        form.appendChild(quantityInput);
+            // quantity
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'hidden';
+            quantityInput.name = 'quantity';
+            quantityInput.value = directCheckoutData.quantity;
+            form.appendChild(quantityInput);
 
-        // optionIds
-        <c:if test="${not empty item.optionIds}">
-        <c:forEach var="optId" items="${item.optionIds}">
-        const optionInput = document.createElement('input');
-        optionInput.type = 'hidden';
-        optionInput.name = 'optionIds';
-        optionInput.value = '${optId}';
-        form.appendChild(optionInput);
-        </c:forEach>
-        </c:if>
-        </c:if>
-        </c:forEach>
-        </c:if>
+            // optionIds
+            if (directCheckoutData.optionIds && directCheckoutData.optionIds.length > 0) {
+                directCheckoutData.optionIds.forEach(optId => {
+                    const optionInput = document.createElement('input');
+                    optionInput.type = 'hidden';
+                    optionInput.name = 'optionIds';
+                    optionInput.value = optId;
+                    form.appendChild(optionInput);
+                });
+            }
+        }
 
         // CSRF 토큰 추가
         const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');

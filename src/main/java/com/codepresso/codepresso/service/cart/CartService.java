@@ -271,6 +271,7 @@ public class CartService {
     }
 
     // d - 전체 삭제
+    @Transactional
     public void clearCart(Long memberId, Long cartId) {
         // cartId가 본인 소유인지 검증
         Cart cart = cartRepository.findById(cartId)
@@ -289,6 +290,6 @@ public class CartService {
         }
 
         // 아이템 전부 삭제
-        cartItemRepository.deleteAll(items);
+        cartItemRepository.deleteAllInBatch(items);
     }
 }
