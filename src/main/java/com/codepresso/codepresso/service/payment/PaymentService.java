@@ -21,6 +21,7 @@ import com.codepresso.codepresso.repository.product.ProductOptionRepository;
 import com.codepresso.codepresso.repository.product.ProductRepository;
 import com.codepresso.codepresso.service.cart.CartService;
 import com.codepresso.codepresso.service.coupon.CouponService;
+import com.codepresso.codepresso.service.coupon.StampService;
 import com.codepresso.codepresso.service.product.ProductService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class PaymentService {
     private final CartService cartService;
     private final ProductService productService;
     private final CouponService couponService;
+    private final StampService stampService;
 
     /**
      * 장바구니 결제페이지 데이터 준비
@@ -270,6 +272,7 @@ public class PaymentService {
                 System.out.println("✅ 토스 결제 후 장바구니 비우기 성공");
             } catch (Exception e) {
                 System.err.println("❌ 토스 결제 후 장바구니 비우기 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -281,14 +284,18 @@ public class PaymentService {
                 if (!validCoupons.isEmpty()) {
                     Long couponId = validCoupons.get(0).getCouponId();
                     couponService.useCoupon(couponId);
-                    System.out.println("✅ 쿠폰 사용 처리 성공 - couponId: " + couponId);
-                } else {
-                    System.err.println("⚠️ 사용 가능한 쿠폰이 없습니다.");
                 }
             } catch (Exception e) {
                 System.err.println("❌ 쿠폰 사용 처리 실패: " + e.getMessage());
                 e.printStackTrace();
             }
+        }
+
+        // stamp 적립
+        try{
+            stampService.earnStampsFromOrder(member.getId(), ordersDetails);
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
         // 5. 응답 데이터 생성
