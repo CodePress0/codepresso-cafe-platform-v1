@@ -167,28 +167,20 @@ function removeRecentSearch(event, keyword) {
 // ================================================
 async function getRandomRecommendation() {
     try {
-        // 전체 카테고리의 상품 가져오기
-        const response = await fetch(`${contextPath}/api/products`);
+        // 랜덤 상품 1개 조회
+        const response = await fetch(`${contextPath}/api/products/random`);
 
         if (!response.ok) {
             throw new Error('상품 조회에 실패했습니다.');
         }
 
-        const productsByCategory = await response.json();  // Map<String, List<ProductListResponse>>
+        // API가 단일 ProductListResponse 객체를 반환
+        const randomProduct = await response.json();
 
-        // Map에서 모든 상품을 하나의 배열로 변환
-        const allProducts = [];
-        Object.values(productsByCategory).forEach(products => {
-            allProducts.push(...products);
-        });
-
-        if (allProducts.length === 0) {
+        if (!randomProduct) {
             alert('추천할 상품이 없습니다.');
             return;
         }
-
-        const randomIndex = Math.floor(Math.random() * allProducts.length);
-        const randomProduct = allProducts[randomIndex];
 
         displaySearchResults([randomProduct]);
 

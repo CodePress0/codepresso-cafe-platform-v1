@@ -3,13 +3,13 @@ package com.codepresso.codepresso.controller.product;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.service.product.ProductService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -59,7 +59,9 @@ public class ProductViewController {
     }
 
     @GetMapping("/search")
-    public String searchProducts() {
+    public String searchProducts(HttpServletResponse response) {
+        // 정적 리소스 캐싱 설정 (1시간)
+        response.setHeader("Cache-Control", "public, max-age=3600");
         return "product/productSearch";
     }
 }

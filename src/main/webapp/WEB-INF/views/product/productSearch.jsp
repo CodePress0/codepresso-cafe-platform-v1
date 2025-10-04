@@ -55,7 +55,10 @@
                 <div class="recommend-header">
                     <h3 class="section-subtitle">고민되면 제가 추천해드릴까요?</h3>
                     <div class="mascot-icon">
-                        <img src="/banners/mascot.png" alt="Mascot" />
+                        <picture>
+                            <source srcset="/banners/mascot-small.webp" type="image/webp">
+                            <img src="/banners/mascot.png" alt="Mascot" loading="lazy" />
+                        </picture>
                     </div>
                 </div>
                 <button class="recommend-btn" onclick="getRandomRecommendation()">
@@ -179,8 +182,8 @@
     const contextPath = '${pageContext.request.contextPath}';
 </script>
 
-<script src="${pageContext.request.contextPath}/js/categoryNav.js"></script>
-<script src="${pageContext.request.contextPath}/js/productSearch.js"></script>
+<script src="${pageContext.request.contextPath}/js/categoryNav.js" defer></script>
+<script src="${pageContext.request.contextPath}/js/productSearch.js" defer></script>
 
 </body>
 </html>

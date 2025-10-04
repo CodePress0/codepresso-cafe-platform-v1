@@ -4,10 +4,12 @@ import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.review.ReviewListResponse;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/products")
@@ -15,6 +17,27 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    /**
+     * 전체 상품 목록 조회
+     */
+    @GetMapping
+    public ResponseEntity<List<ProductListResponse>> getAllProducts() {
+        List<ProductListResponse> products = productService.findProductsByCategory();
+        return ResponseEntity.ok(products);
+    }
+
+    /**
+     * 상품 랜덤 추천
+     */
+    @GetMapping("/random")
+    public ResponseEntity<ProductListResponse> getProductRandom() {
+        ProductListResponse product = productService.findProductsRandom();
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(product);
+    }
 
     /**
      * 상품 리뷰 목록 조회
