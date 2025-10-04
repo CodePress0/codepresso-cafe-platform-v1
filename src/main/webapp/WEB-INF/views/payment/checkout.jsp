@@ -214,33 +214,62 @@
             <div class="discount-section">
                 <h2 class="section-title">할인 및 혜택</h2>
                 <div class="discount-options">
-                    <label class="coupon-option">
-                        <input type="checkbox" id="useCoupon" name="useCoupon">
-                        <div class="coupon-content">
-                            <div class="coupon-info">
-                                <div class="coupon-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <path d="M21 12C21 16.418 16.418 21 12 21C7.582 21 3 16.418 3 12C3 7.582 7.582 3 12 3C16.418 3 21 7.582 21 12Z" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
+                    <c:choose>
+                        <c:when test="${empty validCouponCount or validCouponCount == 0}">
+                            <!-- 쿠폰이 없을 때 -->
+                            <label class="coupon-option disabled">
+                                <input type="checkbox" id="useCoupon" name="useCoupon" disabled>
+                                <div class="coupon-content">
+                                    <div class="coupon-info">
+                                        <div class="coupon-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M21 12C21 16.418 16.418 21 12 21C7.582 21 3 16.418 3 12C3 7.582 7.582 3 12 3C16.418 3 21 7.582 21 12Z" stroke="currentColor" stroke-width="2"/>
+                                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="coupon-details">
+                                            <span class="coupon-name">할인 쿠폰 사용 (보유 0장)
+                                                <c:if test="${not empty stampCount}">
+                                                    | (보유 스탬프 수 : ${stampCount}개)
+                                                </c:if>
+                                            </span>
+                                            <span class="coupon-discount" style="color: #999;">사용 가능한 쿠폰이 없습니다</span>
+                                        </div>
+                                    </div>
+                                    <div class="coupon-checkbox">
+                                        <div class="checkbox-custom"></div>
+                                    </div>
                                 </div>
-                                <div class="coupon-details">
-                                    <span class="coupon-name">할인 쿠폰 사용
-                                        <c:if test="${not empty validCouponCount}">
-                                            (보유 ${validCouponCount}장)
-                                            <c:if test="${not empty stampCount}">
-                                                | (보유 스탬프 수 : ${stampCount}개)
-                                            </c:if>
-                                        </c:if>
-                                    </span>
-                                    <span class="coupon-discount">2,000원 할인</span>
+                            </label>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- 쿠폰이 있을 때 -->
+                            <label class="coupon-option">
+                                <input type="checkbox" id="useCoupon" name="useCoupon">
+                                <div class="coupon-content">
+                                    <div class="coupon-info">
+                                        <div class="coupon-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M21 12C21 16.418 16.418 21 12 21C7.582 21 3 16.418 3 12C3 7.582 7.582 3 12 3C16.418 3 21 7.582 21 12Z" stroke="currentColor" stroke-width="2"/>
+                                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <div class="coupon-details">
+                                            <span class="coupon-name">할인 쿠폰 사용 (보유 ${validCouponCount}장)
+                                                <c:if test="${not empty stampCount}">
+                                                    | (보유 스탬프 수 : ${stampCount}개)
+                                                </c:if>
+                                            </span>
+                                            <span class="coupon-discount">2,000원 할인</span>
+                                        </div>
+                                    </div>
+                                    <div class="coupon-checkbox">
+                                        <div class="checkbox-custom"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="coupon-checkbox">
-                                <div class="checkbox-custom"></div>
-                            </div>
-                        </div>
-                    </label>
+                            </label>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </div>
