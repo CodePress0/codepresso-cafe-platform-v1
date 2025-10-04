@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,12 +29,16 @@ public class OrderViewPageController {
     @GetMapping
     public String orderListPage(
             @RequestParam(defaultValue = "1개월") String period,
+            @RequestParam(defaultValue = "0") int page,
             @AuthenticationPrincipal LoginUser loginUser,
             Model model
             ) {
         try{
+            // 페이지 10개 고정
+            int size = 10;
+
             // 주문 목록 조회
-            OrderListResponse orderList = orderService.getOrderList(loginUser.getMemberId(), period);
+            OrderListResponse orderList = orderService.getOrderList(loginUser.getMemberId(), period, page, size);
 
             // Model에 데이터 추가
             model.addAttribute("orderList", orderList);
@@ -41,6 +46,20 @@ public class OrderViewPageController {
             model.addAttribute("totalCount",orderList.getTotalCount());
             model.addAttribute("filteredCount",orderList.getFilteredCount());
             model.addAttribute("hasOrders",!orderList.getOrders().isEmpty());
+
+            // 페이징 정보 추가
+            model.addAttribute("currentPage", orderList.getCurrentPage());
+            model.addAttribute("totalPages", orderList.getTotalPages());
+            model.addAttribute("pageSize", orderList.getPageSize());
+            model.addAttribute("hasNext", orderList.getHasNext());
+            model.addAttribute("hasPrevious", orderList.getHasPrevious());
+
+            // 페이지 번호 리스트 생성 (1, 2, 3, ... 표시용)
+            List<Integer> pageNumbers = new ArrayList<>();
+            for (int i = 0; i < orderList.getTotalPages(); i++) {
+                pageNumbers.add(i);
+            }
+            model.addAttribute("pageNumbers", pageNumbers);
 
             // 기간 옵션
             List<String> periodOptions = Arrays.asList("1개월","3개월","전체");

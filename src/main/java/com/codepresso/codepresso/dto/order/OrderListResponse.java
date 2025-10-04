@@ -18,6 +18,13 @@ public class OrderListResponse {
     private Long totalCount;    // 전체 주문 수
     private Integer filteredCount; // 현재 기간 필터에 해당하는 주문 수
 
+    // 페이징 정보 추가
+    private Integer currentPage;    // 현재 페이지 (0부터 시작)
+    private Integer totalPages;     // 전체 페이지 수
+    private Integer pageSize;       // 페이지당 항목 수
+    private Boolean hasNext;        // 다음 페이지 존재 여부
+    private Boolean hasPrevious;    // 이전 페이지 존재 여부
+
     @Data
     @Builder
     public static class OrderSummary {

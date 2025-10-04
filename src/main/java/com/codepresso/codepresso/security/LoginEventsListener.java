@@ -23,11 +23,11 @@ public class LoginEventsListener {
 
     private final MemberRepository memberRepository;
 
-    @EventListener
-    @Transactional
-    public void onAuthenticationSuccess(AuthenticationSuccessEvent event) {
-        updateLastLogin(event.getAuthentication());
-    }
+//    @EventListener
+//    @Transactional
+//    public void onAuthenticationSuccess(AuthenticationSuccessEvent event) {
+//        updateLastLogin(event.getAuthentication());
+//    }
 
     @EventListener
     @Transactional
@@ -37,11 +37,11 @@ public class LoginEventsListener {
 
     private void updateLastLogin(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) return;
-        String accountId = authentication.getName();
-        memberRepository.findByAccountId(accountId).ifPresent(member -> {
-            // 초 단위까지만 저장 (밀리/마이크로초 제거)
-            member.setLastLoginAt(LocalDateTime.now().withNano(0));
-            memberRepository.save(member);
-        });
+
+        if (authentication.getPrincipal() instanceof LoginUser loginUser) {
+            Long memberId = loginUser.getMemberId();
+
+            memberRepository.updateLastLoginAt(memberId,LocalDateTime.now().withNano(0));
+        }
     }
 }

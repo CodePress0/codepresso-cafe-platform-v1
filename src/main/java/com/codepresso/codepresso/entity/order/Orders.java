@@ -51,9 +51,9 @@ public class Orders {
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersDetail> ordersDetails;
 
-    // 주문 <-> 결제 마스터 (1:1)
-    @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Payment payment;
+//    // 주문 <-> 결제 마스터 (1:1)
+//    @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private Payment payment;
 
     @Column(name = "total_amount")
     private Integer totalAmount;     // 원래 주문 금액( 할인전 )

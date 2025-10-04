@@ -28,9 +28,12 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<OrderListResponse> getOrderList(
             @AuthenticationPrincipal LoginUser loginUser,
-            @RequestParam(value = "period", defaultValue = "1개월") String period ){
+            @RequestParam(value = "period", defaultValue = "1개월") String period,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size){
+
         Long memberId = loginUser.getMemberId();
-        OrderListResponse response = orderService.getOrderList(memberId, period);
+        OrderListResponse response = orderService.getOrderList(memberId, period, page, size);
         return ResponseEntity.ok(response);
     }
 

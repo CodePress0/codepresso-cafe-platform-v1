@@ -17,7 +17,8 @@
 
         <!-- 필터 옵션 -->
         <div class="filter-section">
-          <form method="GET" action="/orders">
+          <form method="GET" action="/orders" id="filterForm">
+            <input type="hidden" name="page" value="0">
             <select name="period" onchange="this.form.submit()">
               <c:forEach var="option" items="${periodOptions}">
                 <option value="${option}" ${option == selectedPeriod ? 'selected' : ''}>${option}</option>
@@ -50,7 +51,7 @@
                   <div class="order-header">
                     <div class="order-info">
                       <div class="order-date">
-                        ${order.orderDate.toString().substring(o,16).replace('T',' ')}
+                        ${order.orderDate.toString().substring(0,16).replace('T',' ')}
                       </div>
                       <div class="order-number">${order.orderNumber}</div>
                     </div>
@@ -82,14 +83,66 @@
                 </div>
               </c:forEach>
             </div>
-          </c:when>
-        </c:choose>
 
-        <!-- 빈 상태 -->
-        <div id="empty-state" style="display: none; text-align: center; padding: 40px 16px; color: var(--text-2);">
-          <h3 style="color: var(--text-2);">📋 주문 내역이 없습니다</h3>
-          <p>첫 주문을 시작해보세요!</p>
-        </div>
+            <!-- 페이징 UI -->
+            <c:if test="${totalPages > 1}">
+              <div class="pagination-container">
+                <!-- 페이지 정보 -->
+                <div class="pagination-info">
+                  <span>전체 ${filteredCount}건</span>
+                  <span>|</span>
+                  <span>${currentPage + 1} / ${totalPages} 페이지</span>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                  <!-- 이전 버튼 -->
+                  <c:if test="${hasPrevious}">
+                    <a href="/orders?period=${selectedPeriod}&page=${currentPage - 1}" class="pagination-btn">
+                      ← 이전
+                    </a>
+                  </c:if>
+                  <c:if test="${!hasPrevious}">
+                    <span class="pagination-btn disabled">← 이전</span>
+                  </c:if>
+
+                  <!-- 페이지 번호 -->
+                  <div class="pagination-numbers">
+                    <c:forEach var="pageNum" items="${pageNumbers}">
+                      <c:choose>
+                        <c:when test="${pageNum == currentPage}">
+                          <span class="pagination-number active">${pageNum + 1}</span>
+                        </c:when>
+                        <c:otherwise>
+                          <a href="/orders?period=${selectedPeriod}&page=${pageNum}" class="pagination-number">
+                            ${pageNum + 1}
+                          </a>
+                        </c:otherwise>
+                      </c:choose>
+                    </c:forEach>
+                  </div>
+
+                  <!-- 다음 버튼 -->
+                  <c:if test="${hasNext}">
+                    <a href="/orders?period=${selectedPeriod}&page=${currentPage + 1}" class="pagination-btn">
+                      다음 →
+                    </a>
+                  </c:if>
+                  <c:if test="${!hasNext}">
+                    <span class="pagination-btn disabled">다음 →</span>
+                  </c:if>
+                </div>
+              </div>
+            </c:if>
+          </c:when>
+          <c:otherwise>
+            <!-- 빈 상태 -->
+            <div style="text-align: center; padding: 40px 16px; color: var(--text-2);">
+              <h3 style="color: var(--text-2);">📋 주문 내역이 없습니다</h3>
+              <p>첫 주문을 시작해보세요!</p>
+            </div>
+          </c:otherwise>
+        </c:choose>
 
         <!-- 하단 액션 버튼 -->
         <div class="cta" style="justify-content: center; margin-top: 20px;">
