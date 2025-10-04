@@ -17,16 +17,6 @@ public class ProductController {
     private final ProductService productService;
 
     /**
-     * 전체 상품 목록 조회 (카테고리별)
-     */
-    @GetMapping
-    public ResponseEntity<List<ProductListResponse>> getAllProducts(
-            @RequestParam(required = false, defaultValue = "COFFEE") String category) {
-        List<ProductListResponse> products = productService.findProductsByCategory(category);
-        return ResponseEntity.ok(products);
-    }
-
-    /**
      * 상품 리뷰 목록 조회
      */
     @GetMapping("/{productId}/reviews")
@@ -45,9 +35,12 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-    @PostMapping("/search/hashtag")
-    public ResponseEntity<List<ProductListResponse>> searchProductsByHashtag(@RequestParam String hashtag) {
-        List<ProductListResponse> products = productService.searchProductsByHashtag(hashtag);
+    /**
+     * 상품 검색(multiple hashtags)
+     */
+    @PostMapping("/search/hashtags")
+    public ResponseEntity<List<ProductListResponse>> searchProductsByHashtags(@RequestParam List<String> hashtags) {
+        List<ProductListResponse> products = productService.searchProductsByHashtags(hashtags);
         return ResponseEntity.ok(products);
     }
 

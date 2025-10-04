@@ -347,5 +347,6 @@
     }
 
 </script>
+<script src="${pageContext.request.contextPath}/js/categoryNav.js"></script>
 </body>
 </html>

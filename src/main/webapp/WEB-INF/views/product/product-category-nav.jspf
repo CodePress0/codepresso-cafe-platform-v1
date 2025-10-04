@@ -32,13 +32,26 @@
         transition: color 0.3s;
     }
 
+    .product-category-nav-item:hover {
+        color: #ff6b9d;
+    }
+
     .product-category-nav-item.active {
         color: #ff6b9d;
         font-weight: 700;
     }
 
-
     .product-category-nav-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #ff6b9d;
+    }
+
+    .product-category-nav-item:hover::after {
         content: '';
         position: absolute;
         bottom: -15px;
@@ -57,15 +70,16 @@
         }
     }
 </style>
+<c:set var="isProductListPage" value="${pageContext.request.requestURI.contains('/products') and not pageContext.request.requestURI.contains('/products/')}" />
 <nav class="product-category-nav">
     <div class="product-category-nav-content">
-        <a href="${pageContext.request.contextPath}/products?category=COFFEE" class="product-category-nav-item ${currentCategory == 'COFFEE' ? 'active' : ''}">커피</a>
-        <a href="${pageContext.request.contextPath}/products?category=LATTE" class="product-category-nav-item ${currentCategory == 'LATTE' ? 'active' : ''}">라떼</a>
-        <a href="${pageContext.request.contextPath}/products?category=JUICE" class="product-category-nav-item ${currentCategory == 'JUICE' ? 'active' : ''}">주스 & 드링크</a>
-        <a href="${pageContext.request.contextPath}/products?category=SMOOTHIE" class="product-category-nav-item ${currentCategory == 'SMOOTHIE' ? 'active' : ''}">바나치노 & 스무디</a>
-        <a href="${pageContext.request.contextPath}/products?category=TEA" class="product-category-nav-item ${currentCategory == 'TEA' ? 'active' : ''}">티 & 에이드</a>
-        <a href="${pageContext.request.contextPath}/products?category=FOOD" class="product-category-nav-item ${currentCategory == 'FOOD' ? 'active' : ''}">디저트</a>
-        <a href="${pageContext.request.contextPath}/products?category=SET" class="product-category-nav-item ${currentCategory == 'SET' ? 'active' : ''}">세트메뉴</a>
-        <a href="${pageContext.request.contextPath}/products?category=MD_GOODS" class="product-category-nav-item ${currentCategory == 'MD_GOODS' ? 'active' : ''}">MD</a>
+        <a href="#category-COFFEE" class="product-category-nav-item ${isProductListPage ? 'active' : ''}" data-category="COFFEE">커피</a>
+        <a href="#category-LATTE" class="product-category-nav-item" data-category="LATTE">라떼</a>
+        <a href="#category-JUICE" class="product-category-nav-item" data-category="JUICE">주스 & 드링크</a>
+        <a href="#category-SMOOTHIE" class="product-category-nav-item" data-category="SMOOTHIE">바나치노 & 스무디</a>
+        <a href="#category-TEA" class="product-category-nav-item" data-category="TEA">티 & 에이드</a>
+        <a href="#category-DESSERT" class="product-category-nav-item" data-category="DESSERT">디저트</a>
+        <a href="#category-SET" class="product-category-nav-item" data-category="SET">세트메뉴</a>
+        <a href="#category-MD_GOODS" class="product-category-nav-item" data-category="MD_GOODS">MD</a>
     </div>
 </nav>

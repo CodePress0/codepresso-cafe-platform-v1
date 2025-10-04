@@ -17,7 +17,6 @@ let selectedFilters = {
 // 1. 초기화 함수
 // ================================================
 function initializeSearch() {
-    console.log('검색 페이지 초기화');
     loadRecentSearches();
 }
 
@@ -56,7 +55,8 @@ function performSearch() {
     const keyword = searchInput.value.trim();
 
     if (keyword === '') {
-        alert('검색어를 입력해주세요.');
+        // 검색어가 없으면 초기 상태로 되돌림
+        resetSearchResults();
         return;
     }
 
@@ -65,6 +65,9 @@ function performSearch() {
 
     // 검색 실행
     searchProducts(keyword);
+
+    // 검색 후 입력창 비우기
+    searchInput.value = '';
 }
 
 function handleSearchKeyPress(event) {
@@ -74,8 +77,6 @@ function handleSearchKeyPress(event) {
 }
 
 async function searchProducts(keyword) {
-    console.log('검색 실행:', keyword);
-
     // 랜덤 추천 섹션 숨기기
     hideRecommendSection();
 
@@ -166,25 +167,28 @@ function removeRecentSearch(event, keyword) {
 // ================================================
 async function getRandomRecommendation() {
     try {
-        // 모든 카테고리의 상품 가져오기
-        const categories = ['COFFEE', 'LATTE', 'JUICE', 'SMOOTHIE', 'TEA', 'FOOD', 'SET', 'MD_GOODS'];
-        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-
-        const response = await fetch(`${contextPath}/api/products?category=${randomCategory}`);
+        // 전체 카테고리의 상품 가져오기
+        const response = await fetch(`${contextPath}/api/products`);
 
         if (!response.ok) {
             throw new Error('상품 조회에 실패했습니다.');
         }
 
-        const products = await response.json();
+        const productsByCategory = await response.json();  // Map<String, List<ProductListResponse>>
 
-        if (products.length === 0) {
+        // Map에서 모든 상품을 하나의 배열로 변환
+        const allProducts = [];
+        Object.values(productsByCategory).forEach(products => {
+            allProducts.push(...products);
+        });
+
+        if (allProducts.length === 0) {
             alert('추천할 상품이 없습니다.');
             return;
         }
 
-        const randomIndex = Math.floor(Math.random() * products.length);
-        const randomProduct = products[randomIndex];
+        const randomIndex = Math.floor(Math.random() * allProducts.length);
+        const randomProduct = allProducts[randomIndex];
 
         displaySearchResults([randomProduct]);
 
@@ -215,8 +219,6 @@ function toggleFilter(element) {
     } else {
         selectedFilters[category] = selectedFilters[category].filter(item => item !== value);
     }
-
-    console.log('선택된 필터:', selectedFilters);
 }
 
 function resetFilter(category) {
@@ -229,8 +231,6 @@ function resetFilter(category) {
 }
 
 async function applyFilters() {
-    console.log('필터 적용:', selectedFilters);
-
     // 선택된 필터가 없으면 경고
     const hasSelectedFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
     if (!hasSelectedFilters) {
@@ -242,25 +242,26 @@ async function applyFilters() {
     hideRecommendSection();
 
     try {
-        // 첫 번째 선택된 해시태그로 검색
-        let firstHashtag = null;
+        // 모든 선택된 해시태그 수집
+        const allHashtags = [];
         for (const category in selectedFilters) {
             if (selectedFilters[category].length > 0) {
-                firstHashtag = selectedFilters[category][0];
-                break;
+                allHashtags.push(...selectedFilters[category]);
             }
         }
 
-        if (!firstHashtag) {
+        if (allHashtags.length === 0) {
             alert('필터를 선택해주세요.');
             return;
         }
 
-        // API 호출
+        // API 호출 - 다중 해시태그 검색
         const formData = new URLSearchParams();
-        formData.append('hashtag', firstHashtag);
+        allHashtags.forEach(hashtag => {
+            formData.append('hashtags', hashtag);
+        });
 
-        const response = await fetch(`${contextPath}/api/products/search/hashtag`, {
+        const response = await fetch(`${contextPath}/api/products/search/hashtags`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -272,25 +273,7 @@ async function applyFilters() {
             throw new Error('필터 검색에 실패했습니다.');
         }
 
-        let results = await response.json();
-
-        // 클라이언트 사이드에서 추가 필터링 (나머지 선택된 필터들)
-        results = results.filter(product => {
-            for (const category in selectedFilters) {
-                const filterValues = selectedFilters[category];
-                if (filterValues.length > 0) {
-                    // 상품이 해당 카테고리의 필터 중 하나라도 만족해야 함
-                    const matches = filterValues.some(filterValue => {
-                        // ProductListResponse에는 hashtags가 없을 수 있으므로 이름으로 체크
-                        return product.productName && product.productName.includes(filterValue);
-                    });
-                    if (!matches) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        });
+        const results = await response.json();
 
         displaySearchResults(results);
 
@@ -316,11 +299,10 @@ function displaySearchResults(results) {
         emptyState.style.display = 'block';
         resultsList.style.display = 'none';
         emptyState.innerHTML = `
-            <div class="mascot-large">
-                <img src="/banners/mascot.png" alt="Mascot" />
-            </div>
             <p class="empty-message">검색 결과가 없습니다.<br>다른 검색어나 특징을 선택해주세요.</p>
         `;
+        // 추천 버튼 다시 표시
+        showRecommendSection();
         return;
     }
 
@@ -332,7 +314,7 @@ function displaySearchResults(results) {
 
 function createProductCard(product) {
     const imageHtml = product.productPhoto
-        ? `<img src="${product.productPhoto}" alt="${product.productName}" class="result-image">`
+        ? `<img src="${product.productPhoto}" alt="${product.productName}" class="result-image" loading="lazy">`
         : `<div class="result-image no-image">이미지 없음</div>`;
 
     // ProductListResponse에는 hashtags가 없으므로 categoryName 사용
@@ -361,9 +343,6 @@ function resetSearchResults() {
     emptyState.style.display = 'block';
     resultsList.style.display = 'none';
     emptyState.innerHTML = `
-        <div class="mascot-large">
-            <img src="/banners/mascot.png" alt="Mascot" />
-        </div>
         <p class="empty-message">찾고 싶은 메뉴를 검색하거나<br>특징을 선택해주세요!</p>
     `;
 

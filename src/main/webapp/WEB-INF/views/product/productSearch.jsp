@@ -5,9 +5,7 @@
 
 <%@ include file="/WEB-INF/views/common/head.jspf" %>
 
-<style>
-    @import url('${pageContext.request.contextPath}/css/productSearch.css');
-</style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/productSearch.css">
 
 <body class="product-search-page">
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
@@ -61,7 +59,7 @@
                     </div>
                 </div>
                 <button class="recommend-btn" onclick="getRandomRecommendation()">
-                    🎲 다른 걸로 추천해줘!
+                    다른 걸로 추천해줘!
                 </button>
             </div>
         </div>
@@ -80,18 +78,18 @@
                         <button class="filter-tag" data-category="beverage" data-value="에스프레소" onclick="toggleFilter(this)">에스프레소</button>
                         <button class="filter-tag" data-category="beverage" data-value="콜드브루" onclick="toggleFilter(this)">콜드브루</button>
                         <button class="filter-tag" data-category="beverage" data-value="커피믹스" onclick="toggleFilter(this)">커피믹스</button>
-                        <button class="filter-tag" data-category="beverage" data-value="디카페인" onclick="toggleFilter(this)">디카페인(노카페인)</button>
+                        <button class="filter-tag" data-category="beverage" data-value="디카페인(노카페인)" onclick="toggleFilter(this)">디카페인(노카페인)</button>
                         <button class="filter-tag" data-category="beverage" data-value="카페인" onclick="toggleFilter(this)">카페인</button>
                         <button class="filter-tag" data-category="beverage" data-value="우유" onclick="toggleFilter(this)">우유</button>
                         <button class="filter-tag" data-category="beverage" data-value="크림" onclick="toggleFilter(this)">크림</button>
                         <button class="filter-tag" data-category="beverage" data-value="요거트" onclick="toggleFilter(this)">요거트</button>
-                        <button class="filter-tag" data-category="beverage" data-value="아이스 블렌디드" onclick="toggleFilter(this)">아이스 블렌디드</button>
+                        <button class="filter-tag" data-category="beverage" data-value="아이스블렌디드" onclick="toggleFilter(this)">아이스 블렌디드</button>
                         <button class="filter-tag" data-category="beverage" data-value="탄산" onclick="toggleFilter(this)">탄산</button>
                         <button class="filter-tag" data-category="beverage" data-value="토핑" onclick="toggleFilter(this)">토핑</button>
                         <button class="filter-tag" data-category="beverage" data-value="펄포함" onclick="toggleFilter(this)">펄포함</button>
                         <button class="filter-tag" data-category="beverage" data-value="홍차" onclick="toggleFilter(this)">홍차</button>
                         <button class="filter-tag" data-category="beverage" data-value="휘핑크림" onclick="toggleFilter(this)">휘핑크림</button>
-                        <button class="filter-tag" data-category="beverage" data-value="Tea bag" onclick="toggleFilter(this)">Tea bag</button>
+                        <button class="filter-tag" data-category="beverage" data-value="Teabag" onclick="toggleFilter(this)">Tea Bag</button>
                     </div>
                 </div>
 
@@ -115,7 +113,7 @@
                     </h3>
                     <div class="filter-options">
                         <button class="filter-tag" data-category="taste" data-value="단맛" onclick="toggleFilter(this)">단맛</button>
-                        <button class="filter-tag" data-category="taste" data-value="달지 않음" onclick="toggleFilter(this)">달지 않음</button>
+                        <button class="filter-tag" data-category="taste" data-value="달지않음" onclick="toggleFilter(this)">달지 않음</button>
                         <button class="filter-tag" data-category="taste" data-value="고소한" onclick="toggleFilter(this)">고소한</button>
                         <button class="filter-tag" data-category="taste" data-value="신맛" onclick="toggleFilter(this)">신맛</button>
                         <button class="filter-tag" data-category="taste" data-value="쓴맛" onclick="toggleFilter(this)">쓴맛</button>
@@ -143,7 +141,7 @@
                         <button class="reset-btn" onclick="resetFilter('brand')">초기화 ↻</button>
                     </h3>
                     <div class="filter-options">
-                        <button class="filter-tag" data-category="brand" data-value="핫 브랜드" onclick="toggleFilter(this)">핫 브랜드</button>
+                        <button class="filter-tag" data-category="brand" data-value="핫 디저트" onclick="toggleFilter(this)">핫 디저트</button>
                         <button class="filter-tag" data-category="brand" data-value="콜드 디저트" onclick="toggleFilter(this)">콜드 디저트</button>
                         <button class="filter-tag" data-category="brand" data-value="디저트류" onclick="toggleFilter(this)">디저트류</button>
                         <button class="filter-tag" data-category="brand" data-value="빵류" onclick="toggleFilter(this)">빵류</button>
@@ -163,9 +161,6 @@
         <div class="search-results" id="searchResults">
             <!-- 검색 전 상태 -->
             <div class="empty-state" id="emptyState">
-                <div class="mascot-large">
-                    <img src="/banners/mascot.png" alt="Mascot" />
-                </div>
                 <p class="empty-message">찾고 싶은 메뉴를 검색하거나<br>특징을 선택해주세요!</p>
             </div>
 
@@ -184,6 +179,7 @@
     const contextPath = '${pageContext.request.contextPath}';
 </script>
 
+<script src="${pageContext.request.contextPath}/js/categoryNav.js"></script>
 <script src="${pageContext.request.contextPath}/js/productSearch.js"></script>
 
 </body>

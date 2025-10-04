@@ -14,9 +14,11 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findAll();
+//    List<Product> findAll();
 
-    List<Product> findByCategoryCategoryCode(String categoryCode);
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category c " +
+            "ORDER BY c.displayOrder")
+    List<Product> findProductByCategory();
 
     @EntityGraph(attributePaths = {
             "nutritionInfo",
@@ -29,5 +31,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.hashtags h WHERE h.hashtagName = :hashtag")
     List<Product> findByHashtagsContaining(@Param("hashtag") String hashtag);
+
+    @Query("SELECT p1 " +
+            "FROM Product p1 " +
+            "WHERE p1.id " +
+            "IN(select distinct(p2.id)" +
+            "FROM Product p2 join p2.hashtags h " +
+            "WHERE h.hashtagName IN :hashtags " +
+            "GROUP BY p2.id " +
+            "HAVING COUNT(DISTINCT h.hashtagName) = :size)")
+    List<Product> findByHashtagsIn(@Param("hashtags") List<String> hashtags,
+                                   @Param("size") long size);
 
 }

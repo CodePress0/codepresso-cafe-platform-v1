@@ -60,6 +60,9 @@ public class ProductConverter {
     }
 
     private NutritionInfoDTO getNutritionInfo(NutritionInfo nutritionInfo) {
+        if (nutritionInfo == null) {
+            return null;
+        }
 
         return NutritionInfoDTO.builder()
                 .calories(nutritionInfo.getCalories())

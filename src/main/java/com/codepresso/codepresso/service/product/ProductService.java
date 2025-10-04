@@ -29,8 +29,8 @@ public class ProductService {
     private final ProductConverter productConverter;
 
     @Transactional
-    public List<ProductListResponse> findProductsByCategory(String categoryCode) {
-        List<Product> products = productRepo.findByCategoryCategoryCode(categoryCode);
+    public List<ProductListResponse> findProductsByCategory() {
+        List<Product> products = productRepo.findProductByCategory();
 
         return products.stream()
                 .map(productConverter::toDto)
@@ -68,6 +68,15 @@ public class ProductService {
     @Transactional
     public List<ProductListResponse> searchProductsByHashtag(String hashtag) {
         List<Product> products = productRepo.findByHashtagsContaining(hashtag);
+
+        return products.stream()
+                .map(productConverter::toDto)
+                .toList();
+    }
+
+    @Transactional
+    public List<ProductListResponse> searchProductsByHashtags(List<String> hashtags) {
+        List<Product> products = productRepo.findByHashtagsIn(hashtags, hashtags.size());
 
         return products.stream()
                 .map(productConverter::toDto)

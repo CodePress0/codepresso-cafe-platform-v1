@@ -24,14 +24,9 @@ public class ProductViewController {
      * 상품 목록 페이지
      */
     @GetMapping
-    public String productList(@RequestParam(required = false, defaultValue = "COFFEE") String category, Model model) {
-        try {
-            List<ProductListResponse> products = productService.findProductsByCategory(category);
-            model.addAttribute("products", products);
-            model.addAttribute("currentCategory", category);
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "상품 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
-        }
+    public String productList(Model model) {
+        List<ProductListResponse> products = productService.findProductsByCategory();
+        model.addAttribute("products", products);
         return "product/productList";
     }
 
