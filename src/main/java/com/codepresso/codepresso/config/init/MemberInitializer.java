@@ -61,5 +61,25 @@ public class MemberInitializer implements ApplicationRunner {
         }
 
         log.info("[Init] MemberInitializer done");
+
+        for (int i = 1; i <= 500; i++) {
+            String accountId = "testuser" + i;
+
+            // 이미 존재하면 스킵
+            if (memberRepository.existsByAccountId(accountId)) {
+                continue;
+            }
+
+            Member member = Member.builder()
+                    .accountId(accountId)
+                    .password("$2a$10$tcUQJq1JuY98bN.aFslJKuKPjw9X0Ohz9RuN1TVoqXkRpEZEcrkU.")
+                    .name("Test User " + i)
+                    .nickname("testuser" + i)
+                    .email("testuser" + i + "@test.com")
+                    .role(Member.Role.USER)
+                    .build();
+
+            memberRepository.save(member);
+        }
     }
 }

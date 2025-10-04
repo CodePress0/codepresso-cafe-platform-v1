@@ -12,6 +12,10 @@ import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,30 +34,41 @@ public class OrderService {
     /**
      * 주문 목록 조회
      * */
-    public OrderListResponse getOrderList(Long memberId, String period){
+    public OrderListResponse getOrderList(Long memberId, String period, int page, int size) {
         // 기간 계산
         LocalDateTime startDate = calculateStartDate(period);
+
+        // Pageable 객체 생성 (페이지 번호, 사이즈, 정렬 조건)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
 
         // 전체 건수 (기간 무관)
         long totalCount = ordersRepository.countByMemberId(memberId);
 
-        // 기간 필터 적용된 목록 조회
-        List<Orders> orders;
+        // 기간 필터 적용된 목록 조회 (페이징)
+        Page<Orders> ordersPage;
         if ("전체".equals(period)) {
-            orders = ordersRepository.findByMemberIdOrderByOrderDateDesc(memberId);
+            ordersPage = ordersRepository.findByMemberIdWithPaging(memberId, pageable);
         } else {
-            orders = ordersRepository.findByMemberIdAndOrderDateAfterOrderByOrderDateDesc(memberId, startDate);
+            ordersPage = ordersRepository.findByMemberIdAndDateWithPaging(memberId, startDate, pageable);
         }
+
+        // Page -> List 변환
         List<OrderListResponse.OrderSummary> orderSummaries = new ArrayList<>();
-        for (Orders order : orders) {
+        for (Orders order : ordersPage.getContent()) {
             OrderListResponse.OrderSummary orderSummary = convertToOrderSummary(order);
             orderSummaries.add(orderSummary);
         }
 
+        // 페이징 정보 포함하여 반환
         return OrderListResponse.builder()
                 .orders(orderSummaries)
                 .totalCount(totalCount)
-                .filteredCount(orderSummaries.size())
+                .filteredCount((int) ordersPage.getTotalElements()) // 기간 필터 적용된 전체 수
+                .currentPage(page)
+                .totalPages(ordersPage.getTotalPages())
+                .pageSize(size)
+                .hasNext(ordersPage.hasNext())
+                .hasPrevious(ordersPage.hasPrevious())
                 .build();
     }
 

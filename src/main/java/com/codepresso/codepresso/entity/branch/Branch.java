@@ -4,6 +4,8 @@ import com.codepresso.codepresso.entity.order.Orders;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.Order;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+
 import java.time.LocalTime;
 import java.util.List;
 
@@ -48,6 +50,7 @@ public class Branch {
 
     // 연관관계: Branch ↔ OrderMaster (1:N)
     @OneToMany(mappedBy = "branch", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 10)
     @Builder.Default
     private List<Orders> orders = new java.util.ArrayList<>();
 }

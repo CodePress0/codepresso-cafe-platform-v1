@@ -227,3 +227,115 @@
     margin-top: 20px;
     gap: 12px;
 }
+
+/* 페이징 컨테이너 */
+.pagination-container {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* 페이지 정보 */
+.pagination-info {
+    text-align: center;
+    color: var(--text-2);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.pagination-info span {
+    margin: 0 8px;
+}
+
+/* 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* 이전/다음 버튼 */
+.pagination-btn {
+    padding: 8px 14px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-2);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background .2s ease, color .2s ease;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: rgba(255, 122, 162, 0.12);
+    color: var(--pink-1);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: var(--text-3);
+}
+
+/* 페이지 번호 컨테이너 */
+.pagination-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+/* 페이지 번호 */
+.pagination-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 14px;
+    transition: background .2s ease, color .2s ease;
+}
+
+.pagination-number:hover:not(.active) {
+    background: rgba(255, 122, 162, 0.12);
+    color: var(--pink-1);
+}
+
+.pagination-number.active {
+    background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 10px 20px rgba(255, 122, 162, 0.3);
+    font-weight: 600;
+    cursor: default;
+}
+
+/* 반응형 (모바일) */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .pagination-numbers {
+        width: 100%;
+        justify-content: center;
+        order: -1;
+        margin-bottom: 12px;
+    }
+
+    .pagination-number {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .pagination-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 13px;
+    }
+}
