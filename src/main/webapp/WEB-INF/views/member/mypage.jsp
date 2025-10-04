@@ -4,9 +4,6 @@
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <style>
-    .mypage-body {
-        background: linear-gradient(160deg, var(--pink-4), #fff 55%);
-    }
     .hero.mypage-hero {
         background: transparent;
         padding: 72px 0 92px;

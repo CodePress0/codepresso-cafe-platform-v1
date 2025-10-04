@@ -1,12 +1,13 @@
 package com.codepresso.codepresso.dto.review;
 
-import com.codepresso.codepresso.entity.product.Review;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
 public class ReviewListResponse {
     private Long reviewId;
     private String nickname;
@@ -16,13 +17,4 @@ public class ReviewListResponse {
     private String photoUrl;
     private LocalDateTime createdAt;
 
-    public ReviewListResponse(Review review, Double avgRating) {
-        this.reviewId = review.getId();
-        this.nickname = review.getMember().getNickname();
-        this.rating = review.getRating();
-        this.avgRating = avgRating;
-        this.content = review.getContent();
-        this.photoUrl = review.getPhotoUrl();
-        this.createdAt = review.getCreatedAt();
-    }
 }

@@ -1,11 +1,14 @@
 package com.codepresso.codepresso.service.order;
 
+import com.codepresso.codepresso.converter.order.OrderConverter;
 import com.codepresso.codepresso.dto.review.OrdersDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderDetailResponse;
 import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
+import com.codepresso.codepresso.entity.payment.PaymentDetail;
+import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ public class OrderService {
 
     private final OrdersRepository ordersRepository;
     private final OrdersDetailRepository ordersDetailRepository;
+    private final OrderConverter orderConverter;
 
     /**
      * 주문 목록 조회
@@ -164,30 +168,30 @@ public class OrderService {
              return "주문 상품 없음";
          }
 
-         String firstProductName = orderDetails.get(0).getProduct().getProductName();
-         int totalItems = orderDetails.size();
+        String firstProductName = orderDetails.get(0).getProduct().getProductName();
+        int totalItems = orderDetails.size();
 
-         if (totalItems == 1) {
-             return firstProductName;
-         } else {
-             return firstProductName + " 외 " + (totalItems - 1) + "개";
-         }
-     }
+        if (totalItems == 1) {
+            return firstProductName;
+        } else {
+            return firstProductName + " 외 " + (totalItems - 1) + "개";
+        }
+    }
 
-     private String generateOrderNumber(Orders orders) {
-         LocalDateTime orderDate = orders.getOrderDate();
-         String phone = orders.getMember() != null ? orders.getMember().getPhone() : null;
-         String last4 = "0000";
-         if (phone != null) {
-             String digits = phone.replaceAll("\\D", "");
-             if (digits.length() >= 4) last4 = digits.substring(digits.length() - 4);
-         }
-         LocalDateTime startOfDay = orderDate.toLocalDate().atStartOfDay();
-         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
-         long seq = ordersRepository.countByOrderDateBetweenAndOrderDateLessThanEqual(startOfDay, endOfDay, orderDate);
-         if (seq < 1) seq = 1; // 안전장치
-         return String.format("%s-%d", last4, seq);
-     }
+    private String generateOrderNumber(Orders orders) {
+        LocalDateTime orderDate = orders.getOrderDate();
+        String phone = orders.getMember() != null ? orders.getMember().getPhone() : null;
+        String last4 = "0000";
+        if (phone != null) {
+            String digits = phone.replaceAll("\\D", "");
+            if (digits.length() >= 4) last4 = digits.substring(digits.length() - 4);
+        }
+        LocalDateTime startOfDay = orderDate.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+        long seq = ordersRepository.countByOrderDateBetweenAndOrderDateLessThanEqual(startOfDay, endOfDay, orderDate);
+        if (seq < 1) seq = 1; // 안전장치
+        return String.format("%s-%d", last4, seq);
+    }
 
     /**
      * 기간별 시작일 계산
@@ -211,9 +215,10 @@ public class OrderService {
      * 특정 주문 상품
      */
     public OrdersDetailResponse getOrdersDetail(Long orderDetailId) {
-        Optional<OrdersDetail> ordersDetail = ordersDetailRepository.findById(orderDetailId);
+        OrdersDetail ordersDetail = ordersDetailRepository.findById(orderDetailId)
+                .orElseThrow(() -> new RuntimeException("OrdersDetail not found: " + orderDetailId));
 
-        return OrdersDetailResponse.of(ordersDetail);
+        return orderConverter.toDto(ordersDetail);
     }
 
     /**

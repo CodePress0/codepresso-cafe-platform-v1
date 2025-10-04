@@ -1,6 +1,5 @@
 package com.codepresso.codepresso.controller.product;
 
-import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.dto.review.ReviewListResponse;
 import com.codepresso.codepresso.service.product.ProductService;
@@ -17,22 +16,6 @@ public class ProductController {
 
     private final ProductService productService;
 
-//    // 1. 상품 전체 조회
-//    @GetMapping
-//    public ResponseEntity<List<ProductListResponse>> getProducts(
-//            @RequestParam(required = false, defaultValue = "COFFEE") String category) {
-//        // 카테고리별 상품 조회
-//        List<ProductListResponse> products = productService.findProductsByCategory(category);
-//        return ResponseEntity.ok(products);
-//    }
-//
-//    // 2. 상품 상세 조회
-//    @GetMapping("/{productId}")
-//    public ResponseEntity<ProductDetailResponse> getProduct(@PathVariable Long productId) {
-//        ProductDetailResponse product = productService.findByProductId(productId);
-//        return ResponseEntity.ok(product);
-//    }
-//
     /**
      * 상품 리뷰 목록 조회
      */
@@ -41,6 +24,24 @@ public class ProductController {
             @PathVariable Long productId) {
         List<ReviewListResponse> reviews = productService.findProductReviews(productId);
         return ResponseEntity.ok(reviews);
+    }
+
+    /**
+     * 상품 검색(keyword)
+     */
+    @PostMapping("/search/keyword")
+    public ResponseEntity<List<ProductListResponse>> searchProductsByKeyword(@RequestParam String keyword) {
+        List<ProductListResponse> products = productService.searchProductsByKeyword(keyword);
+        return ResponseEntity.ok(products);
+    }
+
+    /**
+     * 상품 검색(multiple hashtags)
+     */
+    @PostMapping("/search/hashtags")
+    public ResponseEntity<List<ProductListResponse>> searchProductsByHashtags(@RequestParam List<String> hashtags) {
+        List<ProductListResponse> products = productService.searchProductsByHashtags(hashtags);
+        return ResponseEntity.ok(products);
     }
 
 }

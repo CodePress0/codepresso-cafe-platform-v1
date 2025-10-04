@@ -1,34 +1,22 @@
 package com.codepresso.codepresso.dto.review;
 
-import com.codepresso.codepresso.entity.product.Review;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Builder
 public class ReviewResponse {
     private Long reviewId;
-    private Long orderDetailId;
+    private Long ordersDetailId;
     private String branchName;
+    private String productName;
+    private String productPhoto;
     private Long memberId;
     private BigDecimal rating;
     private String content;
     private String photoUrl;
     private LocalDateTime createdAt;
-
-    public static ReviewResponse fromEntity(Review review) {
-        return ReviewResponse.builder()
-                .reviewId(review.getId())
-                .orderDetailId(review.getOrdersDetail().getId())
-                .branchName(review.getOrdersDetail().getOrders().getBranch().getBranchName())
-                .memberId(review.getMember().getId())
-                .rating(review.getRating())
-                .content(review.getContent())
-                .photoUrl(review.getPhotoUrl())
-                .createdAt(review.getCreatedAt())
-                .build();
-    }
 }

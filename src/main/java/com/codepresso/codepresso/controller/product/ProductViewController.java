@@ -2,13 +2,8 @@ package com.codepresso.codepresso.controller.product;
 
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
 import com.codepresso.codepresso.dto.product.ProductListResponse;
-import com.codepresso.codepresso.dto.review.ReviewListResponse;
-import com.codepresso.codepresso.entity.product.Review;
 import com.codepresso.codepresso.service.product.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,14 +24,9 @@ public class ProductViewController {
      * 상품 목록 페이지
      */
     @GetMapping
-    public String productList(@RequestParam(required = false, defaultValue = "COFFEE") String category, Model model) {
-        try {
-            List<ProductListResponse> products = productService.findProductsByCategory(category);
-            model.addAttribute("products", products);
-            model.addAttribute("currentCategory", category);
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "상품 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
-        }
+    public String productList(Model model) {
+        List<ProductListResponse> products = productService.findProductsByCategory();
+        model.addAttribute("products", products);
         return "product/productList";
     }
 
@@ -44,7 +34,7 @@ public class ProductViewController {
      * 상품 상세 페이지
      */
     @GetMapping("/{productId}")
-    public String productDetail(@PathVariable Long productId, Model model) {
+    public String getProductDetail(@PathVariable Long productId, Model model) {
         try {
             ProductDetailResponse product = productService.findByProductId(productId);
             model.addAttribute("product", product);
@@ -58,7 +48,7 @@ public class ProductViewController {
      * 상품별 리뷰 조회
      */
     @GetMapping("/{productId}/reviews")
-    public String productReviews(@PathVariable Long productId, Model model) {
+    public String getProductReviews(@PathVariable Long productId, Model model) {
         try {
             ProductDetailResponse product = productService.findByProductId(productId);
             model.addAttribute("product", product);
@@ -66,5 +56,10 @@ public class ProductViewController {
             model.addAttribute("errorMessage", "상품 정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
         }
         return "product/productReviews";
+    }
+
+    @GetMapping("/search")
+    public String searchProducts() {
+        return "product/productSearch";
     }
 }

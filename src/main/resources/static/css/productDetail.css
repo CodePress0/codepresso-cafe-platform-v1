@@ -6,16 +6,10 @@
 /* ================================================
    1. 페이지 기본 레이아웃
    ================================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* 전역 스타일은 head.jspf에서 관리 */
 
-body {
+.product-detail-page {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #ffffff;
-    color: #333;
     line-height: 1.6;
 }
 
@@ -484,7 +478,6 @@ body {
 }
 
 :root {
-    --pink-1: #ffb6c1; /* 연핑크 */
     --pink-2: #ff69b4; /* 핫핑크 */
 }
 

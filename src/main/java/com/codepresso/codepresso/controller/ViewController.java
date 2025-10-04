@@ -2,8 +2,6 @@ package com.codepresso.codepresso.controller;
 
 import com.codepresso.codepresso.dto.cart.CartResponse;
 import com.codepresso.codepresso.dto.member.FavoriteListResponse;
-import com.codepresso.codepresso.dto.product.ProductDetailResponse;
-import com.codepresso.codepresso.dto.product.ProductListResponse;
 import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.security.LoginUser;
 import com.codepresso.codepresso.service.cart.CartService;
@@ -19,10 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import java.util.List;
 
 /**
  * JSP 뷰를 반환하는 컨트롤러

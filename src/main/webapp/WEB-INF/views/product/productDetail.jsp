@@ -71,7 +71,7 @@
                                 <c:if test="${not empty product.hashtags}">
                                     <div class="category-tags">
                                         <c:forEach var="hashtag" items="${product.hashtags}">
-                                            <span class="tag">${hashtag.hashtagName}</span>
+                                            <span class="tag">${hashtag}</span>
                                         </c:forEach>
                                     </div>
                                 </c:if>
@@ -207,7 +207,7 @@
                                     <div class="allergen-grid">
                                         <c:forEach var="allergen" items="${product.allergens}">
                                             <div class="allergen-item">
-                                                <span class="allergen-name">${allergen.allergenName}</span>
+                                                <span class="allergen-name">${allergen}</span>
                                             </div>
                                         </c:forEach>
                                     </div>
@@ -259,11 +259,8 @@
         </c:if>
     </div>
 
-
     <!-- 성공 메시지 팝업 -->
     <div id="successMessage" class="success-message">장바구니에 담았습니다!</div>
-
-    <script src="${pageContext.request.contextPath}/js/menu.js"></script>
 
     <script type="text/javascript">
         // 현재 상품 정보
@@ -972,6 +969,7 @@
         }
 
     </script>
+    <script src="${pageContext.request.contextPath}/js/categoryNav.js"></script>
 
     <!-- 바로 주문하기 폼 (숨김) -->
     <form id="directForm" method="post" action="${pageContext.request.contextPath}/payments/direct"

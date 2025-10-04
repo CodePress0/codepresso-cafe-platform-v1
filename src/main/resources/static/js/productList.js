@@ -1,129 +1,233 @@
-// 상품 목록 페이지 JavaScript
+// 카테고리 한글명 매핑 (DB의 category_code와 일치)
+const categoryNames = {
+    'COFFEE': { ko: '커피', en: 'COFFEE' },
+    'LATTE': { ko: '라떼', en: 'LATTE' },
+    'JUICE': { ko: '주스 & 드링크', en: 'JUICE & DRINKS' },
+    'SMOOTHIE': { ko: '바나치노 & 스무디', en: 'BANACCINO & SMOOTHIE' },
+    'TEA': { ko: '티 & 에이드', en: 'TEA & ADE' },
+    'DESSERT': { ko: '디저트', en: 'DESSERT' },
+    'SET': { ko: '세트메뉴', en: 'SET MENU' },
+    'MD_GOODS': { ko: 'MD상품', en: 'MD PRODUCTS' }
+};
 
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    loadProductList();
-    initializeCategoryButtons();
-});
+// 상품 카드 HTML 생성
+function createProductCard(product) {
+    const imageClass = product.productName.includes('핑크') || product.productName.includes('딸기') ? 'menu-image pink' :
+                       product.productName.includes('바나나') ? 'menu-image yellow' : 'menu-image';
 
-// 카테고리 버튼 초기화
-function initializeCategoryButtons() {
-    const categoryButtons = document.querySelectorAll('.category-btn');
-    categoryButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const category = this.getAttribute('data-category');
-            selectCategory(category);
-            loadProductList(category);
-        });
-    });
+    let tag = '';
+    if (product.productName.includes('시그니처')) {
+        tag = '<div class="menu-tag tag-signature">시그니처</div>';
+    } else if (product.productName.includes('디카페인')) {
+        tag = '<div class="menu-tag tag-decaf">디카페인</div>';
+    } else if (product.productName.includes('아메리카노') &&
+               !product.productName.includes('시그니처') &&
+               !product.productName.includes('디카페인')) {
+        tag = '<div class="menu-tag tag-premium">고소함</div>';
+    }
+
+    const imageHtml = product.productPhoto
+        ? '<img src="' + product.productPhoto + '" alt="' + product.productName + '" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">'
+        : '';
+
+    return '<div class="menu-item" onclick="location.href=\'' + contextPath + '/products/' + product.productId + '\'">' +
+            '<div class="menu-image-container">' +
+                '<div class="' + imageClass + '">' +
+                    imageHtml +
+                    tag +
+                '</div>' +
+            '</div>' +
+            '<div class="menu-info">' +
+                '<div class="menu-name">' + product.productName + '</div>' +
+                '<div class="menu-price">' + product.price.toLocaleString() + '원</div>' +
+            '</div>' +
+        '</div>';
 }
 
-// 카테고리 선택
-function selectCategory(category) {
-    const categoryButtons = document.querySelectorAll('.category-btn');
-    categoryButtons.forEach(btn => {
-        if (btn.getAttribute('data-category') === category) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+// 카테고리 섹션 HTML 생성
+function createCategorySection(category, products) {
+    const categoryInfo = categoryNames[category];
+    if (!categoryInfo || products.length === 0) return '';
+
+    const productsHTML = products.map(product => createProductCard(product)).join('');
+
+    return '<section id="category-' + category + '" class="category-section">' +
+            '<div class="section-header">' +
+                '<h2 class="section-title">' +
+                    categoryInfo.ko + " " +
+                    '<span class="section-subtitle">' + categoryInfo.en + '</span>' +
+                '</h2>' +
+            '</div>' +
+            '<div class="menu-grid">' +
+                productsHTML +
+            '</div>' +
+        '</section>';
 }
 
-// 상품 목록 로드
-function loadProductList(category = 'COFFEE') {
-    showLoadingState();
+// 전체 상품 로드 및 렌더링
+function loadAllProducts() {
+    const container = document.getElementById('products-container');
 
-    fetch(`/api/products?category=${category}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to load products');
-            }
-            return response.json();
-        })
-        .then(products => {
-            updateProductListUI(products);
-            hideLoadingState();
-        })
-        .catch(error => {
-            console.error('Error loading products:', error);
-            showErrorMessage('상품 목록을 불러올 수 없습니다.');
-            hideLoadingState();
-        });
-}
-
-// 상품 목록 UI 업데이트
-function updateProductListUI(products) {
-    const productContainer = document.querySelector('.product-container, .products-grid');
-    if (!productContainer) return;
-
-    productContainer.innerHTML = '';
-
+    // List를 카테고리별로 그룹화 (display_order로 이미 정렬되어 있음)
+    const productsByCategory = {};
     products.forEach(product => {
-        const productElement = createProductElement(product);
-        productContainer.appendChild(productElement);
-    });
-}
-
-// 상품 요소 생성
-function createProductElement(product) {
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
-    productDiv.innerHTML = `
-        <div class="product-image-container">
-            <img src="${product.productPhoto || '/images/default-product.jpg'}"
-                 alt="${product.productName}" class="product-image">
-        </div>
-        <div class="product-info">
-            <h3 class="product-name">${product.productName}</h3>
-            <p class="product-price">${product.price.toLocaleString()}원</p>
-        </div>
-    `;
-
-    // 클릭 이벤트 추가
-    productDiv.addEventListener('click', function() {
-        window.location.href = `/products/${product.id}`;
+        const category = product.categoryCode;
+        if (!productsByCategory[category]) {
+            productsByCategory[category] = [];
+        }
+        productsByCategory[category].push(product);
     });
 
-    return productDiv;
+    // 카테고리별 섹션 생성
+    const sectionsHTML = Object.entries(productsByCategory)
+        .map(([category, products]) => createCategorySection(category, products))
+        .join('');
+
+    container.innerHTML = sectionsHTML || '<div class="no-products" style="text-align: center; padding: 100px 20px; color: #666;"><h3>등록된 상품이 없습니다.</h3></div>';
 }
 
-// 로딩 상태 표시
-function showLoadingState() {
-    const productContainer = document.querySelector('.product-container, .products-grid');
-    if (productContainer) {
-        productContainer.innerHTML = '<div class="loading">상품을 불러오는 중...</div>';
+// ScrollSpy 일시 중지 플래그
+let isScrollSpyPaused = false;
+
+// sessionStorage에서 스크롤할 카테고리 확인
+function checkAndScrollToCategory() {
+    const scrollToCategory = sessionStorage.getItem('scrollToCategory');
+    if (scrollToCategory) {
+        sessionStorage.removeItem('scrollToCategory');
+
+        // ScrollSpy 일시 중지 (수동 active 적용을 위해)
+        isScrollSpyPaused = true;
+
+        // 상품 로딩 완료 후 스크롤
+        const checkAndScroll = setInterval(function() {
+            const targetSection = document.getElementById('category-' + scrollToCategory);
+            if (targetSection) {
+                clearInterval(checkAndScroll);
+
+                const navHeight = document.querySelector('.product-category-nav').offsetHeight;
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const targetPosition = targetSection.offsetTop - navHeight - headerHeight - 20;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+
+                // 스크롤 완료 후 active 적용 (스크롤 애니메이션 대기)
+                setTimeout(function() {
+                    document.querySelectorAll('.product-category-nav-item').forEach(function(item) {
+                        item.classList.remove('active');
+                    });
+                    const activeNavItem = document.querySelector('.product-category-nav-item[data-category="' + scrollToCategory + '"]');
+                    if (activeNavItem) {
+                        activeNavItem.classList.add('active');
+                    }
+
+                    // 2초 후 ScrollSpy 재개
+                    setTimeout(function() {
+                        isScrollSpyPaused = false;
+                    }, 2000);
+                }, 1200); // 스크롤 애니메이션 완료 대기
+            }
+        }, 100);
+
+        setTimeout(function() {
+            clearInterval(checkAndScroll);
+        }, 5000);
     }
 }
 
-// 로딩 상태 해제
-function hideLoadingState() {
-    // 실제 상품 데이터로 대체되므로 별도 처리 불필요
+// Smooth Scroll 구현
+function initSmoothScroll() {
+    const navItems = document.querySelectorAll('.product-category-nav-item');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+
+            if (targetSection) {
+                // ScrollSpy 일시 중지
+                isScrollSpyPaused = true;
+
+                const navHeight = document.querySelector('.product-category-nav').offsetHeight;
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const targetPosition = targetSection.offsetTop - navHeight - headerHeight - 20;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+
+                // 클릭한 카테고리 추출
+                const clickedCategory = this.getAttribute('data-category');
+
+                // 스크롤 완료 후 active 적용
+                setTimeout(function() {
+                    document.querySelectorAll('.product-category-nav-item').forEach(function(navItem) {
+                        navItem.classList.remove('active');
+                    });
+                    const activeNavItem = document.querySelector('.product-category-nav-item[data-category="' + clickedCategory + '"]');
+                    if (activeNavItem) {
+                        activeNavItem.classList.add('active');
+                    }
+
+                    // 2초 후 ScrollSpy 재개
+                    setTimeout(function() {
+                        isScrollSpyPaused = false;
+                    }, 2000);
+                }, 1200);
+            }
+        });
+    });
 }
 
-// 에러 메시지 표시
-function showErrorMessage(message) {
-    const errorToast = document.createElement('div');
-    errorToast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #f44336;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-size: 14px;
-        font-weight: 500;
-    `;
-    errorToast.textContent = message;
+// Scroll Spy 구현 (현재 보이는 섹션 하이라이트)
+function initScrollSpy() {
+    const navItems = document.querySelectorAll('.product-category-nav-item');
+    const sections = document.querySelectorAll('.category-section');
 
-    document.body.appendChild(errorToast);
+    const observerOptions = {
+        root: null,
+        rootMargin: '-120px 0px -60% 0px', // 상단 120px(헤더+네비), 하단 60%
+        threshold: 0
+    };
 
-    setTimeout(() => {
-        if (errorToast.parentNode) {
-            errorToast.parentNode.removeChild(errorToast);
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // ScrollSpy가 일시 중지된 경우 active 변경 스킵
+                if (isScrollSpyPaused) return;
+
+                const category = entry.target.id.replace('category-', '');
+
+                // 모든 네비게이션 아이템에서 active 제거
+                navItems.forEach(item => item.classList.remove('active'));
+
+                // 현재 섹션에 해당하는 네비게이션 아이템에 active 추가
+                const activeNavItem = document.querySelector(`.product-category-nav-item[data-category="${category}"]`);
+                if (activeNavItem) {
+                    activeNavItem.classList.add('active');
+                }
+            }
+        });
+    }, observerOptions);
+
+    // 상품 로딩 완료 후 섹션 관찰 시작
+    const checkSections = setInterval(() => {
+        const loadedSections = document.querySelectorAll('.category-section');
+        if (loadedSections.length > 0) {
+            loadedSections.forEach(section => observer.observe(section));
+            clearInterval(checkSections);
         }
-    }, 3000);
+    }, 100);
 }
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', function () {
+    loadAllProducts();
+    initSmoothScroll();
+    initScrollSpy();
+    checkAndScrollToCategory();
+});

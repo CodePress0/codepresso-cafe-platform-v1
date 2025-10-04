@@ -1,5 +1,6 @@
-package com.codepresso.codepresso.service.product;
+package com.codepresso.codepresso.service.review;
 
+import com.codepresso.codepresso.converter.review.ReviewConverter;
 import com.codepresso.codepresso.dto.review.*;
 import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
@@ -8,24 +9,23 @@ import com.codepresso.codepresso.exception.ReviewNotFoundException;
 import com.codepresso.codepresso.exception.UnauthorizedAccessException;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
-import com.codepresso.codepresso.repository.product.ReviewRepository;
+import com.codepresso.codepresso.repository.review.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepo;
     private final MemberRepository memberRepo;
     private final OrdersDetailRepository ordersDetailRepo;
+    private final ReviewConverter reviewConverter;
 
+    @Transactional
     public ReviewResponse createReview(Long memberId, ReviewCreateRequest request, String photoUrl) {
         Long orderDetailId = request.getOrderDetailId();
 
@@ -55,11 +55,12 @@ public class ReviewService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        Review savedReview = reviewRepo.save(review);
+        Review savedReview = saveReview(review);
 
-        return ReviewResponse.fromEntity(savedReview);
+        return reviewConverter.toDto(savedReview);
     }
 
+    @Transactional
     public ReviewResponse editReview(Long memberId, Long reviewId, ReviewUpdateRequest request) {
         Review review = validateReviewOwnership(memberId, reviewId);
 
@@ -73,24 +74,31 @@ public class ReviewService {
                 .createdAt(review.getCreatedAt())
                 .build();
 
-        Review savedReview = reviewRepo.save(review);
+        Review savedReview = saveReview(review);
 
-        return ReviewResponse.fromEntity(savedReview);
+        return reviewConverter.toDto(savedReview);
     }
 
+    @Transactional
     public void deleteReview(Long memberId, Long reviewId) {
         validateReviewOwnership(memberId, reviewId);
 
         reviewRepo.deleteById(reviewId);
     }
 
+    @Transactional
     public List<MyReviewProjection> getReviewsByMember(Long memberId) {
         return reviewRepo.findByMemberId(memberId);
     }
 
+    @Transactional
     public ReviewResponse getReview(Long memberId, Long reviewId) {
         Review review = validateReviewOwnership(memberId, reviewId);
-        return ReviewResponse.fromEntity(review);
+        return reviewConverter.toDto(review);
+    }
+
+    private Review saveReview(Review review) {
+        return reviewRepo.save(review);
     }
 
     private Review validateReviewOwnership(Long memberId, Long reviewId) {

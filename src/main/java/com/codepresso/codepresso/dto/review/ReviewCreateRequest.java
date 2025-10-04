@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewCreateRequest {
-    private Long orderId;
+//    private Long orderId;
+
     private Long orderDetailId;
 
     @DecimalMin(value = "1.0", message = "별점은 1.0 이상이어야 합니다.")
@@ -27,5 +27,5 @@ public class ReviewCreateRequest {
 
     private MultipartFile photos;
 
-    private LocalDateTime created_At;
+//    private LocalDateTime created_At;
 }
