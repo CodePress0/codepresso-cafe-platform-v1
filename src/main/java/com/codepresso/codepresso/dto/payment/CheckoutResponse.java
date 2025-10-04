@@ -4,7 +4,11 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 통합 결제 응답 DTO (결제 준비 + 주문 완료 응답 통합)
@@ -44,6 +48,56 @@ public class CheckoutResponse {
         private Integer lineTotal;     // 추가: 총액
         private Long productId;        // 추가: 상품 ID
         private List<Long> optionIds;  // 추가: 옵션 ID 리스트
+    }
+
+    /**
+     * 토스 결제용 주문 아이템 리스트로 변환
+     * toss-checkout.jsp에서 사용
+     */
+    public List<Map<String, Object>> toTossOrderItems() {
+        if (orderItems == null || orderItems.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return orderItems.stream()
+                .map(item -> {
+                    Map<String, Object> orderItem = new HashMap<>();
+                    orderItem.put("productId", item.getProductId());
+                    orderItem.put("quantity", item.getQuantity());
+                    orderItem.put("price", item.getUnitPrice()); // 단가 사용
+                    orderItem.put("optionIds", item.getOptionIds() != null ?
+                            item.getOptionIds() : Collections.emptyList());
+                    return orderItem;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * JSP checkout.jsp에서 사용하는 directItems 형식으로 변환
+     * 기존 checkout.jsp 호환성 유지용
+     */
+    public List<Map<String, Object>> toDirectItemsMap() {
+        if (orderItems == null || orderItems.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return orderItems.stream()
+                .map(item -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productId", item.getProductId());
+                    map.put("productName", item.getProductName());
+                    map.put("productPhoto", item.getProductPhoto());
+                    map.put("quantity", item.getQuantity());
+                    map.put("unitPrice", item.getUnitPrice());
+                    map.put("price", item.getPrice());
+                    map.put("lineTotal", item.getLineTotal());
+                    map.put("optionIds", item.getOptionIds() != null ?
+                            item.getOptionIds() : Collections.emptyList());
+                    map.put("optionNames", item.getOptionNames() != null ?
+                            item.getOptionNames() : Collections.emptyList());
+                    return map;
+                })
+                .collect(Collectors.toList());
     }
 
 }
