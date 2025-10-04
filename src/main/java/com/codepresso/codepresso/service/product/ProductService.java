@@ -13,6 +13,8 @@ import com.codepresso.codepresso.repository.product.*;
 import com.codepresso.codepresso.repository.review.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,11 +32,7 @@ public class ProductService {
 
     @Transactional
     public List<ProductListResponse> findProductsByCategory() {
-        List<Product> products = productRepo.findProductByCategory();
-
-        return products.stream()
-                .map(productConverter::toDto)
-                .toList();
+        return productRepo.findAllProductsAsDto();
     }
 
     @Transactional
@@ -45,6 +43,15 @@ public class ProductService {
         return reviews.stream()
                 .map(review -> reviewConverter.toDto(review, avgRating))
                 .toList();
+    }
+
+    @Transactional
+    public ProductListResponse findProductsRandom() {
+        Long maxId = productRepo.findMaxId();
+        Long randomId = (long) (Math.random() * maxId);
+        Pageable pageable = PageRequest.of(0, 1);
+        List<ProductListResponse> results = productRepo.findByProductRandom(randomId, pageable);
+        return results.isEmpty() ? null : results.get(0);
     }
 
     @Transactional
@@ -66,21 +73,8 @@ public class ProductService {
     }
 
     @Transactional
-    public List<ProductListResponse> searchProductsByHashtag(String hashtag) {
-        List<Product> products = productRepo.findByHashtagsContaining(hashtag);
-
-        return products.stream()
-                .map(productConverter::toDto)
-                .toList();
-    }
-
-    @Transactional
     public List<ProductListResponse> searchProductsByHashtags(List<String> hashtags) {
-        List<Product> products = productRepo.findByHashtagsIn(hashtags, hashtags.size());
-
-        return products.stream()
-                .map(productConverter::toDto)
-                .toList();
+        return productRepo.findByHashtagsIn(hashtags, hashtags.size());
     }
 
 }

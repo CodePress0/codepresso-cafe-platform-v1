@@ -16,10 +16,13 @@
                 <c:when test="${not empty b.photoUrl}">
                     <img src="${b.photoUrl}"
                          alt="${b.branchName}"
-                         onerror="this.src='/banners/mascot.png'; this.onerror=null;" />
+                         onerror="this.src='/banners/mascot.webp'; this.onerror=null;" loading="lazy" />
                 </c:when>
                 <c:otherwise>
-                    <img src="/banners/mascot.png" alt="CodePress Mascot" />
+                    <picture>
+                        <source srcset="/banners/mascot-small.webp" type="image/webp">
+                        <img src="/banners/mascot.png" alt="CodePress Mascot" loading="lazy" />
+                    </picture>
                 </c:otherwise>
             </c:choose>
         </div>

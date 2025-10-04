@@ -324,8 +324,12 @@
             }
         });
 
-        // 페이지 로드 시 실행
-        updateHeaderBranch();
+        // 페이지 로드 시 실행 (branch-selection.js 로드 대기)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateHeaderBranch);
+        } else {
+            updateHeaderBranch();
+        }
 
         // 매장 선택 변경 이벤트 리스너
         window.addEventListener('branchSelection:change', updateHeaderBranch);
