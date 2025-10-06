@@ -23,20 +23,21 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<List<ProductListResponse>> getAllProducts() {
-        List<ProductListResponse> products = productService.findProductsByCategory();
+//        List<ProductListResponse> products = productService.findProductsByCategory();
+        List<ProductListResponse> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
     /**
-     * 상품 랜덤 추천
+     * 상품 랜덤 추천 (4개)
      */
     @GetMapping("/random")
-    public ResponseEntity<ProductListResponse> getProductRandom() {
-        ProductListResponse product = productService.findProductsRandom();
-        if (product == null) {
+    public ResponseEntity<List<ProductListResponse>> getProductRandom() {
+        List<ProductListResponse> products = productService.findProductsRandom();
+        if (products.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(products);
     }
 
     /**
@@ -65,6 +66,17 @@ public class ProductController {
     public ResponseEntity<List<ProductListResponse>> searchProductsByHashtags(@RequestParam List<String> hashtags) {
         List<ProductListResponse> products = productService.searchProductsByHashtags(hashtags);
         return ResponseEntity.ok(products);
+    }
+
+    /**
+     * 카테고리별 상품 조회
+     */
+    @GetMapping("/category/{categoryCode}")
+    public ResponseEntity<List<ProductListResponse>> getByCategory(@PathVariable String categoryCode) {
+        List<ProductListResponse> products = productService.getProductsByCategory(categoryCode);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES))
+                .body(products);
     }
 
 }

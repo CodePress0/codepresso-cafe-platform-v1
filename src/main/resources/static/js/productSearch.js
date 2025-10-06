@@ -167,22 +167,22 @@ function removeRecentSearch(event, keyword) {
 // ================================================
 async function getRandomRecommendation() {
     try {
-        // 랜덤 상품 1개 조회
+        // 랜덤 상품 4개 조회
         const response = await fetch(`${contextPath}/api/products/random`);
 
         if (!response.ok) {
             throw new Error('상품 조회에 실패했습니다.');
         }
 
-        // API가 단일 ProductListResponse 객체를 반환
-        const randomProduct = await response.json();
+        // API가 List<ProductListResponse> 배열을 반환
+        const randomProducts = await response.json();
 
-        if (!randomProduct) {
+        if (!randomProducts || randomProducts.length === 0) {
             alert('추천할 상품이 없습니다.');
             return;
         }
 
-        displaySearchResults([randomProduct]);
+        displaySearchResults(randomProducts);
 
         // 추천 결과로 스크롤
         document.getElementById('searchResults').scrollIntoView({

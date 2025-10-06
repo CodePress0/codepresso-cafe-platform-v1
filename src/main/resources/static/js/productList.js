@@ -27,7 +27,7 @@ function createProductCard(product) {
     }
 
     const imageHtml = product.productPhoto
-        ? '<img src="' + product.productPhoto + '" alt="' + product.productName + '" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">'
+        ? '<img src="' + product.productPhoto + '" alt="' + product.productName + '" class="product-photo" loading="lazy">'
         : '';
 
     return '<div class="menu-item" onclick="location.href=\'' + contextPath + '/products/' + product.productId + '\'">' +
