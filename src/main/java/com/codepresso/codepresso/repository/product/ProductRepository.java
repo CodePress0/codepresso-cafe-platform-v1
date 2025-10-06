@@ -20,14 +20,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "ORDER BY c.displayOrder")
     List<ProductListResponse> findAllProductsAsDto();
 
-    @Query("SELECT MAX(p.id) FROM Product p")
-    Long findMaxId();
-
     @Query("SELECT new com.codepresso.codepresso.dto.product.ProductListResponse(" +
             "p.id, p.productName, p.productPhoto, p.price, c.categoryName, c.categoryCode) " +
             "FROM Product p LEFT JOIN p.category c " +
-            "WHERE p.id >= :randomId")
-    List<ProductListResponse> findByProductRandom(@Param("randomId") Long randomId, Pageable pageable);
+            "ORDER BY FUNCTION('RAND')")
+    List<ProductListResponse> findByProductRandom(Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "nutritionInfo",
@@ -52,6 +49,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "HAVING COUNT(DISTINCT h.hashtagName) = :size)")
     List<ProductListResponse> findByHashtagsIn(@Param("hashtags") List<String> hashtags,
                                    @Param("size") long size);
-
 
 }

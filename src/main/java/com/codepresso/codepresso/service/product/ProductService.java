@@ -13,6 +13,7 @@ import com.codepresso.codepresso.repository.product.*;
 import com.codepresso.codepresso.repository.review.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,15 +22,19 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
     private final ProductRepository productRepo;
     private final ProductOptionRepository productOptRepo;
     private final FavoriteRepository favoriteRepo;
     private final ReviewRepository reviewRepo;
 
+    private final ProductCacheService productCacheService;
+
     private final ReviewConverter reviewConverter;
     private final ProductConverter productConverter;
 
+    // 캐시 사용으로 대체 (getAllProducts 사용)
     @Transactional
     public List<ProductListResponse> findProductsByCategory() {
         return productRepo.findAllProductsAsDto();
@@ -46,12 +51,9 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductListResponse findProductsRandom() {
-        Long maxId = productRepo.findMaxId();
-        Long randomId = (long) (Math.random() * maxId);
-        Pageable pageable = PageRequest.of(0, 1);
-        List<ProductListResponse> results = productRepo.findByProductRandom(randomId, pageable);
-        return results.isEmpty() ? null : results.get(0);
+    public List<ProductListResponse> findProductsRandom() {
+        Pageable pageable = PageRequest.of(0, 4);
+        return productRepo.findByProductRandom(pageable);
     }
 
     @Transactional
@@ -76,5 +78,35 @@ public class ProductService {
     public List<ProductListResponse> searchProductsByHashtags(List<String> hashtags) {
         return productRepo.findByHashtagsIn(hashtags, hashtags.size());
     }
+
+    // 성능 비교
+    @Transactional
+    public List<ProductListResponse> getProductsByCategory(String categoryCode) {
+        long startTime = System.currentTimeMillis();
+
+        List<ProductListResponse> products = productCacheService.getProductsByCategoryCode(categoryCode);
+
+        long endTime = System.currentTimeMillis();
+        log.debug("카테고리 조회 시간 : {}ms", endTime - startTime);
+
+        return products;
+    }
+
+    /**
+     * 전체 상품 목록
+     */
+    @Transactional
+    public List<ProductListResponse> getAllProducts() {
+        return productCacheService.getAllProducts();
+    }
+
+    /**
+     * 정렬된 카테고리 목록
+     */
+    @Transactional
+    public List<String> getSortedCategories() {
+        return productCacheService.getSortedCategories();
+    }
+
 
 }

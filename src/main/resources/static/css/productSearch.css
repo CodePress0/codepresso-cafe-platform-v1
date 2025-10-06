@@ -426,10 +426,11 @@ body.product-search-page {
 .result-image-wrapper {
     position: relative;
     width: 100%;
-    /*aspect-ratio: 4 / 5;*/
+    aspect-ratio: 1 / 1;
     border-radius: 18px;
     overflow: hidden;
     background: #ffffff;
+    min-height: 200px;
 }
 
 .result-image {
