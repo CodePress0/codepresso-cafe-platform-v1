@@ -223,16 +223,13 @@
                 </div>
 
                 <!-- 수량 선택 및 주문 버튼 -->
-                <aside class="detail-side-column">
+                <aside class="detail-side-column" id="orderCard">
                     <section class="detail-card order-card">
                         <header class="detail-card-header">
                             <h3>총 가격</h3>
                         </header>
                         <div class="quantity-section">
-                                <%--                        <div class="quantity-price-display">--%>
-                                <%--                            <span class="price-label">총 가격:</span>--%>
                             <span class="total-price" id="totalPrice">0원</span>
-                                <%--                        </div>--%>
                             <div class="quantity-controls">
                                 <button class="quantity-btn minus" onclick="decreaseQuantity()">−</button>
                                 <span class="quantity-display" id="quantity">1</span>
@@ -630,6 +627,7 @@
                 })
                 .then(data => {
                     console.log('장바구니 추가 성공:', data);
+                    window.dispatchEvent(new Event('cartUpdated'));
                     showSuccessMessage('장바구니에 ' + currentProduct.name + ' ' + currentQuantity + '개를 담았습니다.');
                 })
                 .catch(error => {
@@ -967,6 +965,16 @@
             console.log('선택된 매장 ID:', branchId);
             form.submit();
         }
+
+        const card = document.querySelector('.detail-side-column');
+        let lastScrollY = 0;
+
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const offset = Math.min(scrollY, 200); // 상한선 설정 (너무 많이 내려가지 않게)
+            card.style.transform = `translateY(${offset}px)`;
+            lastScrollY = scrollY;
+        });
 
     </script>
     <script src="${pageContext.request.contextPath}/js/categoryNav.js"></script>
