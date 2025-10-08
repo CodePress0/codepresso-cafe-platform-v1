@@ -44,7 +44,9 @@ public class SecurityConfig {
                     "/users/**",
 //                    "/api/users/**",
                     "/boards/**",
-                    "/products/**"
+                    "/products/**",
+                        "/payments/**",
+                        "/orders/**"
                 ).authenticated()
                 .anyRequest().permitAll()
             )
@@ -84,7 +86,7 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(8);
     }
 
 }

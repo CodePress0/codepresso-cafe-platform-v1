@@ -22,30 +22,11 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-class OrderCreationService {
+public class OrderCreationService {
 
     private final ProductRepository productRepository;
     private final ProductOptionRepository productOptionRepository;
 
-    /**
-     * 주문 생성
-     */
-    public Orders createOrder(CheckoutRequest request, Member member, Branch branch) {
-        return Orders.builder()
-                .member(member)
-                .branch(branch)
-                .productionStatus("픽업완료")
-                .isTakeout(request.getIsTakeout())
-                .pickupTime(request.getPickupTime())
-                .orderDate(LocalDateTime.now())
-                .requestNote(request.getRequestNote())
-                .isPickup(true)
-                .totalAmount(request.getTotalAmount())
-                .discountAmount(request.getTotalDiscountAmount())
-                .finalAmount(request.getTotalAmount()-request.getTotalDiscountAmount())
-                .usedCouponId(request.getUsedCouponId())
-                .build();
-    }
 
     /**
      * 주문 상세 생성
@@ -53,26 +34,52 @@ class OrderCreationService {
     public List<OrdersDetail> createOrderDetails(List<CheckoutRequest.OrderItem> orderItems, Orders orders) {
         List<OrdersDetail> orderDetails = new ArrayList<>();
 
-        for (CheckoutRequest.OrderItem item : orderItems) {
+        // 할인 전 총액 계산
+        int totalBeforeDiscount = orderItems.stream()
+                .mapToInt(item -> item.getPrice() * item.getQuantity())
+                .sum();
+
+        // 할인 금액 가져오기
+        int totalDiscount =orders.getDiscountAmount() != null ? orders.getDiscountAmount() : 0;
+
+        // 할인율 계산
+        double discountRate = totalBeforeDiscount > 0 ? (double) totalDiscount/totalBeforeDiscount : 0;
+
+        int accumulateDiscount = 0;
+
+        for (int i = 0; i<orderItems.size(); i++) {
+            CheckoutRequest.OrderItem item = orderItems.get(i);
 
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + item.getProductId()));
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            // 주문 상세 생성 (총액 = 단가*수량, 수량은 OrdersDetail에 저장)
-            OrdersDetail orderDetail = OrdersDetail.builder()
+            int itemOriginalPrice = item.getPrice() * item.getQuantity();
+
+            int itemDiscount;
+            if(i==orderItems.size()-1) {
+                itemDiscount = totalDiscount - accumulateDiscount;
+            }else {
+                itemDiscount = (int)Math.round(itemOriginalPrice * discountRate);
+                accumulateDiscount = accumulateDiscount + itemDiscount;
+            }
+
+            // 할인 적용된 가격
+            int discountedPrice = itemOriginalPrice - itemDiscount;
+
+            // 주문 상세 생성
+            OrdersDetail ordersDetail = OrdersDetail.builder()
                     .orders(orders)
                     .product(product)
-                    .price(item.getPrice() * item.getQuantity())
+                    .price(discountedPrice)
                     .quantity(item.getQuantity())
                     .build();
 
-            // 옵션 추가
-            if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
-                List<OrdersItemOptions> options = createOrderItemOptions(item.getOptionIds(), orderDetail);
-                orderDetail.setOptions(options);
+            if(item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
+                List<OrdersItemOptions> options = createOrderItemOptions(item.getOptionIds(), ordersDetail);
+                ordersDetail.setOptions(options);
             }
 
-            orderDetails.add(orderDetail);
+            orderDetails.add(ordersDetail);
         }
 
         return orderDetails;
