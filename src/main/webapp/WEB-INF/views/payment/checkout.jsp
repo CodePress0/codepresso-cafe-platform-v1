@@ -573,6 +573,16 @@
         document.body.appendChild(form);
         form.submit();
     }
+
+    const card = document.querySelector('.payment-summary');
+    let lastScrollY = 0;
+
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        const offset = Math.min(scrollY, 200); // 상한선 설정 (너무 많이 내려가지 않게)
+        card.style.transform = `translateY(${offset}px)`;
+        lastScrollY = scrollY;
+    });
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jspf" %>
