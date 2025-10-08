@@ -51,13 +51,10 @@
                                             <c:when test="${not empty item.productPhoto}">
                                                 <img src="${item.productPhoto}"
                                                      alt="${item.productName}"
-                                                     onerror="this.src='/banners/mascot.webp'; this.onerror=null;" loading="lazy" />
+                                                     onerror="this.src='/banners/mascot.png'; this.onerror=null;" />
                                             </c:when>
                                             <c:otherwise>
-                                                <picture>
-                                                    <source srcset="/banners/mascot-small.webp" type="image/webp">
-                                                    <img src="/banners/mascot.png" alt="CodePress Mascot" loading="lazy" />
-                                                </picture>
+                                                <img src="/banners/mascot.png" alt="CodePress Mascot" />
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
@@ -493,6 +490,15 @@
         }
     });
 
+    // branch-selection.js가 로드될 때까지 대기
+    function waitForBranchSelection(callback) {
+        if (window.branchSelection) {
+            callback();
+        } else {
+            setTimeout(function() { waitForBranchSelection(callback); }, 50);
+        }
+    }
+
     const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
     const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
     const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
@@ -647,8 +653,8 @@
         const dLat = toRad(lat2 - lat1);
         const dLng = toRad(lng2 - lng1);
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
         const c = 2 * Math.asin(Math.sqrt(a));
         return R * c;
     };
@@ -816,8 +822,14 @@
     };
 
     const hydrateSelectionFromServer = () => {
+        if (!window.branchSelection) {
+            console.warn('branchSelection이 아직 로드되지 않았습니다.');
+            return;
+        }
+
         const initialId = selectedBranchIdInput ? selectedBranchIdInput.value : '';
         const initialName = selectedBranchNameInput ? selectedBranchNameInput.value : '';
+
         if (initialId) {
             if (initialName) {
                 setBranchSelection(initialId, initialName);
@@ -837,9 +849,8 @@
                     });
             }
         } else {
-            const stored = window.branchSelection && typeof window.branchSelection.load === 'function'
-                ? window.branchSelection.load()
-                : null;
+            const stored = window.branchSelection.load();
+            console.log('localStorage에서 로드한 매장 정보:', stored);
             if (stored && stored.id) {
                 setBranchSelection(stored.id, stored.name);
             } else {
@@ -900,7 +911,8 @@
         }
     });
 
-    hydrateSelectionFromServer();
+    // branchSelection이 로드된 후에 실행
+    waitForBranchSelection(hydrateSelectionFromServer);
 
     // 주문하기 버튼: 선택된 매장 ID를 쿼리스트링으로 넘겨 결제 페이지로 이동
     if (orderButton) {

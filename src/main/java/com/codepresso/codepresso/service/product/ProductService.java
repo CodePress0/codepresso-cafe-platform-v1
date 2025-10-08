@@ -29,7 +29,7 @@ public class ProductService {
     private final FavoriteRepository favoriteRepo;
     private final ReviewRepository reviewRepo;
 
-    private final ProductCacheService productCacheService;
+    // private final ProductCacheService productCacheService;
 
     private final ReviewConverter reviewConverter;
     private final ProductConverter productConverter;
@@ -78,35 +78,5 @@ public class ProductService {
     public List<ProductListResponse> searchProductsByHashtags(List<String> hashtags) {
         return productRepo.findByHashtagsIn(hashtags, hashtags.size());
     }
-
-    // 성능 비교
-    @Transactional
-    public List<ProductListResponse> getProductsByCategory(String categoryCode) {
-        long startTime = System.currentTimeMillis();
-
-        List<ProductListResponse> products = productCacheService.getProductsByCategoryCode(categoryCode);
-
-        long endTime = System.currentTimeMillis();
-        log.debug("카테고리 조회 시간 : {}ms", endTime - startTime);
-
-        return products;
-    }
-
-    /**
-     * 전체 상품 목록
-     */
-    @Transactional
-    public List<ProductListResponse> getAllProducts() {
-        return productCacheService.getAllProducts();
-    }
-
-    /**
-     * 정렬된 카테고리 목록
-     */
-    @Transactional
-    public List<String> getSortedCategories() {
-        return productCacheService.getSortedCategories();
-    }
-
 
 }

@@ -16,7 +16,7 @@
                 <c:when test="${not empty b.photoUrl}">
                     <img src="${b.photoUrl}"
                          alt="${b.branchName}"
-                         onerror="this.src='/banners/mascot.webp'; this.onerror=null;" loading="lazy" />
+                         onerror="this.src='/banners/mascot.png'; this.onerror=null;" loading="lazy" />
                 </c:when>
                 <c:otherwise>
                     <picture>

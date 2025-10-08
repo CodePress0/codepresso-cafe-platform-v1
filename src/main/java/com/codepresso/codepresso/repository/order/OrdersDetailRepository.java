@@ -14,4 +14,9 @@ import java.util.Optional;
 public interface OrdersDetailRepository extends JpaRepository<OrdersDetail, Long> {
     Optional<OrdersDetail> findById(Long orderDetailId);
 
+    @Query("SELECT d FROM OrdersDetail d " +
+           "LEFT JOIN FETCH d.orders o " +
+           "LEFT JOIN FETCH o.member")
+    List<OrdersDetail> findAllWithOrdersAndMember();
+
 }

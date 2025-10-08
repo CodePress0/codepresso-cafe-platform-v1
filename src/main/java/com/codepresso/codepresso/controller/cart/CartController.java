@@ -27,6 +27,19 @@ public class CartController {
         return ResponseEntity.ok(cartService.getCartByMemberId(loginUser.getMemberId()));
     }
 
+    //장바구니 아이템 개수 조회
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getCartItemCount(@AuthenticationPrincipal LoginUser loginUser) {
+        try {
+            CartResponse cart = cartService.getCartByMemberId(loginUser.getMemberId());
+            int totalCount = (int) cart.getItems().stream().count();
+            return ResponseEntity.ok(totalCount);
+        } catch (IllegalArgumentException e) {
+            // 장바구니가 없으면 0 반환
+            return ResponseEntity.ok(0);
+        }
+    }
+
     //장바구니 상품 추가
     @PostMapping
     public ResponseEntity<CartItemResponse> addItem(

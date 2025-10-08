@@ -904,6 +904,10 @@ body.product-detail-page {
     max-width: 360px;
     display: grid;
     gap: 18px;
+    position: sticky;
+    top: 150px; /* 스크롤 시 상단에서 150px 떨어진 위치에 고정 */
+    height: fit-content; /* 고정 시에도 영역이 맞게 조정됨 */
+    z-index: 10;
 }
 
 .detail-card {
