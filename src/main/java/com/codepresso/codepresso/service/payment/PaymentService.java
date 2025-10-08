@@ -331,11 +331,14 @@ public class PaymentService {
     }
 
     private CheckoutResponse buildCheckoutResponse(Orders orders) {
-        // 1. 주문 상세 정보 리스트 생성
+        Orders fetchedOrders = ordersRepository.findByIdWithDetails(orders.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        // 주문 상세 정보 리스트 생성
         List<CheckoutResponse.OrderItem> orderItems = new ArrayList<>();
 
-        // 2. 각 주문 상세를 OrderItem으로 변환
-        for (OrdersDetail detail : orders.getOrdersDetails()) {
+        // 각 주문 상세를 OrderItem으로 변환
+        for (OrdersDetail detail : fetchedOrders.getOrdersDetails()) {
             // 옵션 이름들 수집
             List<String> optionNames = new ArrayList<>();
             if (detail.getOptions() != null) {
@@ -356,23 +359,22 @@ public class PaymentService {
             orderItems.add(orderItem);
         }
 
-        // 3. 총 주문 금액 계산
+        // 총 주문 금액 계산
         int totalAmount = 0;
-        for (OrdersDetail detail : orders.getOrdersDetails()) {
+        for (OrdersDetail detail : fetchedOrders.getOrdersDetails()) {
             totalAmount += detail.getPrice();
         }
 
-        // 4. 최종 응답 객체 생성
+        // 최종 응답 객체 생성
         return CheckoutResponse.builder()
-                .orderId(orders.getId())
-                .productionStatus(orders.getProductionStatus())
-                .orderDate(orders.getOrderDate())
-                .pickupTime(orders.getPickupTime())
-                .isTakeout(orders.getIsTakeout())
-                .requestNote(orders.getRequestNote())
+                .orderId(fetchedOrders.getId())
+                .productionStatus(fetchedOrders.getProductionStatus())
+                .orderDate(fetchedOrders.getOrderDate())
+                .pickupTime(fetchedOrders.getPickupTime())
+                .isTakeout(fetchedOrders.getIsTakeout())
+                .requestNote(fetchedOrders.getRequestNote())
                 .totalAmount(totalAmount)
                 .orderItems(orderItems)
                 .build();
     }
-
 }

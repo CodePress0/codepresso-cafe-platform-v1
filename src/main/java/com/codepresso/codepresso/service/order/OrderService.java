@@ -7,8 +7,6 @@ import com.codepresso.codepresso.dto.order.OrderListResponse;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
-import com.codepresso.codepresso.entity.payment.PaymentDetail;
-import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersDetailRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -76,12 +73,11 @@ public class OrderService {
      * 주문 상세 조회
      * */
     public OrderDetailResponse getOrderDetail(Long orderId){
-        //실제구현 나중에 주석 해제
-         Orders orders = ordersRepository.findById(orderId)
-                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-         return convertToOrderDetail(orders);
+        // 1차 쿼리: Orders + Branch + Member + OrdersDetails + Product
+        Orders orders = ordersRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
-
+        return convertToOrderDetail(orders);
     }
 
      private OrderListResponse.OrderSummary convertToOrderSummary(Orders orders) {

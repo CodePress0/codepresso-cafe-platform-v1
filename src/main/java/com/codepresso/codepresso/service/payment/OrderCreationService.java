@@ -1,8 +1,6 @@
 package com.codepresso.codepresso.service.payment;
 
 import com.codepresso.codepresso.dto.payment.CheckoutRequest;
-import com.codepresso.codepresso.entity.branch.Branch;
-import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
@@ -13,7 +11,6 @@ import com.codepresso.codepresso.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
