@@ -41,10 +41,13 @@
                 </a>
                 <a href="/boards/list">고객센터</a>
                 <a href="/member/mypage">마이페이지</a>
-                <a href="/cart" class="cart-link">
-                    장바구니
-                    <span id="cartBadge" class="cart-badge" style="display: none;">0</span>
-                </a>
+                <c:set var="currentPath" value="${pageContext.request.requestURI}" />
+                <c:if test="${!fn:contains(currentPath, '/branch/list')}">
+                    <a href="/cart" class="cart-link">
+                        장바구니
+                        <span id="cartBadge" class="cart-badge" style="display: none;">0</span>
+                    </a>
+                </c:if>
             </c:if>
         </nav>
     </div>
