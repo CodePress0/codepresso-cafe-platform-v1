@@ -3,6 +3,7 @@ package com.codepresso.codepresso.service.payment;
 import com.codepresso.codepresso.dto.cart.CartItemResponse;
 import com.codepresso.codepresso.dto.cart.CartOptionResponse;
 import com.codepresso.codepresso.dto.cart.CartResponse;
+import com.codepresso.codepresso.dto.payment.CheckoutRequest;
 import com.codepresso.codepresso.dto.payment.CheckoutResponse;
 import com.codepresso.codepresso.dto.payment.TossPaymentSuccessRequest;
 import com.codepresso.codepresso.dto.product.ProductDetailResponse;
@@ -12,13 +13,9 @@ import com.codepresso.codepresso.entity.member.Member;
 import com.codepresso.codepresso.entity.order.Orders;
 import com.codepresso.codepresso.entity.order.OrdersDetail;
 import com.codepresso.codepresso.entity.order.OrdersItemOptions;
-import com.codepresso.codepresso.entity.product.Product;
-import com.codepresso.codepresso.entity.product.ProductOption;
 import com.codepresso.codepresso.repository.branch.BranchRepository;
 import com.codepresso.codepresso.repository.member.MemberRepository;
 import com.codepresso.codepresso.repository.order.OrdersRepository;
-import com.codepresso.codepresso.repository.product.ProductOptionRepository;
-import com.codepresso.codepresso.repository.product.ProductRepository;
 import com.codepresso.codepresso.service.cart.CartService;
 import com.codepresso.codepresso.service.coupon.CouponService;
 import com.codepresso.codepresso.service.coupon.StampService;
@@ -42,12 +39,11 @@ public class PaymentService {
     private final MemberRepository memberRepository;
     private final OrdersRepository ordersRepository;
     private final BranchRepository branchRepository;
-    private final ProductRepository productRepository;
-    private final ProductOptionRepository productOptionRepository;
     private final CartService cartService;
     private final ProductService productService;
     private final CouponService couponService;
     private final StampService stampService;
+    private final OrderCreationService orderCreationService;
 
     /**
      * 장바구니 결제페이지 데이터 준비
@@ -223,25 +219,6 @@ public class PaymentService {
         return (basePrice + optionPrice) * quantity;
     }
 
-
-    private List<OrdersItemOptions> createOrderItemOptions(List<Long> optionIds, OrdersDetail orderDetail) {
-        List<OrdersItemOptions> orderItemOptions = new ArrayList<>();
-
-        for (Long optionId : optionIds) {
-            ProductOption productOption = productOptionRepository.findById(optionId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + optionId));
-
-            OrdersItemOptions orderItemOption = OrdersItemOptions.builder()
-                    .option(productOption)
-                    .ordersDetail(orderDetail)
-                    .build();
-
-            orderItemOptions.add(orderItemOption);
-        }
-
-        return orderItemOptions;
-    }
-
     /**
      * 토스페이먼츠 결제 성공 시 주문 생성
      */
@@ -258,10 +235,14 @@ public class PaymentService {
         Orders orders = createTossOrder(request, member, branch);
 
         // 3. 주문 상세 생성
-        List<OrdersDetail> ordersDetails = createTossOrderDetails(request.getOrderItems(), orders);
-        orders.setOrdersDetails(ordersDetails);
+        List<CheckoutRequest.OrderItem> checkoutItems = request.getOrderItems().stream()
+                .map(this::convertToCheckoutOrderItem)
+                .collect(Collectors.toList());
 
         // 4. 주문 저장
+        List<OrdersDetail> ordersDetails = orderCreationService.createOrderDetails(checkoutItems,orders);
+        orders.setOrdersDetails(ordersDetails);
+
         Orders savedOrder = ordersRepository.save(orders);
 
         // 5. 장바구니 비우기 로직 추가
@@ -317,6 +298,11 @@ public class PaymentService {
             pickupTime = LocalDateTime.now().plusMinutes(5);
         }
 
+        int discountAmount = (request.getUseCoupon() != null && request.getUseCoupon() && request.getDiscountAmount() != null)
+                ? request.getDiscountAmount() : 0;
+        int finalAmount = request.getAmount() != null ? request.getAmount() : 0;
+        int totalAmount = finalAmount + discountAmount;
+
         return Orders.builder()
                 .member(member)
                 .branch(branch)
@@ -326,34 +312,22 @@ public class PaymentService {
                 .orderDate(LocalDateTime.now())
                 .requestNote(request.getRequestNote())
                 .isPickup(true)
+                .totalAmount(totalAmount)
+                .discountAmount(discountAmount)
+                .finalAmount(finalAmount)
                 .build();
     }
 
-    private List<OrdersDetail> createTossOrderDetails(List<TossPaymentSuccessRequest.OrderItem> orderItems, Orders orders) {
-        List<OrdersDetail> orderDetails = new ArrayList<>();
-
-        for (TossPaymentSuccessRequest.OrderItem item : orderItems) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다: " + item.getProductId()));
-
-            // 주문 상세 생성
-            OrdersDetail orderDetail = OrdersDetail.builder()
-                    .orders(orders)
-                    .product(product)
-                    .price(item.getPrice() * item.getQuantity())
-                    .quantity(item.getQuantity())
-                    .build();
-
-            // 옵션 추가
-            if (item.getOptionIds() != null && !item.getOptionIds().isEmpty()) {
-                List<OrdersItemOptions> options = createOrderItemOptions(item.getOptionIds(), orderDetail);
-                orderDetail.setOptions(options);
-            }
-
-            orderDetails.add(orderDetail);
-        }
-
-        return orderDetails;
+    /**
+     * TossPaymentSuccessRequest.OrderItem을 CheckoutRequest.OrderItem으로 변환
+     */
+    private CheckoutRequest.OrderItem convertToCheckoutOrderItem(TossPaymentSuccessRequest.OrderItem tossItem) {
+        return CheckoutRequest.OrderItem.builder()
+                .productId(tossItem.getProductId())
+                .quantity(tossItem.getQuantity())
+                .price(tossItem.getPrice())
+                .optionIds(tossItem.getOptionIds())
+                .build();
     }
 
     private CheckoutResponse buildCheckoutResponse(Orders orders) {

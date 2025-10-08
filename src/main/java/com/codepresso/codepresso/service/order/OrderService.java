@@ -84,8 +84,6 @@ public class OrderService {
 
     }
 
-    // ========== 실제 구현 메서드들 (나중에 주석 해제) ==========
-
      private OrderListResponse.OrderSummary convertToOrderSummary(Orders orders) {
          // 대표 상품명 계산
          String representativeItem = calculateRepresentativeItem(orders.getOrdersDetails());
@@ -124,9 +122,9 @@ public class OrderService {
                  .build();
 
           // 결제 정보 생성
-         int totalAmount = calculateTotalAmount(orders);
+         int totalAmount = orders.getTotalAmount() != null ? orders.getTotalAmount() : 0;
          int discount = orders.getDiscountAmount() != null ? orders.getDiscountAmount() : 0;
-         int finalAmount = totalAmount - discount;
+         int finalAmount = orders.getFinalAmount() != null ? orders.getFinalAmount() : 0;
 
          OrderDetailResponse.PaymentInfo payment = OrderDetailResponse.PaymentInfo.builder()
                  .paymentMethod("신용카드")
@@ -153,27 +151,39 @@ public class OrderService {
      private OrderDetailResponse.OrderItem convertToOrderItem(OrdersDetail detail) {
          // 옵션들 수집 (기본 옵션 제외)
           List<OrderDetailResponse.OrderOption> options = new ArrayList<>();
+          int optionExtraPrice = 0;
+
           if (detail.getOptions() != null) {
-          for (OrdersItemOptions option : detail.getOptions()) {
-              String optionStyle = option.getOption().getOptionStyle().getOptionStyle();
-              Integer extraPrice = option.getOption().getOptionStyle().getExtraPrice();
-              
-              // "기본" 옵션 제외
-              if (!"기본".equals(optionStyle)) {
-                  options.add(OrderDetailResponse.OrderOption.builder()
-                          .optionStyle(optionStyle)
-                          .extraPrice(extraPrice)
-                          .build());
+              for (OrdersItemOptions option : detail.getOptions()) {
+                  String optionStyle = option.getOption().getOptionStyle().getOptionStyle();
+                  Integer extraPrice = option.getOption().getOptionStyle().getExtraPrice();
+
+                  // "기본" 옵션 제외
+                  if (!"기본".equals(optionStyle)) {
+                      options.add(OrderDetailResponse.OrderOption.builder()
+                              .optionStyle(optionStyle)
+                              .extraPrice(extraPrice)
+                              .build());
+
+                      if (extraPrice != null){
+                          optionExtraPrice += extraPrice;
+                      }
+                  }
               }
           }
-          }
+
+         // ✅ 할인 전 원가 계산
+         int basePrice = detail.getProduct().getPrice();  // 상품 기본 가격
+         int unitPrice = basePrice + optionExtraPrice;    // 단가 = 기본가격 + 옵션가격
+         int quantity = detail.getQuantity() != null ? detail.getQuantity() : 1;
+         int totalPriceBeforeDiscount = unitPrice * quantity;  // 할인 전 총액 = 단가 × 수량
 
          return OrderDetailResponse.OrderItem.builder()
                  .orderDetailId(detail.getId())
                  .productName(detail.getProduct().getProductName())
-                 .quantity(detail.getQuantity() != null ? detail.getQuantity() : 1)
-                 .price(detail.getProduct().getPrice())
-                 .totalPrice(detail.getPrice())
+                 .quantity(quantity)
+                 .price(basePrice)
+                 .totalPrice(totalPriceBeforeDiscount)
                  .options(options)
                  .build();
      }
