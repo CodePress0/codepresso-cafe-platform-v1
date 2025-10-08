@@ -12,8 +12,58 @@
   <div class="container">
     <div class="hero-card" style="grid-template-columns: 1fr;">
       <div>
-        <div class="badge">CodePress · 주문 내역</div>
-        <h1>내 주문 내역</h1>
+        <div class="badge">CodePress · 마이페이지</div>
+        <h1>마이페이지</h1>
+
+        <!-- 탭 메뉴 -->
+        <style>
+            .tab-menu {
+                display: flex;
+                gap: 8px;
+                border-bottom: 2px solid rgba(255,122,162,0.2);
+                margin: 24px 0 32px;
+                overflow-x: auto;
+            }
+            .tab-item {
+                padding: 14px 24px;
+                background: transparent;
+                border: none;
+                color: var(--text-2);
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                position: relative;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .tab-item:hover {
+                color: var(--pink-1);
+                background: rgba(255,122,162,0.05);
+            }
+            .tab-item.active {
+                color: var(--pink-1);
+                font-weight: 700;
+            }
+            .tab-item.active::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--pink-1);
+                border-radius: 3px 3px 0 0;
+            }
+        </style>
+
+        <div class="tab-menu">
+            <a href="/member/mypage" class="tab-item">👤 내 정보</a>
+            <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
+            <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
+            <a href="/orders" class="tab-item active">📋 주문목록</a>
+        </div>
 
         <!-- 필터 옵션 -->
         <div class="filter-section">
@@ -144,10 +194,9 @@
           </c:otherwise>
         </c:choose>
 
-        <!-- 하단 액션 버튼 -->
-        <div class="cta" style="justify-content: center; margin-top: 20px;">
-          <a href="/branch/list" class="btn btn-primary">주문하러 가기</a>
-          <a href="/member/mypage" class="btn btn-ghost">마이페이지로 돌아가기</a>
+        <!-- 주문하러 가기 버튼 -->
+        <div style="text-align: center; margin: 32px 0 20px;">
+          <a href="/branch/list" class="btn btn-primary" style="padding: 16px 48px; font-size: 18px; font-weight: 700;">주문하러 가기</a>
         </div>
       </div>
     </div>

@@ -31,7 +31,63 @@
         <div class="hero-card mypage-card" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
             <div>
                 <div class="badge">CodePress · 마이페이지</div>
-                <h1>내 정보</h1>
+                <h1>마이페이지</h1>
+
+                <!-- 탭 메뉴 -->
+                <style>
+                    .tab-menu {
+                        display: flex;
+                        gap: 8px;
+                        border-bottom: 2px solid rgba(255,122,162,0.2);
+                        margin: 24px 0 32px;
+                        overflow-x: auto;
+                    }
+                    .tab-item {
+                        padding: 14px 24px;
+                        background: transparent;
+                        border: none;
+                        color: var(--text-2);
+                        font-weight: 600;
+                        font-size: 16px;
+                        cursor: pointer;
+                        position: relative;
+                        transition: all 0.2s ease;
+                        white-space: nowrap;
+                        text-decoration: none;
+                        display: inline-block;
+                    }
+                    .tab-item:hover {
+                        color: var(--pink-1);
+                        background: rgba(255,122,162,0.05);
+                    }
+                    .tab-item.active {
+                        color: var(--pink-1);
+                        font-weight: 700;
+                    }
+                    .tab-item.active::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        left: 0;
+                        right: 0;
+                        height: 3px;
+                        background: var(--pink-1);
+                        border-radius: 3px 3px 0 0;
+                    }
+                    .tab-content {
+                        display: none;
+                    }
+                    .tab-content.active {
+                        display: block;
+                    }
+                </style>
+
+                <div class="tab-menu">
+                    <a href="/member/mypage" class="tab-item active">👤 내 정보</a>
+                    <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
+                    <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
+                    <a href="/orders" class="tab-item">📋 주문목록</a>
+                </div>
 
                 <c:if test="${not empty success}">
                     <div class="success-message" style="background: #d4edda; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">✅ ${success}</div>
@@ -138,17 +194,16 @@
                     </li>
                 </ul>
 
-                <div class="cta">
-                    <a class="btn btn-primary" href="/branch/list">주문하러 가기</a>
-                    <a class="btn btn-ghost" href="/favorites">즐겨찾기</a>
-                    <a class="btn btn-ghost" href="/users/myReviews">내 리뷰 조회</a>
-                    <a class="btn btn-ghost" href="/orders">주문목록</a>
-                    <button class="btn btn-ghost" id="edit-btn" onclick="toggleEditMode()">정보 수정</button>
+                <!-- 수정 모드 저장/취소 버튼 -->
+                <div class="edit-mode" id="edit-controls" style="text-align: center; margin: 20px 0;">
+                    <button class="btn btn-primary" onclick="saveProfile()" style="padding: 12px 32px; font-size: 16px;">💾 저장</button>
+                    <button class="btn btn-ghost" onclick="cancelEdit()" style="padding: 12px 32px; font-size: 16px; margin-left: 12px;">❌ 취소</button>
                 </div>
 
-                <div class="edit-mode" id="edit-controls" style="text-align: center; margin: 20px 0;">
-                    <button class="btn btn-primary" onclick="saveProfile()">저장</button>
-                    <button class="btn btn-ghost" onclick="cancelEdit()">취소</button>
+                <!-- 하단 버튼 -->
+                <div style="text-align: center; margin: 32px 0 20px;">
+                    <a class="btn btn-primary" href="/branch/list" style="padding: 16px 48px; font-size: 18px; font-weight: 700;">주문하러 가기</a>
+                    <button class="btn btn-ghost" id="edit-btn" onclick="toggleEditMode()" style="padding: 16px 48px; font-size: 18px; font-weight: 700; margin-left: 12px;">정보 수정</button>
                 </div>
 
                 <script>
