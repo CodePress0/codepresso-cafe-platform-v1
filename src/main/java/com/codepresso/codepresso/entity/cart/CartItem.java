@@ -3,6 +3,7 @@ package com.codepresso.codepresso.entity.cart;
 import com.codepresso.codepresso.entity.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class CartItem {
     @JoinColumn(name="product_id", nullable = false)
     private Product product;
 
+    @BatchSize(size = 100)
     @Builder.Default
     @OneToMany(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<CartOption> options = new ArrayList<>();

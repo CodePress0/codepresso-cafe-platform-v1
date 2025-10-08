@@ -119,8 +119,6 @@ public class CartService {
         return saved;
     }
 
-    // helper 메서드
-    // 옵션 집합 비교 (순서 무시)
     private boolean sameOptionSet(CartItem existingCartItem, Set<Long> requestedOptionIdSet){
         List<CartOption> existingCartOptions = existingCartItem.getOptions();
         if (existingCartOptions == null || existingCartOptions.isEmpty()) {
@@ -194,7 +192,7 @@ public class CartService {
     public CartResponse getCartByMemberId(Long memberId) {
 
         // 장바구니 조회
-        Cart cart = cartRepository.findByMemberId(memberId)
+        Cart cart = cartRepository.findByMemberIdWithItems(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 없습니다. memberId : " + memberId));
 
         // cartItem -> DTO 변환
@@ -249,8 +247,6 @@ public class CartService {
         }
 
         item.setQuantity(newQuantity);
-        // price는 단가 저장 정책이므로 변경하지 않음(필요 시 아래 한 줄로 단가 재동기화 가능)
-        // item.setPrice(calcUnitPriceFromCartOptions(item.getProduct(), item.getOptions()));
     }
 
     // d - cartItem 삭제

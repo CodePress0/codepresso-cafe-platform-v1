@@ -2,11 +2,10 @@ package com.codepresso.codepresso.entity.order;
 
 import com.codepresso.codepresso.entity.branch.Branch;
 import com.codepresso.codepresso.entity.member.Member;
-import com.codepresso.codepresso.entity.payment.Payment;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,12 +47,9 @@ public class Orders {
     private Boolean isPickup;
 
     // 주문 마스터 <-> 주문상세 (1:N)
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersDetail> ordersDetails;
-
-//    // 주문 <-> 결제 마스터 (1:1)
-//    @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private Payment payment;
 
     @Column(name = "total_amount")
     private Integer totalAmount;     // 원래 주문 금액( 할인전 )

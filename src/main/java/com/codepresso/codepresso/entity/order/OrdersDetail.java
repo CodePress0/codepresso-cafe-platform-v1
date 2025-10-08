@@ -3,6 +3,7 @@ package com.codepresso.codepresso.entity.order;
 import com.codepresso.codepresso.entity.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class OrdersDetail {
     @Column(name = "quantity")
     private Integer quantity;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "ordersDetail", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrdersItemOptions> options;
 }
