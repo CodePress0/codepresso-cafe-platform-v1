@@ -15,9 +15,59 @@
     <div class="rcontainer">
         <div class="section-header">
             <h2 class="section-title">
-                <button class="back-btn" onclick="history.back()">←</button>
-                내가 작성한 리뷰
+                <div class="badge">CodePress · 마이페이지</div>
+                <h1 style="margin-top: 12px;">마이페이지</h1>
             </h2>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <style>
+            .tab-menu {
+                display: flex;
+                gap: 8px;
+                border-bottom: 2px solid rgba(255,122,162,0.2);
+                margin: 24px 0 32px;
+                overflow-x: auto;
+            }
+            .tab-item {
+                padding: 14px 24px;
+                background: transparent;
+                border: none;
+                color: var(--text-2);
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                position: relative;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .tab-item:hover {
+                color: var(--pink-1);
+                background: rgba(255,122,162,0.05);
+            }
+            .tab-item.active {
+                color: var(--pink-1);
+                font-weight: 700;
+            }
+            .tab-item.active::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--pink-1);
+                border-radius: 3px 3px 0 0;
+            }
+        </style>
+
+        <div class="tab-menu">
+            <a href="/member/mypage" class="tab-item">👤 내 정보</a>
+            <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
+            <a href="/users/myReviews" class="tab-item active">✍️ 내 리뷰</a>
+            <a href="/orders" class="tab-item">📋 주문목록</a>
         </div>
 
         <!-- 리뷰 통계 카드 -->
@@ -108,6 +158,11 @@
                 <div class="page-numbers" id="pageNumbers"></div>
                 <button class="page-btn next" id="nextBtn">다음</button>
             </div>
+        </div>
+
+        <!-- 주문하러 가기 버튼 -->
+        <div style="text-align: center; margin: 32px 0 20px;">
+            <a class="btn btn-primary" href="/branch/list" style="padding: 16px 48px; font-size: 18px; font-weight: 700;">주문하러 가기</a>
         </div>
     </div>
 </main>
