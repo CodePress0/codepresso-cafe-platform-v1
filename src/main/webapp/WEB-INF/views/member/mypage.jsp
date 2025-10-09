@@ -4,15 +4,13 @@
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <style>
-    .hero.mypage-hero {
-        background: transparent;
-        padding: 72px 0 92px;
+    .mypage-main {
+        padding: 40px 0 80px;
     }
-    .mypage-card {
-        background: #fff !important;
-        border-radius: 28px;
-        border: 1px solid rgba(15,23,42,0.06);
-        box-shadow: 0 28px 54px rgba(15,23,42,0.08);
+    .mypage-container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
     .mypage-body .btn.btn-ghost {
         background: #fff;
@@ -26,12 +24,10 @@
     }
 </style>
 
-<main class="hero mypage-hero">
-    <div class="container">
-        <div class="hero-card mypage-card" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
-            <div>
-                <div class="badge">CodePress · 마이페이지</div>
-                <h1>마이페이지</h1>
+<main class="mypage-main">
+    <div class="mypage-container">
+        <div class="badge">CodePress · 마이페이지</div>
+        <h1>마이페이지</h1>
 
                 <!-- 탭 메뉴 -->
                 <style>
@@ -41,6 +37,11 @@
                         border-bottom: 2px solid rgba(255,122,162,0.2);
                         margin: 24px 0 32px;
                         overflow-x: auto;
+                        -ms-overflow-style: none;
+                        scrollbar-width: none;
+                    }
+                    .tab-menu::-webkit-scrollbar {
+                        display: none;
                     }
                     .tab-item {
                         padding: 14px 24px;
@@ -82,45 +83,45 @@
                     }
                 </style>
 
-                <div class="tab-menu">
-                    <a href="/member/mypage" class="tab-item active">👤 내 정보</a>
-                    <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
-                    <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
-                    <a href="/orders" class="tab-item">📋 주문목록</a>
-                </div>
+        <div class="tab-menu">
+            <a href="/member/mypage" class="tab-item active">👤 내 정보</a>
+            <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
+            <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
+            <a href="/orders" class="tab-item">📋 주문목록</a>
+        </div>
 
-                <c:if test="${not empty success}">
-                    <div class="success-message" style="background: #d4edda; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">✅ ${success}</div>
-                </c:if>
-                <c:if test="${not empty error}">
-                    <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">❌ ${error}</div>
-                </c:if>
+        <c:if test="${not empty success}">
+            <div class="success-message" style="background: #d4edda; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">✅ ${success}</div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">❌ ${error}</div>
+        </c:if>
 
-                <style>
-                    .info-list { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 16px; }
-                    .info-item {
-                        display: grid;
-                        grid-template-columns: 140px 1fr;
-                        align-items: center;
-                        gap: 12px;
-                        padding-bottom: 14px;
-                        border-bottom: 1px dashed rgba(255, 122, 162, 0.5);
-                    }
-                    .info-item:last-child { border-bottom: none; padding-bottom: 0; }
-                    .info-item b { font-weight: 700; color: var(--text-1); }
-                    .edit-mode { display: none; }
-                    .display-mode { display: block; }
-                    .edit-mode input {
-                        width: 100%;
-                        padding: 10px 14px;
-                        border: 1px solid rgba(15,23,42,0.12);
-                        border-radius: 12px;
-                        font-size: 14px;
-                        margin-top: 4px;
-                    }
-                </style>
+        <style>
+            .info-list { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 16px; }
+            .info-item {
+                display: grid;
+                grid-template-columns: 140px 1fr;
+                align-items: center;
+                gap: 12px;
+                padding-bottom: 14px;
+                border-bottom: 1px dashed rgba(255, 122, 162, 0.5);
+            }
+            .info-item:last-child { border-bottom: none; padding-bottom: 0; }
+            .info-item b { font-weight: 700; color: var(--text-1); }
+            .edit-mode { display: none; }
+            .display-mode { display: block; }
+            .edit-mode input {
+                width: 100%;
+                padding: 10px 14px;
+                border: 1px solid rgba(15,23,42,0.12);
+                border-radius: 12px;
+                font-size: 14px;
+                margin-top: 4px;
+            }
+        </style>
 
-                <!--
+        <!--
                   간단 표시: accountId는 userPrincipal.name으로 확인 가능
                   추가 정보(이메일/닉네임 등)는 API로 불러오거나, 시큐리티 태그로 principal 확장 정보를 노출하는 방식으로 확장할 수 있어요.
                 -->

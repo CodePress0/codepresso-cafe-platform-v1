@@ -1,3 +1,29 @@
+/* 페이지 레이아웃 */
+.order-list-main {
+    padding: 40px 0 80px;
+    flex: 1;
+}
+
+.rcontainer {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-header {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-1);
+    margin: 0;
+}
+
 /* 필터 섹션 */
 .filter-section {
     background: var(--white);

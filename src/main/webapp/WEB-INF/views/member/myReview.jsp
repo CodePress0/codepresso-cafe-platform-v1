@@ -28,6 +28,11 @@
                 border-bottom: 2px solid rgba(255,122,162,0.2);
                 margin: 24px 0 32px;
                 overflow-x: auto;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .tab-menu::-webkit-scrollbar {
+                display: none;
             }
             .tab-item {
                 padding: 14px 24px;
