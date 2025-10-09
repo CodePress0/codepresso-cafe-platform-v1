@@ -6,14 +6,8 @@
 <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
 <style>
-  .favorite-page .hero { background: transparent; }
-  .favorite-page .hero-card {
-    background: #fff;
-    border-radius: 28px;
-    border: 1px solid rgba(255,122,162,0.18);
-    box-shadow: 0 32px 60px rgba(15,23,42,0.12);
-    grid-template-columns: 1fr;
-  }
+  .favorite-main { padding: 40px 0 80px; }
+  .favorite-container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
   .favorite-page .favorite-item {
     background: #fff;
     border-radius: 18px;
@@ -48,12 +42,10 @@
   }
 </style>
 
-<main class="hero">
-  <div class="container">
-    <div class="hero-card">
-      <div>
-        <div class="badge">CodePress · 마이페이지</div>
-        <h1>마이페이지</h1>
+<main class="favorite-main">
+  <div class="favorite-container">
+    <div class="badge">CodePress · 마이페이지</div>
+    <h1>마이페이지</h1>
 
         <!-- 탭 메뉴 -->
         <style>
@@ -63,6 +55,11 @@
                 border-bottom: 2px solid rgba(255,122,162,0.2);
                 margin: 24px 0 32px;
                 overflow-x: auto;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .tab-menu::-webkit-scrollbar {
+                display: none;
             }
             .tab-item {
                 padding: 14px 24px;
@@ -98,12 +95,12 @@
             }
         </style>
 
-        <div class="tab-menu">
-            <a href="/member/mypage" class="tab-item">👤 내 정보</a>
-            <a href="/favorites" class="tab-item active">⭐ 즐겨찾기</a>
-            <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
-            <a href="/orders" class="tab-item">📋 주문목록</a>
-        </div>
+    <div class="tab-menu">
+        <a href="/member/mypage" class="tab-item">👤 내 정보</a>
+        <a href="/favorites" class="tab-item active">⭐ 즐겨찾기</a>
+        <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
+        <a href="/orders" class="tab-item">📋 주문목록</a>
+    </div>
 
         <c:if test="${not empty success}">
           <div class="success-message">✅ ${success}</div>
@@ -123,7 +120,7 @@
             <div class="favorite-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; margin-top:16px;">
                 <c:forEach var="favorite" items="${favoriteList.favorites}" varStatus="status">
                     <div class="favorite-item">
-                        <div class="orderby-info" style="font-size:12px;color:var(--text-2);">순서: ${favorite.orderby}</div>
+
                         
                         <c:if test="${not empty favorite.productPhoto}">
                             <img src="${favorite.productPhoto}" alt="${favorite.productName}" class="product-image"
@@ -159,8 +156,6 @@
     <!-- 주문하러 가기 버튼 -->
     <div style="text-align: center; margin: 32px 0 20px;">
         <a class="btn btn-primary" href="/branch/list" style="padding: 16px 48px; font-size: 18px; font-weight: 700;">주문하러 가기</a>
-    </div>
-      </div>
     </div>
   </div>
 </main>
