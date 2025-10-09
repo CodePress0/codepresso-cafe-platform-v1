@@ -18,40 +18,64 @@ spring:
     view:
       prefix: /WEB-INF/views/  # JSP 파일이 위치한 디렉토리 경로
       suffix: .jsp             # JSP 파일 확장자
+    hiddenmethod:
+      filter:
+        enabled: true           # HTTP 메서드 오버라이드 활성화 (PUT, DELETE 등)
 
-#  # 데이터베이스 연결 설정 (H2 인메모리 DB - 개발용)
-#  datasource:
-#    url: jdbc:h2:mem:testdb           # H2 인메모리 데이터베이스 URL
-#    driver-class-name: org.h2.Driver  # H2 드라이버 클래스명
-#    username: sa                      # 데이터베이스 사용자명
-#    password:                         # 데이터베이스 비밀번호 (빈값)
-#
-#
-#  # H2 콘솔 설정
-#  h2:
-#    console:
-#      enabled: true  # H2 웹 콘솔 활성화 (브라우저에서 DB 확인 가능)
-#      # 접속 URL: http://localhost:8080/h2-console
-
-#  datasource:
-#    url: jdbc:mysql://localhost:33306/codepresso?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-#    username: codepresso
-#    password: codepresso123
-#    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 데이터베이스 연결 설정 (MySQL - docker-compose: mysql:8.4, 포트 33306)
+  datasource:
+    url: jdbc:mysql://localhost:33306/codepresso?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: codepresso
+    password: codepresso123
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA/Hibernate 설정
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect  # MySQL 8용 방언 설정
+    database-platform: org.hibernate.dialect.MySQLDialect   # MySQL 방언(자동 선택되지만 명시)
     hibernate:
-      ddl-auto: create   # 기존 테이블 유지하면서 변경된 엔티티 반영(update로 변경할것)
+      ddl-auto: update # 빈 DB는 생성, 기존 스키마는 보존하며 변경 반영
     show-sql: true        # 실행되는 SQL 쿼리를 콘솔에 출력
 
-  # MyBatis 설정
-  mybatis:
-    # Mapper XML 파일 위치 설정
-     mapper-locations: classpath:com.codepresso.codepresso/*.xml     # 특정 패키지의 XML 파일 (현재 경로가 잘못됨)
-     # 테스트 할 땐 이걸로!
-     type-aliases-package: com.codepresso.codepresso.test        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
+  # 이메일 발송 설정 (Naver SMTP)
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username:  codepresso5@naver.com    #  ${EMAIL_USERNAME}  환경변수로 설정
+    password:  D4L4GB37HUJM             #  ${EMAIL_PASSWORD}  앱 비밀번호 사용
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.naver.com
 
-# 테스트 안 할 땐 이걸로!!!!!!!!!
-#  type-aliases-package: com.codepresso.codepresso        # 타입 별칭을 위한 패키지 (MyBatis에서 클래스명만으로 타입 사용 가능)
+# MyBatis는 비활성화(의존성 제거). 필요 시 추후 재도입
+
+# 애플리케이션 커스텀 설정
+app:
+  email:
+    verification:
+      expiry-minutes: 5  # 인증번호 만료 시간 (분)
+  file:
+    upload:
+      path: src/main/resources/static/uploads/profile-images/  # 프로필 이미지 업로드 경로
+      max-size: 5MB  # 최대 파일 크기
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  port: 8080
+
+# 토스 페이먼츠 설정
+toss:
+  payments:
+    client-key: test_ck_Z61JOxRQVEEOn7KM2POwVW0X9bAq
+    secret-key: test_sk_oEjb0gm23PWRyYvE0kbo8pGwBJn5
+    base-url: https://api.tosspayments.com
+    success-url: http://localhost:8080/payments/success
+    fail-url: http://localhost:8080/payments/fail
