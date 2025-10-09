@@ -41,8 +41,12 @@
         <style>
             /* 이 페이지는 상단 여백을 줄입니다 */
             .hero.branch-page { padding-top: 40px; }
-            /* 매장 목록 페이지에서는 헤더의 매장 선택 버튼 숨김 */
+            /* 매장 목록 페이지에서는 헤더의 모든 네비게이션 버튼 숨김 */
             .header-branch-select { display: none !important; }
+            .search-icon { display: none !important; }
+            .nav a[href="/boards/list"] { display: none !important; }
+            .nav a[href="/member/mypage"] { display: none !important; }
+            .nav .cart-link { display: none !important; }
             /* 히어로 섹션과 카드 그리드 사이 여백 */
             .branch-hero { margin-bottom: 24px; }
             /* 레이아웃: 카드 그리드 */

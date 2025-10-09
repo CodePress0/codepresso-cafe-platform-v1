@@ -26,69 +26,7 @@
 
 <main class="mypage-main">
     <div class="mypage-container">
-        <div class="badge">CodePress · 마이페이지</div>
-        <h1>마이페이지</h1>
-
-                <!-- 탭 메뉴 -->
-                <style>
-                    .tab-menu {
-                        display: flex;
-                        gap: 8px;
-                        border-bottom: 2px solid rgba(255,122,162,0.2);
-                        margin: 24px 0 32px;
-                        overflow-x: auto;
-                        -ms-overflow-style: none;
-                        scrollbar-width: none;
-                    }
-                    .tab-menu::-webkit-scrollbar {
-                        display: none;
-                    }
-                    .tab-item {
-                        padding: 14px 24px;
-                        background: transparent;
-                        border: none;
-                        color: var(--text-2);
-                        font-weight: 600;
-                        font-size: 16px;
-                        cursor: pointer;
-                        position: relative;
-                        transition: all 0.2s ease;
-                        white-space: nowrap;
-                        text-decoration: none;
-                        display: inline-block;
-                    }
-                    .tab-item:hover {
-                        color: var(--pink-1);
-                        background: rgba(255,122,162,0.05);
-                    }
-                    .tab-item.active {
-                        color: var(--pink-1);
-                        font-weight: 700;
-                    }
-                    .tab-item.active::after {
-                        content: '';
-                        position: absolute;
-                        bottom: -2px;
-                        left: 0;
-                        right: 0;
-                        height: 3px;
-                        background: var(--pink-1);
-                        border-radius: 3px 3px 0 0;
-                    }
-                    .tab-content {
-                        display: none;
-                    }
-                    .tab-content.active {
-                        display: block;
-                    }
-                </style>
-
-        <div class="tab-menu">
-            <a href="/member/mypage" class="tab-item active">👤 내 정보</a>
-            <a href="/favorites" class="tab-item">⭐ 즐겨찾기</a>
-            <a href="/users/myReviews" class="tab-item">✍️ 내 리뷰</a>
-            <a href="/orders" class="tab-item">📋 주문목록</a>
-        </div>
+        <%@ include file="/WEB-INF/views/member/mypage-header.jspf" %>
 
         <c:if test="${not empty success}">
             <div class="success-message" style="background: #d4edda; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">✅ ${success}</div>

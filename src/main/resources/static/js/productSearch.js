@@ -184,10 +184,15 @@ async function getRandomRecommendation() {
 
         displaySearchResults(randomProducts);
 
-        // 추천 결과로 스크롤
-        document.getElementById('searchResults').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+        // 추천 버튼이 헤더에 가리지 않도록 추천 버튼 섹션으로 스크롤
+        const recommendSection = document.querySelector('.random-recommend-section');
+        const headerHeight = 100; // 헤더 높이만큼 여유 공간
+        const elementPosition = recommendSection.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
         });
     } catch (error) {
         console.error('랜덤 추천 오류:', error);
