@@ -8,7 +8,9 @@ CodePresso는 카페 운영을 위한 종합 웹 플랫폼입니다.
 <br>고객은 온라인으로 메뉴를 주문하고, 리뷰를 작성하며, 쿠폰을 활용할 수 있습니다. 
 <br>관리자는 상품, 주문, 회원, 지점 등을 효율적으로 관리할 수 있습니다.
 
+
 <br>
+
 
 ## 주요 기능
 
@@ -52,7 +54,9 @@ CodePresso는 카페 운영을 위한 종합 웹 플랫폼입니다.
 - 지점 정보 조회
 - 지점 목록
 
+
 <br>
+
 
 ## 기술 스택
 
@@ -93,6 +97,7 @@ CodePresso는 카페 운영을 위한 종합 웹 플랫폼입니다.
 - **JUnit 5**
 - **Spring Boot Test**
 - **H2 Database** (테스트용 인메모리 DB)
+
 
 <br>
 
@@ -135,7 +140,9 @@ codepresso/
 └── README.md
 ```
 
+
 <br>
+
 
 ### 아키텍처
 
@@ -148,7 +155,6 @@ codepresso/
 5. **DTO Layer**: 계층 간 데이터 전송
 6. **Converter Layer**: Entity와 DTO 간 변환
 
-<br>
 
 ## Git 브랜치 전략
 
@@ -158,4 +164,3 @@ codepresso/
 - `develop`: 개발 통합 브랜치
 - `feature/*`: 새로운 기능 개발 브랜치
 - `hotfix/*`: 긴급 버그 수정 브랜치
-- `fix/*`: 일반 버그 수정 브랜치
